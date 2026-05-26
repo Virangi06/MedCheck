@@ -433,28 +433,28 @@ function Home() {
       </section>
 
       {/* ─── CTA ─── */}
-      <section style={{ padding: '100px 24px', background: 'linear-gradient(135deg, #0EA5E9 0%, #0284c7 100%)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle at 30% 50%, rgba(255,255,255,0.08) 0%, transparent 50%), radial-gradient(circle at 70% 50%, rgba(255,255,255,0.06) 0%, transparent 50%)' }} />
+      <section style={{ padding: '100px 24px', background: '#ffffff', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle at 30% 50%, rgba(14,165,233,0.04) 0%, transparent 50%), radial-gradient(circle at 70% 50%, rgba(14,165,233,0.03) 0%, transparent 50%)' }} />
         <div style={{ position: 'relative', zIndex: 1, maxWidth: 600, margin: '0 auto' }}>
           {/* CTA Logo Section */}
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
             <svg width={80} height={80} viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="28" cy="28" r="28" fill="rgba(255,255,255,0.15)" />
+              <circle cx="28" cy="28" r="28" fill="#0EA5E9" />
               <rect x="24.5" y="12" width="7" height="32" rx="3.5" fill="white" />
               <rect x="12" y="24.5" width="32" height="7" rx="3.5" fill="white" />
             </svg>
           </div>
-          <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: 'clamp(28px,5vw,48px)', fontWeight: 500, color: 'white', letterSpacing: '-1px', margin: '24px 0 16px' }}>
+          <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: 'clamp(28px,5vw,48px)', fontWeight: 500, color: '#0f172a', letterSpacing: '-1px', margin: '24px 0 16px' }}>
             Take Control of Your Health Today
           </h2>
           {user ? (
-            <button className="btn-primary" onClick={() => navigate('/symptom-checker')} style={{ background: 'white', color: '#0EA5E9', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+            <button className="btn-primary" onClick={() => navigate('/symptom-checker')} style={{ background: '#0EA5E9', color: 'white', boxShadow: '0 4px 16px rgba(14,165,233,0.35)' }}>
               Go to Symptom Checker →
             </button>
           ) : (
             <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Link to="/register" className="btn-primary" style={{ background: 'white', color: '#0EA5E9', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>Get Started Free →</Link>
-              <Link to="/login" className="btn-outline">Sign In</Link>
+              <Link to="/register" className="btn-primary" style={{ background: '#0EA5E9', color: 'white', boxShadow: '0 4px 16px rgba(14,165,233,0.35)' }}>Get Started Free →</Link>
+              <Link to="/login" className="btn-outline" style={{ background: 'transparent', color: '#0EA5E9', border: '1.5px solid #0EA5E9' }}>Sign In</Link>
             </div>
           )}
         </div>
