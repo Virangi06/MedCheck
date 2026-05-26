@@ -1,19 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-
-function MedCheckLogo({ size = 'sm' }) {
-  const px = size === 'sm' ? 34 : 44;
-  return (
-    <svg width={px} height={px} viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="44" height="44" rx="12" fill="#0EA5E9" />
-      <rect x="19" y="10" width="6" height="24" rx="3" fill="white" />
-      <rect x="10" y="19" width="24" height="6" rx="3" fill="white" />
-      <path d="M8 22 L13 22 L16 15 L20 29 L23 18 L26 24 L29 24 L36 24"
-        stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"
-        opacity="0.55" />
-    </svg>
-  );
-}
+import MedCheckLogo from './MedCheckLogo';
 
 function Navbar({ user, onLogout }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -56,7 +43,7 @@ function Navbar({ user, onLogout }) {
 
         {/* Logo */}
         <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          <MedCheckLogo size="sm" />
+          <MedCheckLogo size="sm" showText={false} />
           <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: 18, color: '#0f172a', letterSpacing: '-0.3px' }}>MedCheck</span>
         </Link>
 
