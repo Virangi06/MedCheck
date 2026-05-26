@@ -12,28 +12,38 @@ import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import VerifyOtp from './pages/VerifyOtp';
+
+
 import SymptomChecker from './pages/SymptomChecker';
 import Results from './pages/Results';
 import PatientDashboard from './pages/PatientDashboard';
+
 import AboutUs from './pages/AboutUs';
 
 function App() {
-  const { user, loading, logout } = useAuth();
+  const { user, loading, logout } =
+    useAuth();
 
   const location = useLocation();
 
-  // Hide Navbar on Login & Register pages
+  // Hide Navbar on Auth Pages
   const hideNavbar =
     location.pathname === '/login' ||
-    location.pathname === '/register';
+    location.pathname === '/register' ||
+    location.pathname ===
+      '/forgot-password';
 
-  // ─────────────────────────────────────────
+  // ─────────────────────────────
   // Protected Route Component
-  // ─────────────────────────────────────────
+  // ─────────────────────────────
   const ProtectedRoute = ({
     children,
     requiredRole = null,
   }) => {
+    // Loading Screen
     if (loading) {
       return (
         <div
@@ -55,15 +65,27 @@ function App() {
       );
     }
 
+    // User Not Logged In
     if (!user) {
-      return <Navigate to="/login" replace />;
+      return (
+        <Navigate
+          to="/login"
+          replace
+        />
+      );
     }
 
+    // Role Protection
     if (
       requiredRole &&
       user.role !== requiredRole
     ) {
-      return <Navigate to="/" replace />;
+      return (
+        <Navigate
+          to="/"
+          replace
+        />
+      );
     }
 
     return children;
@@ -71,7 +93,7 @@ function App() {
 
   return (
     <>
-      {/* Navbar Hidden on Login/Register */}
+      {/* Navbar */}
       {!hideNavbar && (
         <Navbar
           user={user}
@@ -79,8 +101,9 @@ function App() {
         />
       )}
 
+      {/* Routes */}
       <Routes>
-        {/* Public Routes */}
+        {/* PUBLIC ROUTES */}
         <Route
           path="/"
           element={<Home />}
@@ -101,7 +124,26 @@ function App() {
           element={<Register />}
         />
 
-        {/* Protected Patient Routes */}
+        <Route
+          path="/forgot-password"
+          element={
+            <ForgotPassword />
+          }
+        />
+
+        <Route
+          path="/reset-password"
+          element={
+            <ResetPassword />
+          }
+        />
+
+        <Route
+          path="/verify-otp"
+          element={<VerifyOtp />}
+        />
+
+        {/* PROTECTED ROUTES */}
         <Route
           path="/symptom-checker"
           element={
@@ -129,10 +171,15 @@ function App() {
           }
         />
 
-        {/* Fallback Route */}
+        {/* FALLBACK */}
         <Route
           path="*"
-          element={<Navigate to="/" replace />}
+          element={
+            <Navigate
+              to="/"
+              replace
+            />
+          }
         />
       </Routes>
     </>

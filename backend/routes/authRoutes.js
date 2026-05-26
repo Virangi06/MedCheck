@@ -1,14 +1,72 @@
 const express = require('express');
+
 const router = express.Router();
-const { register, login, getMe, logout } = require('../controllers/authController');
-const { protect } = require('../middleware/authMiddleware');
 
-// Public routes
-router.post('/register', register);
-router.post('/login', login);
-router.post('/logout', logout);
+const {
+  register,
+  login,
+  getMe,
+  logout,
 
-// Protected routes (require valid JWT)
-router.get('/me', protect, getMe);
+  forgotPassword,
+  verifyOtp,
+  resetPassword,
+
+} = require('../controllers/authController');
+
+const {
+  protect,
+} = require('../middleware/authMiddleware');
+
+// ─────────────────────────────────────────────
+// PUBLIC ROUTES
+// ─────────────────────────────────────────────
+
+// Register User
+router.post(
+  '/register',
+  register
+);
+
+// Login User
+router.post(
+  '/login',
+  login
+);
+
+// Logout User
+router.post(
+  '/logout',
+  logout
+);
+
+// Forgot Password - Send OTP
+router.post(
+  '/forgot-password',
+  forgotPassword
+);
+
+// Verify OTP
+router.post(
+  '/verify-otp',
+  verifyOtp
+);
+
+// Reset Password
+router.post(
+  '/reset-password',
+  resetPassword
+);
+
+// ─────────────────────────────────────────────
+// PROTECTED ROUTES
+// ─────────────────────────────────────────────
+
+// Get Current Logged-in User
+router.get(
+  '/me',
+  protect,
+  getMe
+);
 
 module.exports = router;
