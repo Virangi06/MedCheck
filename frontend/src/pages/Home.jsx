@@ -173,15 +173,8 @@ function Home() {
 
           {/* Logo badge */}
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 32 }}>
-            <div className="float-card" style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 20, padding: '12px 24px', backdropFilter: 'blur(8px)' }}>
-              <div style={{ position: 'relative' }}>
-                <div className="pulse-ring" style={{ position: 'absolute', inset: -4, borderRadius: 16, border: '2px solid rgba(14,165,233,0.5)' }} />
-                <MedCheckLogo size="md" showText={false} />
-              </div>
-              <div style={{ textAlign: 'left' }}>
-                <div style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: 22, color: 'white', letterSpacing: '-0.5px' }}>MedCheck</div>
-                <div style={{ fontSize: 12, color: 'rgba(186,230,253,0.8)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Medical Symptom Checker</div>
-              </div>
+            <div className="float-card" style={{ display: 'flex', alignItems: 'center', gap: 16, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 20, padding: '16px 28px', backdropFilter: 'blur(8px)' }}>
+              <MedCheckLogo size="sm" showSubtitle={false} />
             </div>
           </div>
 
@@ -444,7 +437,13 @@ function Home() {
         <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle at 30% 50%, rgba(255,255,255,0.08) 0%, transparent 50%), radial-gradient(circle at 70% 50%, rgba(255,255,255,0.06) 0%, transparent 50%)' }} />
         <div style={{ position: 'relative', zIndex: 1, maxWidth: 600, margin: '0 auto' }}>
           {/* CTA Logo Section */}
-          <MedCheckLogo size="lg" showText={false} />
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
+            <svg width={80} height={80} viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="28" cy="28" r="28" fill="rgba(255,255,255,0.15)" />
+              <rect x="24.5" y="12" width="7" height="32" rx="3.5" fill="white" />
+              <rect x="12" y="24.5" width="32" height="7" rx="3.5" fill="white" />
+            </svg>
+          </div>
           <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: 'clamp(28px,5vw,48px)', fontWeight: 500, color: 'white', letterSpacing: '-1px', margin: '24px 0 16px' }}>
             Take Control of Your Health Today
           </h2>
@@ -467,8 +466,7 @@ function Home() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 40, marginBottom: 48 }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-                <MedCheckLogo size="sm" showText={false} />
-                <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: 18, color: 'white' }}>MedCheck</span>
+                <MedCheckLogo size="sm" showSubtitle={false} />
               </div>
               <p style={{ fontSize: 14, lineHeight: 1.7, maxWidth: 220 }}>Intelligent health insights connecting patients with verified medical professionals.</p>
             </div>

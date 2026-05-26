@@ -175,24 +175,11 @@ function Register() {
             style={{
               textDecoration: 'none',
               display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
+              justifyContent: 'center',
               marginBottom: '16px',
             }}
           >
-            <MedCheckLogo size="md" />
-
-            <span
-              style={{
-                fontSize: '24px',
-                fontWeight: '800',
-                color: '#0f172a',
-                fontFamily: 'Syne, sans-serif',
-                letterSpacing: '-0.5px',
-              }}
-            >
-              MedCheck
-            </span>
+            <MedCheckLogo size="md" showSubtitle={true} />
           </Link>
 
           <h1

@@ -42,9 +42,8 @@ function Navbar({ user, onLogout }) {
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: 64 }}>
 
         {/* Logo */}
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          <MedCheckLogo size="sm" showText={false} />
-          <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: 18, color: '#0f172a', letterSpacing: '-0.3px' }}>MedCheck</span>
+        <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+          <MedCheckLogo size="sm" />
         </Link>
 
         {/* Desktop menu */}

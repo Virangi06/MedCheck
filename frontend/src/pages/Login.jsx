@@ -100,11 +100,10 @@ function Login() {
 
           {/* Logo */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 36 }}>
-            <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', marginBottom: 20 }}>
-              <MedCheckLogo size="md" />
-              <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: 24, color: '#0f172a', letterSpacing: '-0.5px' }}>MedCheck</span>
+            <Link to="/" style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+              <MedCheckLogo size="md" showSubtitle={true} />
             </Link>
-            <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: 36, fontWeight: 800, color: '#0f172a', marginBottom: 8, textAlign: 'center', letterSpacing: '-0.4px', lineHeight: 1.3 }}>Welcome back</h1>
+            <h1 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 32, fontWeight: 700, color: '#0f172a', marginBottom: 8, textAlign: 'center', letterSpacing: '-0.3px', lineHeight: 1.3 }}>Welcome back</h1>
             <p style={{ color: '#64748b', textAlign: 'center', fontSize: 15 }}>Sign in to access your health dashboard</p>
           </div>
 
