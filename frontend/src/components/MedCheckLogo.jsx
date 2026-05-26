@@ -1,22 +1,20 @@
 function MedCheckLogo({ size = 'md', showText = true, showSubtitle = true }) {
   const sizes = {
-    sm: 32,
-    md: 44,
-    lg: 64,
-    xl: 80,
+    sm: 40,
+    md: 56,
+    lg: 80,
+    xl: 100,
   };
-  const px = sizes[size] || 44;
+  const px = sizes[size] || 56;
 
   const logoComponent = (
-    <svg width={px} height={px} viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* White background */}
-      <rect width="44" height="44" rx="12" fill="white" />
-      {/* Blue background for the icon area */}
-      <rect width="44" height="44" rx="12" fill="#0EA5E9" />
+    <svg width={px} height={px} viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Blue circle background */}
+      <circle cx="28" cy="28" r="28" fill="#0EA5E9" />
       {/* White cross (vertical) */}
-      <rect x="19" y="10" width="6" height="24" rx="3" fill="white" />
+      <rect x="24.5" y="12" width="7" height="32" rx="3.5" fill="white" />
       {/* White cross (horizontal) */}
-      <rect x="10" y="19" width="24" height="6" rx="3" fill="white" />
+      <rect x="12" y="24.5" width="32" height="7" rx="3.5" fill="white" />
     </svg>
   );
 
@@ -25,38 +23,37 @@ function MedCheckLogo({ size = 'md', showText = true, showSubtitle = true }) {
   }
 
   const fontSizeMap = {
-    sm: { main: 14, sub: 10 },
-    md: { main: 18, sub: 12 },
-    lg: { main: 24, sub: 14 },
-    xl: { main: 32, sub: 16 },
+    sm: { main: 16, sub: 11 },
+    md: { main: 22, sub: 13 },
+    lg: { main: 28, sub: 15 },
+    xl: { main: 36, sub: 18 },
   };
 
   const fontSize = fontSizeMap[size] || fontSizeMap.md;
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: px / 3 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: px / 2.5 }}>
       {logoComponent}
       <div>
         <div
           style={{
-            fontFamily: 'Syne, sans-serif',
-            fontWeight: 800,
+            fontFamily: "'DM Sans', sans-serif",
+            fontWeight: 700,
             fontSize: fontSize.main,
-            color: '#0f172a',
-            letterSpacing: '-0.3px',
-            lineHeight: 1,
+            color: '#0EA5E9',
+            letterSpacing: '-0.5px',
+            lineHeight: 1.2,
           }}
         >
-          MedCheck
+          Med<span style={{ color: '#475569' }}>Check</span>
         </div>
         {showSubtitle && (
           <div
             style={{
               fontSize: fontSize.sub,
-              color: '#0EA5E9',
-              fontWeight: 600,
-              letterSpacing: '0.05em',
-              textTransform: 'uppercase',
+              color: '#94a3b8',
+              fontWeight: 500,
+              letterSpacing: '0.02em',
               marginTop: 2,
             }}
           >
