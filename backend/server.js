@@ -1,6 +1,10 @@
+// ✅ FIX: dotenv v17 (dotenvx) removed the .config() method
+// require('dotenv').config() silently fails in dotenv v17
+// Use require('dotenv/config') instead - works in ALL versions
+require('dotenv/config');
+
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 
 const connectDB = require('./config/db');
@@ -8,9 +12,6 @@ const connectDB = require('./config/db');
 // ROUTES
 const authRoutes = require('./routes/authRoutes');
 const analysisRoutes = require('./routes/analysisRoutes');
-
-// Load environment variables
-dotenv.config();
 
 // Connect database
 connectDB();
@@ -58,7 +59,41 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({
     success: true,
     message: 'MedCheck API is running',
+    env: {
+      groqKeyLoaded: !!process.env.GROQ_API_KEY,
+      port: process.env.PORT,
+    },
   });
+});
+
+/* =========================================================
+   TEST LOCATION SERVICE
+========================================================= */
+
+app.get('/api/test/nearby-doctors', async (req, res) => {
+  try {
+    const { getNearbyDoctors } = require('./services/locationService');
+
+    const lat = req.query.lat || 40.7128;
+    const lng = req.query.lng || -74.0060;
+
+    console.log(`🧪 TEST: Fetching nearby doctors for ${lat}, ${lng}`);
+
+    const doctors = await getNearbyDoctors(lat, lng, 'General');
+
+    res.status(200).json({
+      success: true,
+      coordinates: { lat, lng },
+      doctorsFound: doctors.length,
+      doctors: doctors,
+    });
+  } catch (error) {
+    console.error('Test error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 });
 
 /* =========================================================
@@ -94,7 +129,8 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(
-    `🚀 MedCheck Server running on port ${PORT}`
-  );
+  console.log(`🚀 MedCheck Server running on port ${PORT}`);
+  // ✅ Verify env loaded correctly on startup
+  console.log(`🔑 GROQ Key loaded: ${!!process.env.GROQ_API_KEY}`);
+  console.log(`🗄️  MongoDB URI loaded: ${!!process.env.MONGO_URI}`);
 });

@@ -4,6 +4,7 @@ const router = express.Router();
 
 const {
   analyzeSymptoms,
+  getHistory,         
 } = require('../controllers/analysisController');
 
 const {
@@ -14,7 +15,7 @@ const {
 |--------------------------------------------------------------------------
 | AI Symptom Analysis Route
 |--------------------------------------------------------------------------
-| Protected Route
+| Protected Route based on the token itself, no need to pass userId in body
 | User must be logged in
 |--------------------------------------------------------------------------
 */
@@ -23,6 +24,13 @@ router.post(
   '/analyze',
   protect,
   analyzeSymptoms
+);
+
+
+router.get(
+  '/history',
+  protect,
+  getHistory
 );
 
 module.exports = router;

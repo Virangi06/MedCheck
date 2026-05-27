@@ -1,63 +1,114 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
 
 import {
   Brain,
   User,
   Calendar,
-  VenusAndMars,
   ShieldAlert,
   Pill,
   AlertTriangle,
   Activity,
-  Thermometer,
   HeartPulse,
-  Sparkles,
-  Stethoscope,
+  VenusAndMars,
   ChevronRight,
   ChevronLeft,
+  Thermometer,
   Loader2,
+  Sparkles,
+
+  Stethoscope,
   MapPin,
-  ShieldCheck,
   Siren,
-} from 'lucide-react';
+} from '../components/MedIcon';
 
 function SymptomChecker() {
-  const user = JSON.parse(localStorage.getItem('user'));
+  const navigate = useNavigate();
+  const user = JSON.parse(
+    localStorage.getItem('user')
+  );
+
 
   const [step, setStep] = useState(1);
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] =
+    useState(false);
 
-  const [formData, setFormData] = useState({
-    fullName: user?.name || '',
-    age: '',
-    gender: '',
-    height: '',
-    weight: '',
-    diseases: '',
-    medications: '',
-    allergies: '',
-    symptoms: '',
-    duration: '',
-    severity: '',
-    bodyArea: '',
-  });
+  const [analysis, setAnalysis] =
+    useState(null);
 
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState(
+    {}
+  );
 
-  const [analysis, setAnalysis] = useState(null);
+  const [location, setLocation] =
+    useState(null);
+
+  const [locationError, setLocationError] =
+    useState('');
 
   const [customDisease, setCustomDisease] =
     useState('');
 
-  const [customMedication, setCustomMedication] =
-    useState('');
+  const [
+    customMedication,
+    setCustomMedication,
+  ] = useState('');
 
   const [customAllergy, setCustomAllergy] =
     useState('');
 
-  // HANDLE INPUT CHANGE
+  const [formData, setFormData] =
+    useState({
+      fullName: user?.name || '',
+      age: '',
+      gender: '',
+      height: '',
+      weight: '',
+      diseases: '',
+      medications: '',
+      allergies: '',
+      symptoms: '',
+      duration: '',
+      severity: '',
+      bodyArea: '',
+    });
+
+  /* =====================================================
+     GET USER LOCATION
+  ===================================================== */
+
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setLocationError(
+        'Geolocation not supported'
+      );
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+      },
+      (error) => {
+        console.log(error);
+
+        setLocationError(
+          'Location permission denied'
+        );
+      }
+    );
+  }, []);
+
+  /* =====================================================
+     HANDLE INPUT
+  ===================================================== */
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -66,11 +117,14 @@ function SymptomChecker() {
 
     setErrors({
       ...errors,
-      [e.target.name]: '',
+      [e.target.name]: '', 
     });
   };
 
-  // STEP 1 VALIDATION
+  /* =====================================================
+     STEP 1 VALIDATION
+  ===================================================== */
+
   const validateStep1 = () => {
     let newErrors = {};
 
@@ -78,11 +132,12 @@ function SymptomChecker() {
       newErrors.age = 'Age is required';
 
     if (!formData.gender)
-      newErrors.gender = 'Gender is required';
+      newErrors.gender =
+        'Gender is required';
 
     if (!formData.diseases)
       newErrors.diseases =
-        'Please select existing disease';
+        'Please select disease';
 
     if (!formData.medications)
       newErrors.medications =
@@ -97,7 +152,10 @@ function SymptomChecker() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // STEP 2 VALIDATION
+  /* =====================================================
+     STEP 2 VALIDATION
+  ===================================================== */
+
   const validateStep2 = () => {
     let newErrors = {};
 
@@ -122,15 +180,21 @@ function SymptomChecker() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // REAL AI ANALYSIS
+  /* =====================================================
+     ANALYZE SYMPTOMS
+  ===================================================== */
+
   const handleAnalyze = async () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
+      const token =
+        localStorage.getItem('token');
 
       const finalData = {
         ...formData,
+
+        location,
 
         diseases:
           formData.diseases === 'Other'
@@ -158,13 +222,37 @@ function SymptomChecker() {
         }
       );
 
+      console.log(
+        'AI ANALYSIS:',
+        response.data
+      );
+
       setAnalysis(response.data.analysis);
+
+      setAnalysis(response.data.analysis);
+
+// ✅ Save to localStorage as dashboard fallback
+const historyEntry = {
+  _id: response.data.id || Date.now().toString(),
+  createdAt: new Date().toISOString(),
+  inputData: finalData,
+  result: response.data.analysis,
+};
+const existing = JSON.parse(localStorage.getItem('analysisHistory') || '[]');
+const updated = [historyEntry, ...existing].slice(0, 20);
+localStorage.setItem('analysisHistory', JSON.stringify(updated));
 
       setStep(3);
     } catch (error) {
-      console.log(error);
+      console.log(
+        'AI ANALYSIS ERROR:',
+        error
+      );
 
-      alert('AI analysis failed');
+      alert(
+        error?.response?.data?.message ||
+          'Analysis failed'
+      );
     } finally {
       setLoading(false);
     }
@@ -185,6 +273,7 @@ function SymptomChecker() {
         }}
       >
         {/* HEADER */}
+
         <div
           style={{
             textAlign: 'center',
@@ -225,12 +314,56 @@ function SymptomChecker() {
               fontSize: '18px',
             }}
           >
-            Get AI-powered health analysis and
-            medical insights instantly.
+            Get AI-powered health analysis
+            and nearby medical suggestions.
           </p>
+
+          {/* LOCATION STATUS */}
+
+          <div
+            style={{
+              marginTop: '20px',
+            }}
+          >
+            {location ? (
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: '#dcfce7',
+                  color: '#166534',
+                  padding: '10px 16px',
+                  borderRadius: '999px',
+                  fontWeight: '600',
+                }}
+              >
+                <MapPin size={18} />
+                Live Location Connected
+              </div>
+            ) : (
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: '#fef2f2',
+                  color: '#b91c1c',
+                  padding: '10px 16px',
+                  borderRadius: '999px',
+                  fontWeight: '600',
+                }}
+              >
+                <AlertTriangle size={18} />
+                {locationError ||
+                  'Fetching location...'}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* PROGRESS */}
+
         <div
           style={{
             display: 'flex',
@@ -257,6 +390,7 @@ function SymptomChecker() {
         </div>
 
         {/* STEP 1 */}
+
         {step === 1 && (
           <div style={cardStyle}>
             <h2 style={titleStyle}>
@@ -281,7 +415,9 @@ function SymptomChecker() {
               />
 
               <SelectBox
-                icon={<VenusAndMars size={18} />}
+                icon={
+                  <VenusAndMars size={18} />
+                }
                 label="Gender *"
                 name="gender"
                 value={formData.gender}
@@ -311,9 +447,12 @@ function SymptomChecker() {
               />
 
               {/* DISEASES */}
+
               <div>
                 <SelectBox
-                  icon={<ShieldAlert size={18} />}
+                  icon={
+                    <ShieldAlert size={18} />
+                  }
                   label="Existing Diseases *"
                   name="diseases"
                   value={formData.diseases}
@@ -345,15 +484,20 @@ function SymptomChecker() {
                 )}
               </div>
 
-              {/* MEDICATION */}
+              {/* MEDICATIONS */}
+
               <div>
                 <SelectBox
                   icon={<Pill size={18} />}
                   label="Current Medications *"
                   name="medications"
-                  value={formData.medications}
+                  value={
+                    formData.medications
+                  }
                   onChange={handleChange}
-                  error={errors.medications}
+                  error={
+                    errors.medications
+                  }
                   options={[
                     'None',
                     'Paracetamol',
@@ -381,6 +525,7 @@ function SymptomChecker() {
               </div>
 
               {/* ALLERGIES */}
+
               <div>
                 <SelectBox
                   icon={
@@ -433,6 +578,7 @@ function SymptomChecker() {
         )}
 
         {/* STEP 2 */}
+
         {step === 2 && (
           <div style={cardStyle}>
             <h2 style={titleStyle}>
@@ -446,13 +592,14 @@ function SymptomChecker() {
               }}
             >
               <InputBox
-                icon={<Thermometer size={18} />}
+                icon={
+                  <Thermometer size={18} />
+                }
                 label="Symptoms *"
                 name="symptoms"
                 value={formData.symptoms}
                 onChange={handleChange}
                 error={errors.symptoms}
-                placeholder="e.g. fever, cough"
               />
 
               <SelectBox
@@ -487,13 +634,14 @@ function SymptomChecker() {
               />
 
               <InputBox
-                icon={<Stethoscope size={18} />}
+                icon={
+                  <Stethoscope size={18} />
+                }
                 label="Affected Body Area *"
                 name="bodyArea"
                 value={formData.bodyArea}
                 onChange={handleChange}
                 error={errors.bodyArea}
-                placeholder="e.g. chest, head"
               />
             </div>
 
@@ -544,267 +692,571 @@ function SymptomChecker() {
           </div>
         )}
 
-        {/* STEP 3 */}
-        {step === 3 && analysis && (
-          <div style={cardStyle}>
-            <div
-              style={{
+        {/* STEP 3 - RESULTS */}
+
+        {step === 3 &&
+          analysis && (
+            <div style={{
+              background: 'white',
+              borderRadius: '28px',
+              padding: '40px',
+              boxShadow: '0 10px 40px rgba(0,0,0,0.05)',
+            }}>
+              {/* HEADER */}
+              <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px',
-                marginBottom: '24px',
-              }}
-            >
-              <Brain
-                size={32}
-                color="#0284c7"
-              />
+                gap: '16px',
+                marginBottom: '40px',
+                paddingBottom: '24px',
+                borderBottom: '2px solid #e2e8f0',
+              }}>
+                <Brain size={36} color="#0284c7" />
+                <div>
+                  <h2 style={{
+                    fontSize: '36px',
+                    fontWeight: '800',
+                    color: '#0f172a',
+                    margin: '0 0 4px 0',
+                  }}>
+                    Health Analysis Results
+                  </h2>
+                  <p style={{
+                    margin: 0,
+                    color: '#64748b',
+                    fontSize: '14px',
+                  }}>
+                    AI-powered medical assessment based on your symptoms
+                  </p>
+                </div>
+              </div>
 
-              <h2
-                style={{
-                  fontSize: '40px',
-                  fontWeight: '800',
-                  color: '#0f172a',
-                }}
-              >
-                AI Health Analysis
-              </h2>
-            </div>
-
-            {/* SUMMARY */}
-            <div
-              style={{
-                background: '#eff6ff',
-                borderLeft:
-                  '5px solid #0ea5e9',
-                padding: '24px',
-                borderRadius: '18px',
-                marginBottom: '30px',
-              }}
-            >
-              <p
-                style={{
-                  color: '#334155',
-                  lineHeight: '1.8',
-                  fontSize: '16px',
-                }}
-              >
-                {analysis.conditionExplanation}
-              </p>
-            </div>
-
-            {/* RESULT GRID */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns:
-                  'repeat(auto-fit,minmax(250px,1fr))',
-                gap: '20px',
-              }}
-            >
-              <ResultCard
-                icon={<ShieldCheck size={22} />}
-                title="Possible Condition"
-                value={analysis.possibleCondition}
-              />
-
-              <ResultCard
-                icon={<Siren size={22} />}
-                title="Urgency Level"
-                value={analysis.urgencyLevel}
-              />
-
-              <ResultCard
-                icon={<Stethoscope size={22} />}
-                title="Recommended Doctor"
-                value={analysis.recommendedDoctor}
-              />
-            </div>
-
-            {/* PRECAUTIONS */}
-            <div
-              style={{
-                marginTop: '35px',
-              }}
-            >
-              <h3
-                style={{
-                  fontSize: '24px',
-                  marginBottom: '16px',
-                  color: '#0f172a',
-                }}
-              >
-                Recommended Precautions
-              </h3>
-
-              <ul
-                style={{
-                  paddingLeft: '20px',
-                  color: '#475569',
-                  lineHeight: '2',
-                }}
-              >
-                {analysis.precautions?.map(
-                  (item, i) => (
-                    <li key={i}>{item}</li>
-                  )
-                )}
-              </ul>
-            </div>
-
-            {/* EMERGENCY WARNING */}
-            <div
-              style={{
-                marginTop: '30px',
-                background: '#fef2f2',
-                borderLeft:
-                  '5px solid #ef4444',
-                padding: '24px',
-                borderRadius: '18px',
-              }}
-            >
-              <h3
-                style={{
-                  color: '#b91c1c',
-                  marginBottom: '10px',
-                }}
-              >
-                Emergency Warning
-              </h3>
-
-              <p
-                style={{
-                  color: '#7f1d1d',
-                  lineHeight: '1.8',
-                }}
-              >
-                {analysis.emergencyWarning}
-              </p>
-            </div>
-
-            {/* RECOVERY */}
-            <div
-              style={{
-                marginTop: '30px',
-                display: 'grid',
-                gridTemplateColumns:
-                  'repeat(auto-fit,minmax(280px,1fr))',
-                gap: '20px',
-              }}
-            >
-              <ResultCard
-                icon={<HeartPulse size={22} />}
-                title="Diet Recommendation"
-                value={analysis.dietRecommendation}
-              />
-
-              <ResultCard
-                icon={<Activity size={22} />}
-                title="Recovery Advice"
-                value={analysis.recoveryAdvice}
-              />
-            </div>
-
-            {/* NEARBY DOCTORS */}
-            <div
-              style={{
-                marginTop: '40px',
-              }}
-            >
-              <h3
-                style={{
-                  fontSize: '28px',
-                  color: '#0f172a',
-                  marginBottom: '20px',
-                }}
-              >
-                Nearby Doctors
-              </h3>
-
+              {/* ANALYSIS SUMMARY */}
               <div
                 style={{
-                  display: 'grid',
-                  gridTemplateColumns:
-                    'repeat(auto-fit,minmax(250px,1fr))',
-                  gap: '20px',
+                  background: '#f0f9ff',
+                  padding: '24px',
+                  borderRadius: '16px',
+                  marginBottom: '18px',
+                  border: '1px solid #bfdbfe',
                 }}
               >
-                {[
-                  {
-                    name:
-                      'Dr. Rajesh Sharma',
-                    specialist:
-                      analysis.recommendedDoctor,
-                    distance: '1.2 km',
-                  },
-                  {
-                    name:
-                      'Dr. Priya Mehta',
-                    specialist:
-                      analysis.recommendedDoctor,
-                    distance: '2.4 km',
-                  },
-                ].map((doctor, index) => (
-                  <div
-                    key={index}
+                <p
+                  style={{
+                    color: '#1e40af',
+                    lineHeight: '1.8',
+                    fontSize: '15px',
+                    margin: 0,
+                  }}
+                >
+                  {analysis.conditionExplanation}
+                </p>
+
+                {/* STEP 3 NAV TO DASHBOARD */}
+                <div style={{ marginTop: '18px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => navigate('/patient/dashboard')}
                     style={{
-                      background: '#f8fafc',
-                      borderRadius: '20px',
-                      padding: '24px',
+                      background: 'linear-gradient(135deg,#0ea5e9,#0284c7)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '12px',
+                      padding: '12px 18px',
+                      fontWeight: '800',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
                     }}
                   >
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                        marginBottom: '12px',
-                      }}
-                    >
-                      <MapPin
-                        size={20}
-                        color="#0284c7"
-                      />
+                    Go to Dashboard →
+                  </button>
+                </div>
+              </div>
 
-                      <h4
-                        style={{
-                          color: '#0f172a',
-                          fontSize: '18px',
-                        }}
-                      >
-                        {doctor.name}
-                      </h4>
-                    </div>
 
-                    <p
-                      style={{
-                        color: '#475569',
-                        marginBottom: '8px',
-                      }}
-                    >
-                      {doctor.specialist}
-                    </p>
+              {/* KEY FINDINGS - GRID */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '16px',
+                marginBottom: '40px',
+              }}>
+                {/* Condition */}
+                <div style={{
+                  padding: '20px',
+                  background: '#f8fafc',
+                  borderRadius: '12px',
+                  border: '1px solid #e2e8f0',
+                }}>
+                  <p style={{
+                    fontSize: '12px',
+                    color: '#64748b',
+                    margin: '0 0 8px 0',
+                    fontWeight: '600',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                  }}>
+                    Condition
+                  </p>
+                  <p style={{
+                    fontSize: '18px',
+                    fontWeight: '700',
+                    color: '#0f172a',
+                    margin: 0,
+                  }}>
+                    {analysis.possibleCondition || 'N/A'}
+                  </p>
+                </div>
 
-                    <p
-                      style={{
-                        color: '#0284c7',
-                        fontWeight: '600',
-                      }}
-                    >
-                      {doctor.distance} away
+                {/* Urgency */}
+                <div style={{
+                  padding: '20px',
+                  background: analysis.urgencyLevel === 'High' ? '#fef2f2' : '#f8fafc',
+                  borderRadius: '12px',
+                  border: analysis.urgencyLevel === 'High' ? '1px solid #fecaca' : '1px solid #e2e8f0',
+                }}>
+                  <p style={{
+                    fontSize: '12px',
+                    color: '#64748b',
+                    margin: '0 0 8px 0',
+                    fontWeight: '600',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                  }}>
+                    Urgency Level
+                  </p>
+                  <p style={{
+                    fontSize: '18px',
+                    fontWeight: '700',
+                    color: analysis.urgencyLevel === 'High' ? '#dc2626' : '#0f172a',
+                    margin: 0,
+                  }}>
+                    {analysis.urgencyLevel || 'N/A'}
+                  </p>
+                </div>
+
+                {/* Doctor Type */}
+                <div style={{
+                  padding: '20px',
+                  background: '#f8fafc',
+                  borderRadius: '12px',
+                  border: '1px solid #e2e8f0',
+                }}>
+                  <p style={{
+                    fontSize: '12px',
+                    color: '#64748b',
+                    margin: '0 0 8px 0',
+                    fontWeight: '600',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                  }}>
+                    Recommended Doctor
+                  </p>
+                  <p style={{
+                    fontSize: '18px',
+                    fontWeight: '700',
+                    color: '#0f172a',
+                    margin: 0,
+                  }}>
+                    {analysis.recommendedDoctor || 'N/A'}
+                  </p>
+                </div>
+
+                {/* Specialist */}
+                <div style={{
+                  padding: '20px',
+                  background: '#f8fafc',
+                  borderRadius: '12px',
+                  border: '1px solid #e2e8f0',
+                }}>
+                  <p style={{
+                    fontSize: '12px',
+                    color: '#64748b',
+                    margin: '0 0 8px 0',
+                    fontWeight: '600',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                  }}>
+                    Specialist
+                  </p>
+                  <p style={{
+                    fontSize: '18px',
+                    fontWeight: '700',
+                    color: '#0f172a',
+                    margin: 0,
+                  }}>
+                    {analysis.recommendedSpecialist || 'N/A'}
+                  </p>
+                </div>
+              </div>
+
+              {/* RECOMMENDATIONS SECTION */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                gap: '24px',
+                marginBottom: '40px',
+              }}>
+                {/* Precautions */}
+                {analysis.precautions && analysis.precautions.length > 0 && (
+                  <div>
+                    <h3 style={{
+                      fontSize: '16px',
+                      fontWeight: '700',
+                      color: '#0f172a',
+                      marginBottom: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}>
+                      <ShieldAlert size={20} color="#0284c7" />
+                      Precautions
+                    </h3>
+                    <ul style={{
+                      margin: 0,
+                      paddingLeft: '20px',
+                      color: '#475569',
+                      fontSize: '14px',
+                      lineHeight: '1.8',
+                    }}>
+                      {analysis.precautions.map((item, i) => (
+                        <li key={i}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Medicines */}
+                {analysis.recommendedMedicines && analysis.recommendedMedicines.length > 0 && (
+                  <div>
+                    <h3 style={{
+                      fontSize: '16px',
+                      fontWeight: '700',
+                      color: '#0f172a',
+                      marginBottom: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}>
+                      <Pill size={20} color="#0284c7" />
+                      Medicines
+                    </h3>
+                    <ul style={{
+                      margin: 0,
+                      paddingLeft: '20px',
+                      color: '#475569',
+                      fontSize: '14px',
+                      lineHeight: '1.8',
+                    }}>
+                      {analysis.recommendedMedicines.map((item, i) => (
+                        <li key={i}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Diet */}
+                {analysis.dietRecommendation && (
+                  <div>
+                    <h3 style={{
+                      fontSize: '16px',
+                      fontWeight: '700',
+                      color: '#0f172a',
+                      marginBottom: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}>
+                      <Activity size={20} color="#0284c7" />
+                      Diet
+                    </h3>
+                    <p style={{
+                      color: '#475569',
+                      fontSize: '14px',
+                      lineHeight: '1.6',
+                      margin: 0,
+                    }}>
+                      {analysis.dietRecommendation}
                     </p>
                   </div>
-                ))}
+                )}
+
+                {/* Recovery */}
+                {analysis.recoveryAdvice && (
+                  <div>
+                    <h3 style={{
+                      fontSize: '16px',
+                      fontWeight: '700',
+                      color: '#0f172a',
+                      marginBottom: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}>
+                      <Activity size={20} color="#0284c7" />
+                      Recovery
+                    </h3>
+                    <p style={{
+                      color: '#475569',
+                      fontSize: '14px',
+                      lineHeight: '1.6',
+                      margin: 0,
+                    }}>
+                      {analysis.recoveryAdvice}
+                    </p>
+                  </div>
+                )}
+
+                {/* When to See Doctor */}
+                {analysis.whenToSeeDoctor && (
+                  <div>
+                    <h3 style={{
+                      fontSize: '16px',
+                      fontWeight: '700',
+                      color: '#0f172a',
+                      marginBottom: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}>
+                      <Calendar size={20} color="#0284c7" />
+                      When to See Doctor
+                    </h3>
+                    <p style={{
+                      color: '#475569',
+                      fontSize: '14px',
+                      lineHeight: '1.6',
+                      margin: 0,
+                    }}>
+                      {analysis.whenToSeeDoctor}
+                    </p>
+                  </div>
+                )}
               </div>
+
+              {/* EMERGENCY WARNING */}
+              {analysis.emergencyWarning && analysis.urgencyLevel === 'High' && (
+                <div style={{
+                  background: '#fef2f2',
+                  border: '2px solid #fecaca',
+                  padding: '20px',
+                  borderRadius: '12px',
+                  marginBottom: '40px',
+                }}>
+                  <p style={{
+                    color: '#991b1b',
+                    fontSize: '15px',
+                    lineHeight: '1.6',
+                    margin: 0,
+                    fontWeight: '600',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                  }}>
+                    <Siren size={20} />
+                    {analysis.emergencyWarning}
+                  </p>
+                </div>
+              )}
+
+              {/* NEARBY DOCTORS - REAL TIME */}
+              {analysis.nearbyDoctors && analysis.nearbyDoctors.length > 0 && (
+                <div>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    marginBottom: '24px',
+                    paddingBottom: '16px',
+                    borderBottom: '2px solid #e2e8f0',
+                  }}>
+                    <MapPin size={28} color="#0284c7" />
+                    <div>
+                      <h3 style={{
+                        fontSize: '24px',
+                        fontWeight: '800',
+                        color: '#0f172a',
+                        margin: '0 0 4px 0',
+                      }}>
+                        Nearby Medical Facilities
+                      </h3>
+                      <p style={{
+                        margin: 0,
+                        color: '#64748b',
+                        fontSize: '13px',
+                      }}>
+                        Real-time locations based on your GPS coordinates
+                      </p>
+                    </div>
+                  </div>
+
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                    gap: '16px',
+                  }}>
+                    {analysis.nearbyDoctors.map((doctor, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          background: '#f8fafc',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '12px',
+                          padding: '20px',
+                          transition: 'all 0.3s ease',
+                          cursor: 'pointer',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(2, 132, 199, 0.1)';
+                          e.currentTarget.style.borderColor = '#0284c7';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.boxShadow = 'none';
+                          e.currentTarget.style.borderColor = '#e2e8f0';
+                        }}
+                      >
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: '12px',
+                          marginBottom: '16px',
+                        }}>
+                          <div style={{
+                            background: '#e0f2fe',
+                            padding: '10px',
+                            borderRadius: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                          }}>
+                            <MapPin size={20} color="#0284c7" />
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <h4 style={{
+                              fontSize: '16px',
+                              fontWeight: '700',
+                              color: '#0f172a',
+                              margin: '0 0 4px 0',
+                              lineHeight: '1.3',
+                            }}>
+                              {doctor.name}
+                            </h4>
+                            <p style={{
+                              fontSize: '13px',
+                              color: '#0284c7',
+                              margin: 0,
+                              fontWeight: '600',
+                            }}>
+                              {doctor.type}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '10px',
+                        }}>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            gap: '8px',
+                            fontSize: '13px',
+                            color: '#475569',
+                          }}>
+                            <span style={{
+                              color: '#64748b',
+                              marginTop: '2px',
+                              flexShrink: 0,
+                            }}>📍</span>
+                            <span>{doctor.address}</span>
+                          </div>
+
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            background: '#f0f9ff',
+                            padding: '10px 12px',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                          }}>
+                            <span style={{
+                              color: '#0284c7',
+                              fontWeight: '700',
+                            }}>
+                              {typeof doctor.distance === 'number'
+                                ? doctor.distance.toFixed(1)
+                                : doctor.distance || 'N/A'} km
+                            </span>
+                            <span style={{
+                              color: '#64748b',
+                              fontSize: '12px',
+                            }}>
+                              from your location
+                            </span>
+                          </div>
+
+                          {doctor.phone && (
+                            <div style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              fontSize: '12px',
+                              color: '#475569',
+                            }}>
+                              <span>📞</span>
+                              <span>{doctor.phone}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* NO NEARBY DOCTORS FOUND */}
+              {(!analysis.nearbyDoctors || analysis.nearbyDoctors.length === 0) && location && (
+                <div style={{
+                  background: '#fef2f2',
+                  border: '1px solid #fecaca',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  marginTop: '40px',
+                  textAlign: 'center',
+                }}>
+                  <p style={{
+                    color: '#991b1b',
+                    fontSize: '15px',
+                    margin: 0,
+                    fontWeight: '600',
+                  }}>
+                    ⚠️ No nearby medical facilities found in your area.
+                    Please check your location permission or try again later.
+                  </p>
+                  <p style={{
+                    color: '#64748b',
+                    fontSize: '13px',
+                    margin: '8px 0 0 0',
+                  }}>
+                    Your location: {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
+                  </p>
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          )}
       </div>
     </div>
   );
 }
 
-/* COMPONENTS */
+/* =====================================================
+   COMPONENTS
+===================================================== */
 
 function InputBox({
   icon,
@@ -914,14 +1366,16 @@ function SelectBox({
             Select option
           </option>
 
-          {options.map((item, index) => (
-            <option
-              key={index}
-              value={item}
-            >
-              {item}
-            </option>
-          ))}
+          {options.map(
+            (item, index) => (
+              <option
+                key={index}
+                value={item}
+              >
+                {item}
+              </option>
+            )
+          )}
         </select>
       </div>
 
@@ -945,48 +1399,12 @@ function ResultCard({
   title,
   value,
 }) {
-  return (
-    <div
-      style={{
-        background: '#f8fafc',
-        borderRadius: '20px',
-        padding: '24px',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          marginBottom: '12px',
-        }}
-      >
-        {icon}
-
-        <p
-          style={{
-            color: '#64748b',
-            fontSize: '14px',
-          }}
-        >
-          {title}
-        </p>
-      </div>
-
-      <h3
-        style={{
-          color: '#0f172a',
-          fontSize: '22px',
-          fontWeight: '700',
-        }}
-      >
-        {value}
-      </h3>
-    </div>
-  );
+  return null;
 }
 
-/* STYLES */
+/* =====================================================
+   STYLES
+===================================================== */
 
 const cardStyle = {
   background: 'white',
@@ -1010,15 +1428,6 @@ const gridStyle = {
   gap: '20px',
 };
 
-const otherInputStyle = {
-  width: '100%',
-  marginTop: '10px',
-  padding: '14px',
-  borderRadius: '14px',
-  border: '1.5px solid #cbd5e1',
-  outline: 'none',
-};
-
 const buttonStyle = {
   marginTop: '30px',
   width: '100%',
@@ -1035,6 +1444,16 @@ const buttonStyle = {
   justifyContent: 'center',
   gap: '10px',
   cursor: 'pointer',
+};
+
+const otherInputStyle = {
+  width: '100%',
+  marginTop: '10px',
+  padding: '14px',
+  borderRadius: '14px',
+  border: '1.5px solid #cbd5e1',
+  outline: 'none',
+  fontSize: '14px',
 };
 
 export default SymptomChecker;
