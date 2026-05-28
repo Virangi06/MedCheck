@@ -7,6 +7,7 @@ const {
 const calculateDistance = require('../utils/calculateDistance');
 
 const Analysis = require('../models/Analysis');
+const UserProfile = require('../models/UserProfile');
 
 exports.analyzeSymptoms = async (
   req,
@@ -72,6 +73,39 @@ exports.analyzeSymptoms = async (
     }
 
     /* =====================================================
+       CREATE OR UPDATE USER PROFILE
+       Only update if data has changed
+    ===================================================== */
+
+    try {
+      const existingProfile = await UserProfile.findOne({ user: req.user.id });
+
+      const profileData = {
+        user: req.user.id,
+        fullName: body.fullName || existingProfile?.fullName || '',
+        age: body.age || existingProfile?.age || '',
+        gender: body.gender || existingProfile?.gender || '',
+        height: body.height || existingProfile?.height || '',
+        weight: body.weight || existingProfile?.weight || '',
+        diseases: body.diseases || existingProfile?.diseases || 'None',
+        medications: body.medications || existingProfile?.medications || 'None',
+        allergies: body.allergies || existingProfile?.allergies || 'None',
+      };
+
+      if (existingProfile) {
+        // Update if data changed
+        await UserProfile.findByIdAndUpdate(existingProfile._id, profileData, { new: true });
+      } else {
+        // Create if doesn't exist
+        await UserProfile.create(profileData);
+      }
+
+      console.log('✅ Profile saved/updated');
+    } catch (profileError) {
+      console.warn('⚠️ Profile save warning (non-critical):', profileError.message);
+    }
+
+    /* =====================================================
        EMERGENCY OVERRIDE
     ===================================================== */
 
@@ -120,6 +154,7 @@ exports.analyzeSymptoms = async (
     let savedId = null;
 
     try {
+      console.log("========== DEBUG SAVE =========="); console.log("REQ USER:", req.user); console.log("REQ USER ID:", req.user?.id); console.log("BODY:", body); console.log("NEARBY DOCTORS:", nearbyDoctors); console.log("================================");
       const saved = await Analysis.create({
         user: req.user.id,
 
@@ -168,7 +203,7 @@ exports.analyzeSymptoms = async (
           recoveryAdvice:        aiResult.recoveryAdvice,
           emergencyWarning:      aiResult.emergencyWarning,
           whenToSeeDoctor:       aiResult.whenToSeeDoctor,
-          nearbyDoctors:         nearbyDoctors,  // ✅ now correctly typed as Number distance
+          nearbyDoctors: nearbyDoctors
         },
 
         // flat AI fields
@@ -184,17 +219,21 @@ exports.analyzeSymptoms = async (
         emergencyWarning:      aiResult.emergencyWarning,
         whenToSeeDoctor:       aiResult.whenToSeeDoctor,
 
-        // top-level nearbyDoctors
-        nearbyDoctors: nearbyDoctors,
       });
 
       savedId = saved._id;
       console.log('💾 Saved to MongoDB, id:', savedId);
 
-    } catch (dbError) {
-      // DB save failure is logged but never blocks the response
-      console.error('⚠️ MongoDB save failed (non-critical):', dbError.message);
-    }
+    } 
+    catch (dbError) {
+  console.error('FULL DB ERROR:', dbError);
+
+  return res.status(500).json({
+    success: false,
+    message: dbError.message,
+    error: dbError
+  });
+}
 
     /* =====================================================
        SEND RESPONSE TO FRONTEND
