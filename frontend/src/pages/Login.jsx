@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
+
 import {
   Mail,
   Lock,
@@ -123,7 +124,7 @@ function Login() {
 
       login(data.user, data.token);
 
-      navigate('/symptom-checker');
+      navigate('/patient/dashboard');
     } catch (err) {
       setServerError(
         'Unable to connect to server'

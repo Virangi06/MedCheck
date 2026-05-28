@@ -1,5 +1,4 @@
 // Central API service — all backend calls go through here.
-// Add Authorization header automatically when token exists.
 
 const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -26,10 +25,24 @@ async function request(method, endpoint, body = null) {
   return data;
 }
 
-// ── Auth ─────────────────────────────────────────────────────────
+// ── Auth ──────────────────────────────────────────────────────
 export const authAPI = {
   register: (payload) => request('POST', '/auth/register', payload),
-  login:    (payload) => request('POST', '/auth/login', payload),
+  login:    (payload) => request('POST', '/auth/login',    payload),
   logout:   ()        => request('POST', '/auth/logout'),
-  getMe:    ()        => request('GET', '/auth/me'),
+  getMe:    ()        => request('GET',  '/auth/me'),
+};
+
+// ── Health Profile ────────────────────────────────────────────
+// Profile is stored once and reused — only updated on explicit edit
+export const profileAPI = {
+  get:          ()        => request('GET', '/profile'),
+  getOrCreate:  ()        => request('GET', '/profile/init'),
+  update:       (payload) => request('PUT', '/profile', payload),
+};
+
+// ── Analysis ──────────────────────────────────────────────────
+export const analysisAPI = {
+  analyze:    (payload) => request('POST', '/analysis/analyze', payload),
+  getHistory: ()        => request('GET',  '/analysis/history'),
 };
