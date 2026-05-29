@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import { Brain, HeartPulse, ShieldAlert, Pill, Activity, User, Calendar, Siren, ChevronDown, ChevronUp, Stethoscope, Leaf, Clock3, BadgeAlert, MapPin, AlertTriangle, LayoutDashboard, Sparkles, ArrowRight, Edit3, } from 'lucide-react';
+import { Brain, HeartPulse, ShieldAlert, Pill, Activity, User, Calendar, Siren, 
+ChevronDown, ChevronUp, Stethoscope, Leaf, Clock3, BadgeAlert, MapPin, AlertTriangle, LayoutDashboard, Sparkles, ArrowRight, Edit3, } from 'lucide-react';
 import { profileAPI, analysisAPI } from '../services/api';
+import { feedbackAPI } from '../services/feedbackAPI';
 
 const API = 'http://localhost:5000/api';
 function PatientDashboard() {
@@ -23,6 +25,14 @@ function PatientDashboard() {
   const [editSaving, setEditSaving] = useState(false);
   const [editSuccess, setEditSuccess] = useState(false);
 
+  const [feedbackTab, setFeedbackTab] = useState('submit');
+  const [feedbackForm, setFeedbackForm] = useState({ rating: 5, feedbackText: '' });
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
+  const [feedbackSuccess, setFeedbackSuccess] = useState(false);
+  const [userFeedbacks, setUserFeedbacks] = useState([]);
+  const [loadingFeedbacks, setLoadingFeedbacks] = useState(false);
+
+
   useEffect(() => {
     if (!user) {
       navigate('/login');
@@ -31,6 +41,13 @@ function PatientDashboard() {
 
     loadDashboard();
   }, [profile]);
+
+
+  useEffect(() => {
+  if (feedbackTab === 'my-feedbacks') {
+    loadUserFeedbacks();
+  }
+}, [feedbackTab]);
 
   const loadDashboard = async () => {
     setLoading(true);
@@ -87,7 +104,90 @@ function PatientDashboard() {
       }
     }
   };
+  const handleFeedbackSubmit = async () => {
+  if (feedbackForm.feedbackText.trim().length < 10) {
+    alert('Feedback must be at least 10 characters');
+    return;
+  }
 
+  if (feedbackForm.rating < 1 || feedbackForm.rating > 5) {
+    alert('Please select a valid rating');
+    return;
+  }
+
+  setFeedbackSubmitting(true);
+
+  try {
+    await feedbackAPI.create({
+      rating: feedbackForm.rating,
+      feedbackText: feedbackForm.feedbackText,
+      role: 'Patient',
+    });
+
+    setFeedbackSuccess(true);
+
+    setFeedbackForm({
+      rating: 5,
+      feedbackText: '',
+    });
+
+    setTimeout(() => {
+      setFeedbackSuccess(false);
+      loadUserFeedbacks();
+    }, 2000);
+
+  } catch (error) {
+    alert(
+      'Failed to submit feedback: ' +
+      (error.response?.data?.message || error.message)
+    );
+  } finally {
+    setFeedbackSubmitting(false);
+  }
+};
+const loadUserFeedbacks = async () => {
+  setLoadingFeedbacks(true);
+
+  try {
+    const data = await feedbackAPI.getUserFeedbacks();
+
+    setUserFeedbacks(
+      data.feedbacks || []
+    );
+
+  } catch (error) {
+    console.warn(
+      'Failed to load feedbacks:',
+      error.message
+    );
+  } finally {
+    setLoadingFeedbacks(false);
+  }
+};
+const handleDeleteFeedback = async (feedbackId) => {
+  const confirmed = window.confirm(
+    'Are you sure you want to delete this feedback?'
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await feedbackAPI.delete(feedbackId);
+
+    setUserFeedbacks(prev =>
+      prev.filter(
+        feedback =>
+          feedback._id !== feedbackId
+      )
+    );
+
+  } catch (error) {
+    alert(
+      'Failed to delete feedback: ' +
+      (error.response?.data?.message || error.message)
+    );
+  }
+};
   const openEditModal = () => {
     setEditForm({
       fullName:
@@ -370,7 +470,6 @@ function PatientDashboard() {
               }}
             >
               Welcome back,
-              <br />
               <span
                 style={{
                   color: '#38bdf8',
@@ -396,6 +495,7 @@ function PatientDashboard() {
             </p>
           </div>
               {/* NEW ANALYSIS SECTION */} <div style={{ width: '100%', maxWidth: '1250px', margin: '55px auto 0', background: 'white', borderRadius: '36px', padding: '55px', boxShadow: '0 25px 80px rgba(15,23,42,0.18)', position: 'relative', overflow: 'hidden', }} > {/* BACKGROUND GLOW */} <div style={{ position: 'absolute', top: -120, right: -120, width: 320, height: 320, background: 'rgba(14,165,233,0.12)', borderRadius: '50%', filter: 'blur(80px)', }} /> {/* CONTENT */} <div style={{ position: 'relative', zIndex: 2, display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: '30px', alignItems: 'center', }} > {/* LEFT CONTENT */} <div> <div style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.18)', padding: '10px 18px', borderRadius: '999px', marginBottom: '22px', }} > <Sparkles size={16} color="#0284c7" /> <span style={{ color: '#0284c7', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', }} > AI Powered Healthcare </span> </div> <h2 style={{ margin: '0 0 18px', fontSize: '52px', lineHeight: 1.1, fontWeight: '900', color: '#071c2f', letterSpacing: '-2px', }} > Start Your <br /> New Analysis </h2> <p style={{ margin: 0, fontSize: '17px', lineHeight: 1.9, color: '#475569', maxWidth: '560px', }} > Get instant AI-powered symptom analysis, personalized medical insights, urgency detection, and nearby healthcare recommendations tailored specifically to your health profile. </p> <button onClick={() => navigate( '/symptom-checker' ) } style={{ marginTop: '32px', background: 'linear-gradient(135deg,#0ea5e9,#38bdf8)', border: 'none', color: 'white', borderRadius: '18px', padding: '18px 28px', fontWeight: '800', fontSize: '16px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '12px', boxShadow: '0 15px 40px rgba(14,165,233,0.28)', }} > <Brain size={20} /> Start New Analysis <ArrowRight size={18} /> </button> </div> {/* RIGHT FEATURES */} <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px', }} > {[ { icon: ( <Brain size={26} color="white" /> ), title: 'Smart AI Analysis', desc: 'Advanced AI evaluates symptoms instantly.', }, { icon: ( <MapPin size={26} color="white" /> ), title: 'Nearby Doctors', desc: 'Discover nearby hospitals and clinics.', }, { icon: ( <Calendar size={26} color="white" /> ), title: 'Health History', desc: 'Access previous analyses anytime.', }, { icon: ( <ShieldAlert size={26} color="white" /> ), title: 'Urgency Detection', desc: 'Identify severe symptoms instantly.', }, ].map((item, i) => ( <div key={i} style={{ background: '#f8fbff', border: '1px solid #e0f2fe', borderRadius: '24px', padding: '24px', }} > <div style={{ width: '58px', height: '58px', borderRadius: '18px', background: 'linear-gradient(135deg,#071c2f,#0ea5e9)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '18px', boxShadow: '0 10px 25px rgba(14,165,233,0.22)', }} > {item.icon} </div> <h3 style={{ margin: '0 0 10px', fontSize: '18px', fontWeight: '800', color: '#071c2f', }} > {item.title} </h3> <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.7, color: '#64748b', }} > {item.desc} </p> </div> ))} </div> </div> </div>
+        
         </div>
       </div>
 
@@ -879,6 +979,184 @@ function PatientDashboard() {
         )}
       </div>
 
+{/* ─── FEEDBACK SECTION ─── */}
+<section style={{ padding: '80px 24px', background: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
+  <div style={{ maxWidth: 900, margin: '0 auto' }}>
+    <div style={{ textAlign: 'center', marginBottom: 48 }}>
+      <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(28px,4vw,42px)', color: '#0f172a', letterSpacing: '-0.8px', marginBottom: 16 }}>
+        Share Your Experience
+      </h2>
+      <p style={{ color: '#64748b', fontSize: 16, maxWidth: 600, margin: '0 auto' }}>
+        Your feedback helps us improve and guides other patients
+      </p>
+    </div>
+
+    {/* Feedback Tabs */}
+    <div style={{ display: 'flex', gap: 12, marginBottom: 32, borderBottom: '1px solid #e2e8f0' }}>
+      <button
+        onClick={() => setFeedbackTab('submit')}
+        style={{
+          padding: '12px 24px',
+          border: 'none',
+          background: 'transparent',
+          color: feedbackTab === 'submit' ? '#0EA5E9' : '#94a3b8',
+          fontWeight: feedbackTab === 'submit' ? 700 : 500,
+          fontSize: 15,
+          cursor: 'pointer',
+          borderBottom: feedbackTab === 'submit' ? '2px solid #0EA5E9' : 'none',
+        }}
+      >
+        Submit Feedback
+      </button>
+      <button
+        onClick={() => setFeedbackTab('my-feedbacks')}
+        style={{
+          padding: '12px 24px',
+          border: 'none',
+          background: 'transparent',
+          color: feedbackTab === 'my-feedbacks' ? '#0EA5E9' : '#94a3b8',
+          fontWeight: feedbackTab === 'my-feedbacks' ? 700 : 500,
+          fontSize: 15,
+          cursor: 'pointer',
+          borderBottom: feedbackTab === 'my-feedbacks' ? '2px solid #0EA5E9' : 'none',
+        }}
+      >
+        My Feedbacks ({userFeedbacks.length})
+      </button>
+    </div>
+
+    {/* Submit Feedback Tab */}
+    {feedbackTab === 'submit' && (
+      <div style={{ background: 'white', borderRadius: 20, padding: 32, border: '1px solid #e2e8f0' }}>
+        <div style={{ marginBottom: 24 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#374151', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            Rating
+          </label>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                onClick={() => setFeedbackForm({ ...feedbackForm, rating: star })}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: 32,
+                  cursor: 'pointer',
+                  opacity: star <= feedbackForm.rating ? 1 : 0.3,
+                  transition: 'all 0.2s',
+                }}
+              >
+                ★
+              </button>
+            ))}
+            <span style={{ color: '#64748b', fontSize: 14, marginLeft: 12 }}>
+              {feedbackForm.rating}/5 Stars
+            </span>
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 24 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#374151', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            Your Feedback
+          </label>
+          <textarea
+            value={feedbackForm.feedbackText}
+            onChange={(e) => setFeedbackForm({ ...feedbackForm, feedbackText: e.target.value })}
+            placeholder="Share your experience using MedCheck... (minimum 10 characters)"
+            style={{
+              width: '100%',
+              minHeight: 140,
+              padding: '14px 16px',
+              borderRadius: 12,
+              border: '1.5px solid #e2e8f0',
+              fontSize: 14,
+              fontFamily: "'DM Sans', sans-serif",
+              outline: 'none',
+              resize: 'vertical',
+              boxSizing: 'border-box',
+            }}
+          />
+          <p style={{ margin: '8px 0 0', fontSize: 12, color: '#94a3b8' }}>
+            {feedbackForm.feedbackText.length}/500 characters
+          </p>
+        </div>
+
+        <button
+          onClick={handleFeedbackSubmit}
+          disabled={feedbackSubmitting}
+          style={{
+            width: '100%',
+            padding: '14px',
+            borderRadius: 12,
+            border: 'none',
+            background: feedbackSuccess ? '#22c55e' : 'linear-gradient(135deg,#0ea5e9,#0284c7)',
+            color: 'white',
+            fontSize: 15,
+            fontWeight: 700,
+            cursor: feedbackSubmitting ? 'not-allowed' : 'pointer',
+            transition: 'all 0.3s',
+            opacity: feedbackSubmitting ? 0.7 : 1,
+          }}
+        >
+          {feedbackSubmitting ? 'Submitting...' : feedbackSuccess ? '✅ Feedback Submitted!' : 'Submit Feedback'}
+        </button>
+      </div>
+    )}
+
+    {/* My Feedbacks Tab */}
+    {feedbackTab === 'my-feedbacks' && (
+      <div>
+        {loadingFeedbacks ? (
+          <div style={{ textAlign: 'center', padding: 40 }}>
+            <p style={{ color: '#64748b' }}>Loading feedbacks...</p>
+          </div>
+        ) : userFeedbacks.length === 0 ? (
+          <div style={{ background: 'white', borderRadius: 20, padding: 40, textAlign: 'center', border: '1px solid #e2e8f0' }}>
+            <p style={{ color: '#64748b', marginBottom: 16 }}>No feedbacks yet. Share your experience!</p>
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gap: 16 }}>
+            {userFeedbacks.map((feedback) => (
+              <div key={feedback._id} style={{ background: 'white', borderRadius: 16, padding: 24, border: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: 16 }}>
+                  <div>
+                    <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
+                      {Array(feedback.rating).fill(0).map((_, i) => (
+                        <span key={i} style={{ color: '#F59E0B', fontSize: 18 }}>★</span>
+                      ))}
+                    </div>
+                    <p style={{ color: '#64748b', lineHeight: 1.6, fontSize: 14 }}>
+                      {feedback.feedbackText}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteFeedback(feedback._id)}
+                    style={{
+                      background: '#fee2e2',
+                      border: 'none',
+                      color: '#dc2626',
+                      padding: '6px 12px',
+                      borderRadius: 8,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+                <p style={{ margin: 0, fontSize: 12, color: '#94a3b8' }}>
+                  {new Date(feedback.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    )}
+  </div>
+</section>
+
       {/* ── EDIT PROFILE MODAL ── */}
       {editOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
@@ -945,7 +1223,10 @@ function PatientDashboard() {
           </div>
         </div>
       )}
+
+      
     </div>
+    
   );
 }
 

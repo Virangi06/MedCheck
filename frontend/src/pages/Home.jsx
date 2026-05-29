@@ -1,10 +1,53 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { Brain, MapPin, CalendarDays, AlertTriangle, UserRound, ShieldCheck } from 'lucide-react';
 import MedCheckLogo from '../components/MedCheckLogo';
+import { feedbackAPI } from '../services/feedbackAPI'; // ADD THIS IMPORT
 
 function Home() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || 'null');
+
+  // ADD THIS STATE
+  const [testimonials, setTestimonials] = useState([]);
+  const [loadingTestimonials, setLoadingTestimonials] = useState(true);
+
+  // ADD THIS useEffect
+  useEffect(() => {
+    const loadTestimonials = async () => {
+      try {
+        const data = await feedbackAPI.getRandomFeedbacks(3);
+        setTestimonials(data.feedbacks || []);
+      } catch (error) {
+        console.warn('Failed to load testimonials:', error.message);
+        // Fallback to static if API fails
+        setTestimonials([
+          { 
+            userName: 'Priya S.', 
+            role: 'Patient', 
+            feedbackText: 'MedCheck identified my symptoms as possibly related to thyroid issues. The AI was right — my doctor confirmed it at my appointment. Incredible tool.',
+            rating: 5 
+          },
+          { 
+            userName: 'Rahul M.', 
+            role: 'Patient', 
+            feedbackText: 'Booking a doctor used to take days. With MedCheck I found a cardiologist nearby and booked in 2 minutes. The seamless experience is unmatched.',
+            rating: 5 
+          },
+          { 
+            userName: 'Dr. Anjali K.', 
+            role: 'Verified Doctor', 
+            feedbackText: 'My patients arrive better informed now. MedCheck\'s symptom summaries help us use consultation time more effectively. Highly recommend.',
+            rating: 5 
+          },
+        ]);
+      } finally {
+        setLoadingTestimonials(false);
+      }
+    };
+
+    loadTestimonials();
+  }, []);
 
   return (
     <div style={{ fontFamily: "'DM Sans', 'Segoe UI', sans-serif", background: '#f8fafc', minHeight: '100vh' }}>
@@ -183,7 +226,7 @@ function Home() {
             <span style={{ color: '#38BDF8' }}>Understood</span> Instantly
           </h1>
           <p style={{ fontSize: 'clamp(16px,2.5vw,19px)', color: 'rgba(186,230,253,0.85)', maxWidth: 600, margin: '0 auto 48px', lineHeight: 1.7 }}>
-            AI-powered symptom analysis that - <br></br>helps you better understand your health instantly.
+            AI-powered symptom analysis that helps you better understand your health instantly.
           </p>
 
           <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -296,25 +339,33 @@ function Home() {
             </h2>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
-            {[
-              { name: 'Priya S.', role: 'Patient', text: 'MedCheck identified my symptoms as possibly related to thyroid issues. The AI was right — my doctor confirmed it at my appointment. Incredible tool.', stars: 5 },
-              { name: 'Rahul M.', role: 'Patient', text: 'Booking a doctor used to take days. With MedCheck I found a cardiologist nearby and booked in 2 minutes. The seamless experience is unmatched.', stars: 5 },
-              { name: 'Dr. Anjali K.', role: 'Verified Doctor', text: 'My patients arrive better informed now. MedCheck\'s symptom summaries help us use consultation time more effectively. Highly recommend.', stars: 5 },
-            ].map((t, i) => (
-              <div key={i} className="testimonial">
-                <div style={{ display: 'flex', gap: 4, marginBottom: 16 }}>
-                  {Array(t.stars).fill(0).map((_, j) => <span key={j} style={{ color: '#F59E0B', fontSize: 16 }}>★</span>)}
-                </div>
-                <p style={{ color: '#334155', lineHeight: 1.7, fontSize: 15, marginBottom: 20 }}>{t.text}</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg, #0EA5E9, #38BDF8)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: 15 }}>{t.name[0]}</div>
-                  <div>
-                    <div style={{ fontWeight: 600, color: '#0f172a', fontSize: 14 }}>{t.name}</div>
-                    <div style={{ color: '#94a3b8', fontSize: 12 }}>{t.role}</div>
+            {loadingTestimonials ? (
+              <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 40 }}>
+                <p style={{ color: '#94a3b8' }}>Loading testimonials...</p>
+              </div>
+            ) : testimonials && testimonials.length > 0 ? (
+              testimonials.map((t, i) => (
+                <div key={i} className="testimonial">
+                  <div style={{ display: 'flex', gap: 4, marginBottom: 16 }}>
+                    {Array(t.rating || 5).fill(0).map((_, j) => <span key={j} style={{ color: '#F59E0B', fontSize: 16 }}>★</span>)}
+                  </div>
+                  <p style={{ color: '#334155', lineHeight: 1.7, fontSize: 15, marginBottom: 20 }}>{t.feedbackText || t.text}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg, #0EA5E9, #38BDF8)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: 15 }}>
+                      {(t.userName || t.name || 'U')[0]}
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 600, color: '#0f172a', fontSize: 14 }}>{t.userName || t.name}</div>
+                      <div style={{ color: '#94a3b8', fontSize: 12 }}>{t.role}</div>
+                    </div>
                   </div>
                 </div>
+              ))
+            ) : (
+              <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 40 }}>
+                <p style={{ color: '#94a3b8' }}>No testimonials yet. Be the first to share!</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </section>

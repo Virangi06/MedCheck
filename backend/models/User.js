@@ -49,6 +49,16 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    // In your User schema
+isDoctor: {
+  type: Boolean,
+  default: false,
+},
+
+isDoctorVerified: {
+  type: Boolean,
+  default: false,
+},
   },
   {
     timestamps: true, // adds createdAt and updatedAt automatically
