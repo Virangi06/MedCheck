@@ -23,6 +23,11 @@ const userProfileSchema = new mongoose.Schema(
     diseases:    { type: String, default: 'None' },
     medications: { type: String, default: 'None' },
     allergies:   { type: String, default: 'None' },
+
+    // ── Additional Lifestyle Metrics ──────────────
+    sleepPatterns: { type: String, default: '7-8 hours, deep' },
+    activityLevel: { type: String, default: 'Moderate' },
+    healthGoals:   { type: String, default: 'Improve fitness' },
   },
   {
     timestamps: true,

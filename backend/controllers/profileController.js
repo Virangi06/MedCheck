@@ -39,6 +39,9 @@ const getOrCreateProfile = async (req, res) => {
         diseases: 'None',
         medications: 'None',
         allergies: 'None',
+        sleepPatterns: '7-8 hours, deep',
+        activityLevel: 'Moderate',
+        healthGoals: 'Improve fitness',
       });
     }
 
@@ -68,6 +71,9 @@ const updateProfile = async (req, res) => {
       diseases,
       medications,
       allergies,
+      sleepPatterns,
+      activityLevel,
+      healthGoals,
     } = req.body;
 
     const profile = await UserProfile.findOneAndUpdate(
@@ -82,6 +88,9 @@ const updateProfile = async (req, res) => {
         diseases,
         medications,
         allergies,
+        sleepPatterns,
+        activityLevel,
+        healthGoals,
       },
       { new: true, upsert: true, runValidators: true }
     );

@@ -11,6 +11,10 @@ const authRoutes = require('./routes/authRoutes');
 const analysisRoutes = require('./routes/analysisRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const feedbackRoutes = require('./routes/feedbackRoutes');
+const statisticsRoutes = require('./routes/statisticsRoutes');
+const medicineRoutes = require('./routes/medicineRoutes');
+const tipsRoutes = require('./routes/tipsRoutes');
+
 const app = express();
 
 /* =========================================================
@@ -36,6 +40,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/analysis', analysisRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/feedback', feedbackRoutes);
+app.use('/api/statistics', statisticsRoutes);
+app.use('/api/medicine', medicineRoutes);
+app.use('/api/tips', tipsRoutes);
+
 
 /* =========================================================
    HEALTH CHECK ROUTE

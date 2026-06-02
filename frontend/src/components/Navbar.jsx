@@ -163,18 +163,39 @@ function Navbar({ user, onLogout }) {
           }}
           className="desktop-nav"
         >
-          {!user && navLink('/', 'Home')}
+          {!user && (
+            <>
+              {navLink('/', 'Home')}
+              {navLink('/about', 'About Us')}
+              {navLink('/medical-disclaimer', 'Disclaimer')}
+            </>
+          )}
 
           {user ? (
             <>
+              {navLink(
+                '/patient/dashboard',
+                'Dashboard'
+              )}
+
               {navLink(
                 '/symptom-checker',
                 'Check Symptoms'
               )}
 
               {navLink(
-                '/patient/dashboard',
-                'Dashboard'
+                '/patient/dashboard?tab=statistics',
+                'Health Statistics'
+              )}
+
+              {navLink(
+                '/patient/dashboard?tab=medicine',
+                'Medicine Checker'
+              )}
+
+              {navLink(
+                '/patient/dashboard?tab=tips',
+                'Daily AI Tips'
               )}
 
               {/* Divider */}
@@ -530,42 +551,77 @@ function Navbar({ user, onLogout }) {
           }}
         >
           {!user && (
-            <Link
-              to="/"
-              onClick={() =>
-                setMobileMenuOpen(
-                  false
-                )
-              }
-              style={{
-                display: 'block',
-                padding: '10px 0',
-                color: '#475569',
-                textDecoration:
-                  'none',
-                fontSize: 15,
-                fontWeight: 500,
-              }}
-            >
-              Home
-            </Link>
+            <>
+              <Link
+                to="/"
+                onClick={() => setMobileMenuOpen(false)}
+                style={{
+                  display: 'block',
+                  padding: '10px 0',
+                  color: '#475569',
+                  textDecoration: 'none',
+                  fontSize: 15,
+                  fontWeight: 500,
+                }}
+              >
+                Home
+              </Link>
+              <Link
+                to="/about"
+                onClick={() => setMobileMenuOpen(false)}
+                style={{
+                  display: 'block',
+                  padding: '10px 0',
+                  color: '#475569',
+                  textDecoration: 'none',
+                  fontSize: 15,
+                  fontWeight: 500,
+                }}
+              >
+                About Us
+              </Link>
+              <Link
+                to="/medical-disclaimer"
+                onClick={() => setMobileMenuOpen(false)}
+                style={{
+                  display: 'block',
+                  padding: '10px 0',
+                  color: '#475569',
+                  textDecoration: 'none',
+                  fontSize: 15,
+                  fontWeight: 500,
+                }}
+              >
+                Disclaimer
+              </Link>
+            </>
           )}
 
           {user ? (
             <>
               <Link
-                to="/symptom-checker"
-                onClick={() =>
-                  setMobileMenuOpen(
-                    false
-                  )
-                }
+                to="/patient/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
                 style={{
                   display: 'block',
                   padding: '10px 0',
                   color: '#475569',
-                  textDecoration:
-                    'none',
+                  textDecoration: 'none',
+                  fontSize: 15,
+                  fontWeight: 500,
+                }}
+              >
+                Dashboard
+              </Link>
+
+              <Link
+                to="/symptom-checker"
+                onClick={() => setMobileMenuOpen(false)}
+                style={{
+                  display: 'block',
+                  padding: '10px 0',
+                  color: '#475569',
+                  textDecoration: 'none',
                   fontSize: 15,
                   fontWeight: 500,
                 }}
@@ -574,23 +630,48 @@ function Navbar({ user, onLogout }) {
               </Link>
 
               <Link
-                to="/patient/dashboard"
-                onClick={() =>
-                  setMobileMenuOpen(
-                    false
-                  )
-                }
+                to="/patient/dashboard?tab=statistics"
+                onClick={() => setMobileMenuOpen(false)}
                 style={{
                   display: 'block',
                   padding: '10px 0',
                   color: '#475569',
-                  textDecoration:
-                    'none',
+                  textDecoration: 'none',
                   fontSize: 15,
                   fontWeight: 500,
                 }}
               >
-                Dashboard
+                Health Statistics
+              </Link>
+
+              <Link
+                to="/patient/dashboard?tab=medicine"
+                onClick={() => setMobileMenuOpen(false)}
+                style={{
+                  display: 'block',
+                  padding: '10px 0',
+                  color: '#475569',
+                  textDecoration: 'none',
+                  fontSize: 15,
+                  fontWeight: 500,
+                }}
+              >
+                Medicine Checker
+              </Link>
+
+              <Link
+                to="/patient/dashboard?tab=tips"
+                onClick={() => setMobileMenuOpen(false)}
+                style={{
+                  display: 'block',
+                  padding: '10px 0',
+                  color: '#475569',
+                  textDecoration: 'none',
+                  fontSize: 15,
+                  fontWeight: 500,
+                }}
+              >
+                Daily AI Tips
               </Link>
 
               <button

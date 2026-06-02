@@ -1,7 +1,6 @@
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 
-const generateAnalysisPDF = async (analysis, inputData, healthProfile, userName, createdAt) => {
+const generateAnalysisPDF = (analysis, inputData, healthProfile, userName, createdAt) => {
   try {
     const doc = new jsPDF({
       orientation: 'portrait',
@@ -11,51 +10,60 @@ const generateAnalysisPDF = async (analysis, inputData, healthProfile, userName,
 
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
-    const margin = 15;
-    const contentWidth = pageWidth - 2 * margin;
+    const margin = 12;
+    const contentWidth = pageWidth - (2 * margin);
     let yPosition = margin;
 
     // Helper functions
-    const addText = (text, x, y, options = {}) => {
-      const { size = 12, weight = 'normal', color = '#0f172a', align = 'left' } = options;
-      doc.setFontSize(size);
-      doc.setFont('helvetica', weight);
-      doc.setTextColor(color.startsWith('#') ? parseInt(color.slice(1), 16) : 0);
-      doc.text(text, x, y, { maxWidth: contentWidth - (x - margin), align });
+    const addNewPage = () => {
+      doc.addPage();
+      yPosition = margin;
     };
 
-    const addSection = (title) => {
-      if (yPosition > pageHeight - 40) {
-        doc.addPage();
-        yPosition = margin;
+    const checkPageSpace = (neededSpace = 20) => {
+      if (yPosition + neededSpace > pageHeight - 10) {
+        addNewPage();
       }
-      addText(title, margin, yPosition, { size: 14, weight: 'bold', color: '#0284c7' });
-      yPosition += 8;
-      doc.setDrawColor(2, 132, 199);
-      doc.line(margin, yPosition, pageWidth - margin, yPosition);
-      yPosition += 6;
     };
 
-    const addBulletList = (items, indent = 0) => {
-      items.forEach((item) => {
-        if (yPosition > pageHeight - 20) {
-          doc.addPage();
-          yPosition = margin;
-        }
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(75, 85, 99);
-        doc.text(`• ${item}`, margin + indent + 5, yPosition, { maxWidth: contentWidth - indent - 5 });
-        yPosition += 6;
-      });
+    const addTitle = (text) => {
+      checkPageSpace(15);
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(2, 132, 199);
+      doc.text(text, margin, yPosition);
+      yPosition += 12;
+    };
+
+    const addSubtitle = (text) => {
+      checkPageSpace(12);
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(15, 23, 42);
+      doc.text(text, margin, yPosition);
+      yPosition += 7;
+
+      doc.setDrawColor(200, 200, 200);
+      doc.line(margin, yPosition, pageWidth - margin, yPosition);
+      yPosition += 5;
+    };
+
+    const addWrappedText = (text, fontSize = 10, isBold = false) => {
+      if (!text) return;
+      checkPageSpace(8);
+
+      doc.setFontSize(fontSize);
+      doc.setFont('helvetica', isBold ? 'bold' : 'normal');
+      doc.setTextColor(isBold ? 15 : 50, isBold ? 23 : 50, isBold ? 42 : 50);
+
+      const lines = doc.splitTextToSize(String(text), contentWidth - 2);
+      doc.text(lines, margin + 1, yPosition);
+      yPosition += lines.length * 5 + 2;
     };
 
     const addKeyValue = (key, value) => {
-      if (yPosition > pageHeight - 20) {
-        doc.addPage();
-        yPosition = margin;
-      }
-      if (!value || value === 'None' || value === '') return;
+      if (!value || value === 'None' || value === '' || value === '-') return;
+      checkPageSpace(10);
 
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
@@ -63,249 +71,283 @@ const generateAnalysisPDF = async (analysis, inputData, healthProfile, userName,
       doc.text(`${key}:`, margin, yPosition);
 
       doc.setFont('helvetica', 'normal');
-      doc.setTextColor(75, 85, 99);
-      doc.text(String(value), margin + 40, yPosition, { maxWidth: contentWidth - 45 });
-      yPosition += 6;
-    };
+      doc.setTextColor(80, 80, 80);
+      doc.setFontSize(10);
 
-    // ── HEADER ──
-    doc.setFontSize(24);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(2, 132, 199);
-    doc.text('MedCheck', margin, yPosition);
-    yPosition += 12;
+      // Calculate remaining width after the key
+      const keyWidth = 50;
+      const remainingWidth = contentWidth - keyWidth;
 
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(15, 23, 42);
-    doc.text('Medical Analysis Report', margin, yPosition);
-    yPosition += 10;
+      const valueLines = doc.splitTextToSize(String(value), remainingWidth - 3);
+      const lineHeight = 5;
 
-    // Report metadata
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(100, 116, 139);
-    doc.text(`Generated: ${new Date(createdAt).toLocaleDateString('en-IN')} | Patient: ${userName}`, margin, yPosition);
-    yPosition += 8;
-
-    // ── PATIENT PROFILE ──
-    if (healthProfile) {
-      addSection('📋 Patient Profile');
-      const profileGrid = [
-        [`Age: ${healthProfile.age || '—'}`, `Gender: ${healthProfile.gender || '—'}`],
-        [`Height: ${healthProfile.height ? healthProfile.height + ' cm' : '—'}`, `Weight: ${healthProfile.weight ? healthProfile.weight + ' kg' : '—'}`],
-      ];
-      profileGrid.forEach((row) => {
-        row.forEach((cell, idx) => {
-          doc.setFontSize(10);
-          doc.setFont('helvetica', 'normal');
-          doc.setTextColor(75, 85, 99);
-          doc.text(cell, margin + (idx * contentWidth / 2), yPosition);
-        });
-        yPosition += 6;
+      valueLines.forEach((line, idx) => {
+        if (idx === 0) {
+          doc.text(line, margin + keyWidth, yPosition);
+        } else {
+          checkPageSpace(6);
+          doc.text(line, margin + keyWidth, yPosition);
+        }
+        yPosition += lineHeight;
       });
 
-      if (healthProfile.diseases && healthProfile.diseases !== 'None') {
-        addKeyValue('Existing Diseases', healthProfile.diseases);
-      }
-      if (healthProfile.medications && healthProfile.medications !== 'None') {
-        addKeyValue('Current Medications', healthProfile.medications);
-      }
-      if (healthProfile.allergies && healthProfile.allergies !== 'None') {
-        addKeyValue('Allergies', healthProfile.allergies);
-      }
-      yPosition += 4;
-    }
+      yPosition += 2;
+    };
 
-    // ── PRIMARY CONDITION ──
-    if (yPosition > pageHeight - 40) {
-      doc.addPage();
-      yPosition = margin;
-    }
+    const addBulletList = (title, items) => {
+      if (!items || items.length === 0) return;
+      checkPageSpace(15);
 
-    doc.setFillColor(240, 249, 255);
-    doc.rect(margin, yPosition - 2, contentWidth, 30, 'F');
-    doc.setDrawColor(191, 219, 254);
-    doc.rect(margin, yPosition - 2, contentWidth, 30);
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(15, 23, 42);
+      doc.text(title, margin, yPosition);
+      yPosition += 6;
 
-    doc.setFontSize(12);
+      items.forEach((item) => {
+        checkPageSpace(8);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(80, 80, 80);
+
+        const bulletText = `• ${item}`;
+        const lines = doc.splitTextToSize(bulletText, contentWidth - 4);
+
+        lines.forEach((line, idx) => {
+          if (idx === 0) {
+            doc.text(line, margin + 2, yPosition);
+          } else {
+            doc.text(line, margin + 4, yPosition);
+          }
+          yPosition += 5;
+        });
+      });
+      yPosition += 3;
+    };
+
+    const formatDate = (date) => {
+      return new Date(date).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    };
+
+    // ===== HEADER SECTION =====
+    doc.setFontSize(20);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(15, 23, 42);
-    doc.text('🏥 Primary Condition', margin + 5, yPosition + 3);
+    doc.setTextColor(2, 132, 199);
+    doc.text('MEDCHECK', margin, yPosition);
+    yPosition += 10;
 
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    const urgencyColor = analysis.urgencyLevel?.toLowerCase();
-    if (urgencyColor === 'emergency') {
-      doc.setTextColor(239, 68, 68);
-    } else if (urgencyColor === 'high') {
-      doc.setTextColor(249, 115, 22);
-    } else if (urgencyColor === 'moderate') {
-      doc.setTextColor(234, 179, 8);
-    } else {
-      doc.setTextColor(34, 197, 94);
-    }
-    doc.text(analysis.possibleCondition || 'Unknown Condition', margin + 5, yPosition + 11);
+    doc.setTextColor(0, 0, 0);
+    doc.text('Medical Analysis Report', margin, yPosition);
+    yPosition += 7;
 
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(100, 116, 139);
-    doc.text(`Urgency: ${analysis.urgencyLevel || 'N/A'}`, margin + 5, yPosition + 18);
-    yPosition += 34;
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Report Generated: ${formatDate(createdAt)}`, margin, yPosition);
+    yPosition += 4;
+    doc.text(`Patient Name: ${userName}`, margin, yPosition);
+    yPosition += 7;
 
-    // Condition explanation
-    if (analysis.conditionExplanation) {
+    // Separator line
+    doc.setDrawColor(200, 200, 200);
+    doc.line(margin, yPosition, pageWidth - margin, yPosition);
+    yPosition += 6;
+
+    // ===== PATIENT PROFILE SECTION =====
+    if (healthProfile) {
+      addSubtitle('PATIENT PROFILE');
+
+      const profileItems = [];
+      if (healthProfile.age) profileItems.push(`Age: ${healthProfile.age} years`);
+      if (healthProfile.gender) profileItems.push(`Gender: ${healthProfile.gender}`);
+      if (healthProfile.height) profileItems.push(`Height: ${healthProfile.height} cm`);
+      if (healthProfile.weight) profileItems.push(`Weight: ${healthProfile.weight} kg`);
+
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
-      doc.setTextColor(75, 85, 99);
-      doc.text(analysis.conditionExplanation, margin, yPosition, { maxWidth: contentWidth });
-      yPosition += 10;
+      doc.setTextColor(80, 80, 80);
+
+      const profileText = profileItems.join('  |  ');
+      const lines = doc.splitTextToSize(profileText, contentWidth - 2);
+      doc.text(lines, margin + 1, yPosition);
+      yPosition += lines.length * 5 + 3;
+
+      addKeyValue('Existing Medical Conditions', healthProfile.diseases);
+      addKeyValue('Current Medications', healthProfile.medications);
+      addKeyValue('Known Allergies', healthProfile.allergies);
+      yPosition += 2;
     }
 
-    // ── SYMPTOMS & DETAILS ──
-    addSection('🩺 Symptoms & Details');
-    addKeyValue('Symptoms', inputData.symptoms);
-    addKeyValue('Duration', inputData.duration);
-    addKeyValue('Severity', inputData.severity);
+    // ===== SYMPTOMS AND INPUT SECTION =====
+    addSubtitle('SYMPTOM INFORMATION');
+    addKeyValue('Reported Symptoms', inputData.symptoms);
+    addKeyValue('Duration of Symptoms', inputData.duration);
+    addKeyValue('Severity Level', inputData.severity);
     addKeyValue('Affected Body Area', inputData.bodyArea);
     yPosition += 2;
 
-    // ── RECOMMENDATIONS ──
-    addSection('👨‍⚕️ Medical Recommendations');
+    // ===== AI ANALYSIS RESULTS =====
+    addSubtitle('MEDICAL ANALYSIS RESULTS');
+
+    if (analysis.possibleCondition) {
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(0, 0, 0);
+      doc.text('Primary Condition:', margin, yPosition);
+      yPosition += 5;
+
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(200, 50, 50);
+      const conditionLines = doc.splitTextToSize(analysis.possibleCondition, contentWidth - 2);
+      doc.text(conditionLines, margin + 1, yPosition);
+      yPosition += conditionLines.length * 5 + 3;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(80, 80, 80);
+      doc.setFontSize(9);
+      doc.text(`Urgency Level: ${analysis.urgencyLevel || 'Not Specified'}`, margin + 1, yPosition);
+      yPosition += 5;
+    }
+
+    if (analysis.conditionExplanation) {
+      addWrappedText(analysis.conditionExplanation, 10, false);
+      yPosition += 2;
+    }
+
+    // ===== RECOMMENDATIONS SECTION =====
+    addSubtitle('MEDICAL RECOMMENDATIONS');
     addKeyValue('Recommended Doctor Type', analysis.recommendedDoctor);
     addKeyValue('Recommended Specialist', analysis.recommendedSpecialist);
     yPosition += 2;
 
-    // ── PRECAUTIONS ──
+    // ===== PRECAUTIONS SECTION =====
     if (analysis.precautions && analysis.precautions.length > 0) {
-      addSection('⚠️ Home Care Precautions');
-      addBulletList(analysis.precautions);
-      yPosition += 2;
+      addBulletList('Important Precautions:', analysis.precautions);
     }
 
-    // ── MEDICINES ──
+    // ===== MEDICINES SECTION =====
     if (analysis.recommendedMedicines && analysis.recommendedMedicines.length > 0) {
-      addSection('💊 Suggested Medications');
-      addBulletList(analysis.recommendedMedicines);
-      yPosition += 2;
+      addBulletList('Suggested Medications:', analysis.recommendedMedicines);
     }
 
-    // ── DIET ──
+    // ===== DIET AND RECOVERY =====
     if (analysis.dietRecommendation) {
-      addSection('🥗 Nutritional Guidance');
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(75, 85, 99);
-      doc.text(analysis.dietRecommendation, margin, yPosition, { maxWidth: contentWidth });
-      yPosition += 8;
+      checkPageSpace(20);
+      addSubtitle('NUTRITION RECOMMENDATIONS');
+      addWrappedText(analysis.dietRecommendation);
     }
 
-    // ── RECOVERY ──
     if (analysis.recoveryAdvice) {
-      addSection('❤️ Recovery Support');
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(75, 85, 99);
-      doc.text(analysis.recoveryAdvice, margin, yPosition, { maxWidth: contentWidth });
-      yPosition += 8;
+      checkPageSpace(20);
+      addSubtitle('RECOVERY GUIDANCE');
+      addWrappedText(analysis.recoveryAdvice);
     }
 
-    // ── WHEN TO SEE DOCTOR ──
     if (analysis.whenToSeeDoctor) {
-      addSection('📅 When to See a Doctor');
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(75, 85, 99);
-      doc.text(analysis.whenToSeeDoctor, margin, yPosition, { maxWidth: contentWidth });
-      yPosition += 8;
+      checkPageSpace(20);
+      addSubtitle('WHEN TO CONSULT A DOCTOR');
+      addWrappedText(analysis.whenToSeeDoctor);
     }
 
-    // ── EMERGENCY WARNING ──
-    if (analysis.emergencyWarning && ['high', 'emergency'].includes(analysis.urgencyLevel?.toLowerCase())) {
-      if (yPosition > pageHeight - 30) {
-        doc.addPage();
-        yPosition = margin;
-      }
+    // ===== EMERGENCY WARNING =====
+    if (analysis.emergencyWarning && ['high', 'emergency'].includes((analysis.urgencyLevel || '').toLowerCase())) {
+      checkPageSpace(25);
 
-      doc.setFillColor(254, 242, 242);
-      doc.rect(margin, yPosition - 2, contentWidth, 20, 'F');
-      doc.setDrawColor(254, 202, 202);
-      doc.rect(margin, yPosition - 2, contentWidth, 20);
+      doc.setFillColor(255, 240, 240);
+      const warningBoxHeight = 22;
+      doc.rect(margin, yPosition - 5, contentWidth, warningBoxHeight, 'F');
+      doc.setDrawColor(255, 200, 200);
+      doc.rect(margin, yPosition - 5, contentWidth, warningBoxHeight);
 
-      doc.setFontSize(10);
+      doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(239, 68, 68);
-      doc.text('⚠️ MEDICAL WARNING', margin + 5, yPosition + 4);
+      doc.setTextColor(200, 0, 0);
+      doc.text('IMPORTANT MEDICAL WARNING', margin + 3, yPosition);
+      yPosition += 6;
 
       doc.setFontSize(9);
       doc.setFont('helvetica', 'normal');
-      doc.setTextColor(153, 27, 27);
-      doc.text(analysis.emergencyWarning, margin + 5, yPosition + 11, { maxWidth: contentWidth - 10 });
-      yPosition += 24;
+      doc.setTextColor(100, 0, 0);
+      const warningLines = doc.splitTextToSize(analysis.emergencyWarning, contentWidth - 6);
+      doc.text(warningLines, margin + 3, yPosition);
+      yPosition += warningLines.length * 4 + 8;
     }
 
-    // ── NEARBY FACILITIES ──
+    // ===== NEARBY MEDICAL FACILITIES =====
     if (analysis.nearbyDoctors && analysis.nearbyDoctors.length > 0) {
-      if (yPosition > pageHeight - 50) {
-        doc.addPage();
-        yPosition = margin;
-      }
-
-      addSection('🏥 Nearby Medical Facilities');
+      checkPageSpace(30);
+      addSubtitle('NEARBY MEDICAL FACILITIES');
 
       const doctorsToShow = analysis.nearbyDoctors.slice(0, 5);
       doctorsToShow.forEach((doctor, idx) => {
-        if (yPosition > pageHeight - 30) {
-          doc.addPage();
-          yPosition = margin;
-        }
-
-        doc.setFillColor(248, 250, 252);
-        doc.rect(margin, yPosition - 2, contentWidth, 22, 'F');
-        doc.setDrawColor(226, 232, 240);
-        doc.rect(margin, yPosition - 2, contentWidth, 22);
+        checkPageSpace(20);
 
         doc.setFontSize(10);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(15, 23, 42);
-        doc.text(`${idx + 1}. ${doctor.name}`, margin + 4, yPosition + 3);
+        const facilityName = `${idx + 1}. ${doctor.name}`;
+        const facilityLines = doc.splitTextToSize(facilityName, contentWidth - 2);
+        doc.text(facilityLines, margin + 1, yPosition);
+        yPosition += facilityLines.length * 5;
 
-        doc.setFontSize(8);
+        doc.setFontSize(9);
         doc.setFont('helvetica', 'normal');
-        doc.setTextColor(100, 116, 139);
+        doc.setTextColor(80, 80, 80);
+
         const distance = typeof doctor.distance === 'number' ? doctor.distance.toFixed(1) : doctor.distance;
-        doc.text(`${doctor.type} | 📍 ${distance} km | ${doctor.address}`, margin + 4, yPosition + 9, { maxWidth: contentWidth - 8 });
+        const typeText = `Type: ${doctor.type || 'Medical Facility'}`;
+        doc.text(typeText, margin + 3, yPosition);
+        yPosition += 4;
+
+        const addressText = `Address: ${doctor.address}`;
+        const addressLines = doc.splitTextToSize(addressText, contentWidth - 4);
+        addressLines.forEach((line) => {
+          doc.text(line, margin + 3, yPosition);
+          yPosition += 4;
+        });
+
+        const distanceText = `Distance: ${distance} km away`;
+        doc.text(distanceText, margin + 3, yPosition);
+        yPosition += 4;
 
         if (doctor.phone) {
-          doc.setTextColor(2, 132, 199);
-          doc.text(`☎️ ${doctor.phone}`, margin + 4, yPosition + 15);
+          const phoneText = `Phone: ${doctor.phone}`;
+          doc.text(phoneText, margin + 3, yPosition);
+          yPosition += 4;
         }
 
-        yPosition += 26;
+        yPosition += 2;
       });
     }
 
-    // ── FOOTER ──
-    if (yPosition > pageHeight - 20) {
-      doc.addPage();
-      yPosition = margin;
-    }
-
-    yPosition = pageHeight - 20;
+    // ===== FOOTER =====
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(148, 163, 184);
-    doc.text('Disclaimer: This is an AI-generated analysis and not a substitute for professional medical diagnosis.', margin, yPosition);
-    yPosition += 4;
-    doc.text('Please consult with a qualified healthcare professional for accurate diagnosis and treatment.', margin, yPosition);
+    doc.setTextColor(150, 150, 150);
 
-    // Download
+    const footerY = pageHeight - 12;
+    const disclaimerLine1 = 'DISCLAIMER: This is an AI-generated medical analysis and is not a substitute for';
+    const disclaimerLine2 = 'professional medical diagnosis, treatment, or advice. Please consult with a qualified';
+    const disclaimerLine3 = 'healthcare professional for accurate diagnosis and treatment.';
+
+    doc.text(disclaimerLine1, margin, footerY);
+    doc.text(disclaimerLine2, margin, footerY + 3);
+    doc.text(disclaimerLine3, margin, footerY + 6);
+
+    // Download PDF
     const fileName = `MedCheck_Analysis_${new Date(createdAt).toISOString().split('T')[0]}.pdf`;
     doc.save(fileName);
 
-    console.log('✅ PDF generated and downloaded:', fileName);
+    console.log('✅ Professional PDF generated:', fileName);
   } catch (error) {
-    console.error('❌ PDF Generation Error:', error);
+    console.error('Error generating PDF:', error);
     alert('Failed to generate PDF. Please try again.');
   }
 };

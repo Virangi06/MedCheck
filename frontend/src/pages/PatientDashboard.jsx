@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   Brain, HeartPulse, ShieldAlert, Pill, Activity, User, Calendar, Siren,
-  ChevronDown, ChevronUp, Stethoscope, Leaf, Clock3, BadgeAlert, MapPin, AlertTriangle, LayoutDashboard, Sparkles, ArrowRight, Edit3, Download,
+  ChevronDown, Stethoscope, Leaf, Clock3, BadgeAlert, MapPin, AlertTriangle, LayoutDashboard, Sparkles, ArrowRight, Download, TrendingUp
 } from 'lucide-react';
 import { profileAPI, analysisAPI } from '../services/api';
 import { feedbackAPI } from '../services/feedbackAPI';
 import generateAnalysisPDF from '../utils/generateAnalysisPDF';
-
-const API = 'http://localhost:5000/api';
+import HealthStatisticsDashboard from '../components/HealthStatisticsDashboard';
+import MedicineInteractionChecker from '../components/MedicineInteractionChecker';
+import HealthTipsFeed from '../components/HealthTipsFeed';
+import { checkInteractionsLocally } from '../utils/medicineChecker';
+import { saveHealthMetric, getHealthMetrics } from '../services/statisticsService';
 
 const dashboardStyles = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@400;500;600;700&display=swap');
@@ -56,6 +58,85 @@ const dashboardStyles = `
   @keyframes heroGrid {
     0% { background-position: 0 0; }
     100% { background-position: 40px 40px; }
+  }
+
+  /* ─── HORIZONTAL OVERVIEW CARDS ─── */
+  .horizontal-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    border-radius: 24px;
+    padding: 34px 40px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.03);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    gap: 32px;
+    animation: fadeInUp 0.6s ease-out forwards;
+    position: relative;
+    overflow: hidden;
+  }
+  .horizontal-card:hover {
+    transform: translateY(-6px) scale(1.003);
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.06);
+    border-color: rgba(14, 165, 233, 0.35);
+  }
+  @media (max-width: 991px) {
+    .horizontal-card {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      padding: 24px 28px !important;
+      gap: 20px !important;
+    }
+  }
+  .welcome-glow-card {
+    background: linear-gradient(135deg, #0c1f35 0%, #0a2a4a 40%, #0d3b6e 70%, #0ea5e9 100%) !important;
+    border: none !important;
+    color: white !important;
+    box-shadow: 0 12px 35px rgba(13, 59, 102, 0.2) !important;
+  }
+  .welcome-glow-card:hover {
+    box-shadow: 0 25px 50px rgba(13, 59, 102, 0.3) !important;
+  }
+  .welcome-radial-glow {
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 250px;
+    height: 250px;
+    background: radial-gradient(circle, rgba(14, 165, 233, 0.2) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .premium-pill {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #e2e8f0;
+    transition: all 0.25s ease;
+  }
+  .premium-pill:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-1px);
+  }
+  .premium-icon-box {
+    width: 60px;
+    height: 60px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .horizontal-card:hover .premium-icon-box {
+    transform: scale(1.1) rotate(5deg);
   }
 
   /* ─── DASHBOARD CLASSES ─── */
@@ -409,15 +490,94 @@ const dashboardStyles = `
       padding: 16px;
     }
   }
+
+  /* Sidebar Links */
+  .sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    color: #94a3b8;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    text-align: left;
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+  }
+  
+  .sidebar-link:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateX(4px);
+  }
+  
+  .sidebar-link.active {
+    color: white;
+    background: linear-gradient(135deg, #0ea5e9, #0284c7);
+    box-shadow: 0 8px 20px rgba(14, 165, 233, 0.2);
+  }
+
+  @media (max-width: 991px) {
+    .dashboard-layout {
+      flex-direction: column !important;
+    }
+    .sidebar-container {
+      width: 100% !important;
+      height: auto !important;
+      position: static !important;
+      border-right: none !important;
+      border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+    }
+    .sidebar-menu {
+      flex-direction: row !important;
+      flex-wrap: wrap !important;
+      gap: 10px !important;
+    }
+    .sidebar-link {
+      width: auto !important;
+      flex: 1 1 160px !important;
+    }
+    .sidebar-action-box {
+      display: none !important;
+    }
+  }
 `;
 
 function PatientDashboard() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { profile, updateProfile } = useAuth();
 
   const user = JSON.parse(localStorage.getItem('user') || 'null');
 
-  const [activeTab, setActiveTab] = useState('history');
+  const [activeTab, setActiveTab] = useState('overview');
+
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [metricsOpen, setMetricsOpen] = useState(false);
+  const [metricsForm, setMetricsForm] = useState({
+    date: new Date().toISOString().split('T')[0],
+    heartRate: '',
+    systolic: '',
+    diastolic: '',
+    weight: '',
+    sleepDuration: '',
+    activityLevel: ''
+  });
+  const [metricsSaving, setMetricsSaving] = useState(false);
+  const [metricsSuccess, setMetricsSuccess] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tabParam = params.get('tab');
+    if (tabParam && ['overview', 'history', 'health', 'statistics', 'medicine', 'tips'].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [location.search]);
   const [analyses, setAnalyses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
@@ -434,6 +594,7 @@ function PatientDashboard() {
   const [feedbackSuccess, setFeedbackSuccess] = useState(false);
   const [userFeedbacks, setUserFeedbacks] = useState([]);
   const [loadingFeedbacks, setLoadingFeedbacks] = useState(false);
+  const [latestMetric, setLatestMetric] = useState(null);
 
 
   useEffect(() => {
@@ -458,9 +619,21 @@ function PatientDashboard() {
     await Promise.all([
       loadProfile(),
       loadHistory(),
+      loadLatestMetric(),
     ]);
 
     setLoading(false);
+  };
+
+  const loadLatestMetric = async () => {
+    try {
+      const data = await getHealthMetrics();
+      if (data && data.length > 0) {
+        setLatestMetric(data[data.length - 1]);
+      }
+    } catch (err) {
+      console.warn('Failed to load latest metrics:', err.message);
+    }
   };
 
   const loadProfile = async () => {
@@ -623,6 +796,15 @@ function PatientDashboard() {
       allergies:
         healthProfile?.allergies ||
         'None',
+      sleepPatterns:
+        healthProfile?.sleepPatterns ||
+        '7-8 hours, deep',
+      activityLevel:
+        healthProfile?.activityLevel ||
+        'Moderate',
+      healthGoals:
+        healthProfile?.healthGoals ||
+        'Improve fitness',
     });
 
     setEditOpen(true);
@@ -652,6 +834,33 @@ function PatientDashboard() {
       );
     } finally {
       setEditSaving(false);
+    }
+  };
+
+  const handleMetricsSave = async () => {
+    setMetricsSaving(true);
+    try {
+      const payload = {
+        date: metricsForm.date,
+        heartRate: metricsForm.heartRate ? parseInt(metricsForm.heartRate) : undefined,
+        systolic: metricsForm.systolic ? parseInt(metricsForm.systolic) : undefined,
+        diastolic: metricsForm.diastolic ? parseInt(metricsForm.diastolic) : undefined,
+        weight: metricsForm.weight ? parseFloat(metricsForm.weight) : undefined,
+        sleepDuration: metricsForm.sleepDuration ? parseFloat(metricsForm.sleepDuration) : undefined,
+        activityLevel: metricsForm.activityLevel ? parseInt(metricsForm.activityLevel) : undefined
+      };
+      await saveHealthMetric(payload);
+      setMetricsSuccess(true);
+      setTimeout(() => {
+        setMetricsOpen(false);
+        setMetricsSuccess(false);
+        // Refresh to show updated charts
+        window.location.reload();
+      }, 1200);
+    } catch (err) {
+      alert(err.message || 'Failed to save health metrics');
+    } finally {
+      setMetricsSaving(false);
     }
   };
 
@@ -786,7 +995,7 @@ function PatientDashboard() {
   if (!user) return null;
 
   return (
-    <div className="dashboard-container">
+    <div className="dashboard-container dashboard-layout" style={{ display: 'flex', minHeight: '100vh', background: '#f4f9ff' }}>
       <style>{dashboardStyles}</style>
 
       <link
@@ -794,116 +1003,324 @@ function PatientDashboard() {
         rel="stylesheet"
       />
 
-      {/* ── HERO SECTION ── */}
-      <div className="dashboard-hero">
-        <div className="hero-grid" />
-        <div className="hero-blur" />
+      {/* ── MAIN CONTENT AREA ── */}
+      <div className="main-content" style={{ flex: 1, minHeight: 'calc(100vh - 72px)', width: '100%', display: 'flex', flexDirection: 'column' }}>
+        {activeTab === 'overview' && (
+          <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+            
+            {/* Section 1: Welcome Banner Section (Full Width Edge-to-Edge) */}
+            <div className="welcome-glow-card" style={{ width: '100%', position: 'relative', overflow: 'hidden', padding: '96px 0' }}>
+              <div className="hero-grid" style={{ opacity: 0.4 }} />
+              <div className="welcome-radial-glow" />
+              <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '32px', position: 'relative', zIndex: 2, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1, minWidth: '280px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+                    <div className="premium-icon-box" style={{ background: 'rgba(255, 255, 255, 0.1)', color: '#38bdf8' }}>
+                      <Activity size={32} />
+                    </div>
+                    <div>
+                      <h1 style={{ margin: 0, fontSize: '32px', fontFamily: "'Syne', sans-serif", fontWeight: '700', color: 'white', lineHeight: 1.2 }}>
+                        Welcome back, <span style={{ color: '#38bdf8' }}>{user.name}</span>
+                      </h1>
+                      <p style={{ margin: '6px 0 0', color: '#93c5fd', fontSize: '16px' }}>
+                        Track your AI-powered health insights, log parameters, and manage your health dashboard.
+                      </p>
+                    </div>
+                  </div>
 
-        <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
-          <div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', padding: '8px 16px', borderRadius: '999px', marginBottom: '18px' }}>
-              <Sparkles size={14} color="#38bdf8" />
-              <span style={{ color: '#bae6fd', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase' }}>AI Healthcare Dashboard</span>
-            </div>
-
-            <h1 style={{ margin: 0, fontSize: '44px', fontFamily: "'Syne', sans-serif", fontWeight: '700', color: 'white', lineHeight: 1.1 }}>
-              Welcome back,<br />
-              <span style={{ color: '#38bdf8' }}>{user.name}</span>
-            </h1>
-
-            <p style={{ color: 'rgba(186,230,253,0.85)', maxWidth: '560px', lineHeight: 1.8, marginTop: '16px', fontSize: '16px' }}>
-              Track your AI-powered health insights, medical analyses, and personal health profile all in one place.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* ── NEW ANALYSIS SECTION ── */}
-      <div style={{ width: '100%', maxWidth: '1250px', margin: '55px auto 0', background: 'white', borderRadius: '36px', padding: '55px', boxShadow: '0 25px 80px rgba(15,23,42,0.18)', position: 'relative', overflow: 'hidden', marginBottom: '60px' }}>
-        <div style={{ position: 'absolute', top: -120, right: -120, width: 320, height: 320, background: 'rgba(14,165,233,0.12)', borderRadius: '50%', filter: 'blur(80px)' }} />
-
-        <div style={{ position: 'relative', zIndex: 2, display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: '30px', alignItems: 'center' }}>
-          {/* LEFT CONTENT */}
-          <div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.18)', padding: '10px 18px', borderRadius: '999px', marginBottom: '22px' }}>
-              <Sparkles size={16} color="#0284c7" />
-              <span style={{ color: '#0284c7', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.08em' }}>AI Powered Healthcare</span>
-            </div>
-
-            <h2 style={{ margin: '0 0 18px', fontSize: '48px', fontFamily: "'Syne', sans-serif", lineHeight: 1.1, fontWeight: '700', color: '#071c2f', letterSpacing: '-1.5px' }}>
-              Start Your<br />New Analysis
-            </h2>
-
-            <p style={{ margin: 0, fontSize: '16px', lineHeight: 1.8, color: '#475569', maxWidth: '560px' }}>
-              Get instant AI-powered symptom analysis, personalized medical insights, urgency detection, and nearby healthcare recommendations.
-            </p>
-
-            <button 
-              onClick={() => navigate('/symptom-checker')} 
-              style={{ marginTop: '32px', background: 'linear-gradient(135deg,#0ea5e9,#38bdf8)', border: 'none', color: 'white', borderRadius: '18px', padding: '18px 28px', fontWeight: '600', fontSize: '16px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '12px', boxShadow: '0 15px 40px rgba(14,165,233,0.28)', transition: 'all 0.3s ease' }}
-              onMouseEnter={(e) => { e.target.style.transform = 'translateY(-3px)'; e.target.style.boxShadow = '0 20px 50px rgba(14,165,233,0.35)'; }}
-              onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 15px 40px rgba(14,165,233,0.28)'; }}
-            >
-              <Brain size={20} /> Start New Analysis <ArrowRight size={18} />
-            </button>
-          </div>
-
-          {/* RIGHT FEATURES */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px' }}>
-            {[
-              { icon: <Brain size={26} color="white" />, title: 'Smart AI Analysis', desc: 'Advanced AI evaluates symptoms instantly.' },
-              { icon: <MapPin size={26} color="white" />, title: 'Nearby Doctors', desc: 'Discover nearby hospitals and clinics.' },
-              { icon: <Calendar size={26} color="white" />, title: 'Health History', desc: 'Access previous analyses anytime.' },
-              { icon: <ShieldAlert size={26} color="white" />, title: 'Urgency Detection', desc: 'Identify severe symptoms instantly.' },
-            ].map((item, i) => (
-              <div key={i} className="feature-grid-item">
-                <div className="icon-box">{item.icon}</div>
-                <h3 style={{ margin: '0 0 10px', fontSize: '18px', fontFamily: "'Syne', sans-serif", fontWeight: '600', color: '#071c2f' }}>{item.title}</h3>
-                <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.7, color: '#64748b' }}>{item.desc}</p>
+                  {/* Quick stats pill grid */}
+                  {latestMetric ? (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: '4px' }}>
+                      <div className="premium-pill">
+                        <HeartPulse size={15} color="#fb7185" />
+                        <span>Heart Rate: <strong style={{ color: 'white' }}>{latestMetric.heartRate || '—'} bpm</strong></span>
+                      </div>
+                      <div className="premium-pill">
+                        <Activity size={15} color="#38bdf8" />
+                        <span>Blood Pressure: <strong style={{ color: 'white' }}>{latestMetric.systolic && latestMetric.diastolic ? `${latestMetric.systolic}/${latestMetric.diastolic}` : '—'} mmHg</strong></span>
+                      </div>
+                      <div className="premium-pill">
+                        <Clock3 size={15} color="#fbbf24" />
+                        <span>Sleep Duration: <strong style={{ color: 'white' }}>{latestMetric.sleepDuration || '—'} hrs</strong></span>
+                      </div>
+                      <div className="premium-pill">
+                        <TrendingUp size={15} color="#34d399" />
+                        <span>Steps: <strong style={{ color: 'white' }}>{latestMetric.activityLevel ? latestMetric.activityLevel.toLocaleString('en-IN') : '—'}</strong></span>
+                      </div>
+                    </div>
+                  ) : (
+                    <p style={{ margin: '6px 0 0', color: '#93c5fd', fontSize: '13px', fontStyle: 'italic' }}>
+                      No daily health metrics logged yet today. Complete your metrics log to view dynamic charts!
+                    </p>
+                  )}
+                </div>
+                <div style={{ flexShrink: 0, zIndex: 2 }}>
+                  <button
+                    onClick={() => setMetricsOpen(true)}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '16px 26px', borderRadius: '16px', border: '1px solid rgba(255, 255, 255, 0.2)', background: 'rgba(255, 255, 255, 0.1)', color: 'white', fontSize: '14px', fontWeight: '700', cursor: 'pointer', transition: 'all 0.3s ease', boxShadow: '0 8px 20px rgba(0,0,0,0.1)' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#071c2f'; e.currentTarget.style.borderColor = 'white'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.color = 'white'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)'; e.currentTarget.style.transform = 'none'; }}
+                  >
+                    <Activity size={16} /> Log Daily Metrics
+                  </button>
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* ── MAIN CONTENT ── */}
-      <div style={{ maxWidth: '1180px', margin: '0 auto', padding: '0 24px 60px', position: 'relative', zIndex: 10 }}>
-        {/* STATS CARDS */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: '22px', marginBottom: '50px' }}>
-          {[
-            { label: 'Total Analyses', value: analyses.length, icon: <Brain size={24} color="white" /> },
-            { label: 'Last Check', value: analyses[0] ? new Date(analyses[0].createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '—', icon: <Clock3 size={24} color="white" /> },
-            { label: 'High Urgency', value: analyses.filter(a => ['high', 'emergency'].includes((getResult(a).urgencyLevel || '').toLowerCase())).length || 0, icon: <ShieldAlert size={24} color="white" /> },
-            { label: 'Conditions', value: [...new Set(analyses.map(a => getResult(a).possibleCondition).filter(Boolean))].length, icon: <Activity size={24} color="white" /> },
-          ].map((stat, i) => (
-            <div key={i} className="stat-card" style={{ animationDelay: `${i * 0.1}s` }}>
-              <div className="stat-icon">{stat.icon}</div>
-              <p style={{ margin: '0 0 8px', fontSize: '13px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase' }}>{stat.label}</p>
-              <h2 style={{ margin: 0, fontSize: '34px', fontFamily: "'Syne', sans-serif", fontWeight: '700', color: '#071c2f' }}>{stat.value}</h2>
             </div>
-          ))}
-        </div>
 
-        {/* TABS */}
-        <div style={{ display: 'flex', gap: '40px', marginBottom: '40px', borderBottom: '1px solid #e2e8f0', paddingBottom: '0' }}>
-          {[
-            { id: 'history', label: 'Analysis History', icon: <LayoutDashboard size={16} /> },
-            { id: 'health', label: 'Health Profile', icon: <HeartPulse size={16} /> },
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
-            >
-              {tab.icon}
-              {tab.label}
-            </button>
-          ))}
-        </div>
+            {/* Section 2: AI Clinical Assistant (Full Width Edge-to-Edge) */}
+            <div style={{ width: '100%', background: '#ffffff', padding: '96px 0', borderBottom: '1px solid #f1f5f9' }}>
+              <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
+                <div style={{ marginBottom: '40px' }}>
+                  <div className="section-tag">✦ SMART CLINICAL QUERY</div>
+                  <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: 'clamp(28px, 4vw, 42px)', color: '#0f172a', letterSpacing: '-0.8px', margin: '12px 0 16px' }}>
+                    AI Clinical Assistant
+                  </h2>
+                  <p style={{ color: '#64748b', fontSize: '17px', maxWidth: '600px', margin: 0, lineHeight: 1.6 }}>
+                    Initiate a symptom query powered by clinical AI. Instantly screen for urgency levels, precautions, recovery guidance, and medical specialist recommendations.
+                  </p>
+                </div>
+                
+                <div className="horizontal-card" style={{ background: 'linear-gradient(135deg, #ffffff 0%, #f4f9ff 100%)', borderColor: 'rgba(14, 165, 233, 0.18)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flex: 1, flexWrap: 'wrap' }}>
+                    <div className="premium-icon-box" style={{ background: 'rgba(14, 165, 233, 0.08)', color: '#0ea5e9' }}>
+                      <Brain size={32} />
+                    </div>
+                    <div>
+                      <h3 style={{ margin: 0, fontSize: '20px', fontFamily: "'Syne', sans-serif", fontWeight: '700', color: '#0f172a' }}>Begin AI Assessment</h3>
+                      <p style={{ margin: '6px 0 0', color: '#64748b', fontSize: '14px', lineHeight: 1.6 }}>
+                        Click below to launch the clinical symptom screening analyzer. It takes less than 3 minutes to log your symptoms and receive instant insights.
+                      </p>
+                    </div>
+                  </div>
+                  <div style={{ flexShrink: 0 }}>
+                    <button
+                      onClick={() => navigate('/symptom-checker')}
+                      style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '16px 28px', borderRadius: '16px', border: 'none', background: 'linear-gradient(135deg, #0ea5e9, #0284c7)', color: 'white', fontSize: '14px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 8px 25px rgba(14, 165, 233, 0.2)', transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)'; e.currentTarget.style.boxShadow = '0 12px 30px rgba(14, 165, 233, 0.35)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 8px 25px rgba(14, 165, 233, 0.2)'; }}
+                    >
+                      <Brain size={18} /> Start AI Assessment
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 3: Recent Health Assessments (Full Width Edge-to-Edge) */}
+            <div style={{ width: '100%', background: '#f4f9ff', padding: '96px 0', borderBottom: '1px solid #e2e8f0' }}>
+              <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
+                <div style={{ marginBottom: '40px' }}>
+                  <div className="section-tag">✦ RECENT CLINICAL HISTORY</div>
+                  <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: 'clamp(28px, 4vw, 42px)', color: '#0f172a', letterSpacing: '-0.8px', margin: '12px 0 16px' }}>
+                    Recent Assessments
+                  </h2>
+                  <p style={{ color: '#64748b', fontSize: '17px', maxWidth: '600px', margin: 0, lineHeight: 1.6 }}>
+                    Review your latest clinical assessments or navigate to your complete diagnosis archive.
+                  </p>
+                </div>
+
+                <div className="horizontal-card" style={{ background: 'linear-gradient(135deg, #ffffff 0%, #f0f7fe 100%)', borderColor: 'rgba(14, 165, 233, 0.18)' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div className="premium-icon-box" style={{ background: 'rgba(14, 165, 233, 0.08)', color: '#0ea5e9', width: '48px', height: '48px', borderRadius: '14px' }}>
+                        <Calendar size={24} />
+                      </div>
+                      <h3 style={{ margin: 0, fontSize: '20px', fontFamily: "'Syne', sans-serif", fontWeight: '700', color: '#0f172a' }}>Assessment Timeline</h3>
+                    </div>
+                    
+                    <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '6px', width: '100%', scrollbarWidth: 'none' }}>
+                      {analyses.length === 0 ? (
+                        <div style={{ background: 'white', border: '1px solid #f1f5f9', padding: '16px 20px', borderRadius: '16px', width: '100%' }}>
+                          <p style={{ margin: 0, fontSize: '14px', color: '#64748b' }}>No symptom analyses recorded yet.</p>
+                        </div>
+                      ) : (
+                        analyses.slice(0, 3).map((item, idx) => {
+                          const r = getResult(item);
+                          const uc = urgencyColor(r.urgencyLevel);
+                          return (
+                            <div key={idx} style={{ flex: '1 1 240px', minWidth: '220px', background: 'white', padding: '18px', borderRadius: '16px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '12px', transition: 'all 0.3s ease', cursor: 'pointer' }}
+                              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.04)'; e.currentTarget.style.borderColor = 'rgba(14, 165, 233, 0.2)'; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = '#e2e8f0'; }}
+                              onClick={() => {
+                                setActiveTab('history');
+                                setExpandedId(item._id || idx);
+                                navigate('/patient/dashboard?tab=history');
+                              }}
+                            >
+                              <div style={{ minWidth: 0 }}>
+                                <h4 style={{ margin: '0 0 4px', fontSize: '14px', fontWeight: '700', color: '#0f172a', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{r.possibleCondition || 'Unknown'}</h4>
+                                <span style={{ fontSize: '11px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '4px' }}>⏱ {item.createdAt ? new Date(item.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Recent'}</span>
+                              </div>
+                              <span style={{ background: uc.bg, color: uc.text, fontSize: '10px', fontWeight: '800', padding: '4px 10px', borderRadius: '50px', textTransform: 'uppercase', alignSelf: 'flex-start', letterSpacing: '0.5px' }}>{r.urgencyLevel || 'N/A'}</span>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div style={{ flexShrink: 0, alignSelf: 'center' }}>
+                    <button
+                      onClick={() => {
+                        setActiveTab('history');
+                        navigate('/patient/dashboard?tab=history');
+                      }}
+                      style={{ padding: '14px 24px', borderRadius: '14px', border: '1.5px solid #cbd5e1', background: 'white', color: '#475569', fontSize: '13px', fontWeight: '700', cursor: 'pointer', transition: 'all 0.25s ease', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.borderColor = '#94a3b8'; e.currentTarget.style.color = '#0f172a'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = 'white'; e.currentTarget.style.borderColor = '#cbd5e1'; e.currentTarget.style.color = '#475569'; }}
+                    >
+                      View Full History
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 4: Health Profile (Full Width Edge-to-Edge) */}
+            <div style={{ width: '100%', background: '#ffffff', padding: '96px 0', borderBottom: '1px solid #f1f5f9' }}>
+              <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
+                <div style={{ marginBottom: '40px' }}>
+                  <div className="section-tag">✦ MEDICAL PROFILE</div>
+                  <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: 'clamp(28px, 4vw, 42px)', color: '#0f172a', letterSpacing: '-0.8px', margin: '12px 0 16px' }}>
+                    Your Health Profile
+                  </h2>
+                  <p style={{ color: '#64748b', fontSize: '17px', maxWidth: '600px', margin: 0, lineHeight: 1.6 }}>
+                    Monitor key health metrics, body mass index classification, and targeted fitness/recovery goals.
+                  </p>
+                </div>
+
+                <div className="horizontal-card" style={{ background: 'linear-gradient(135deg, #ffffff 0%, #f4f9ff 100%)', borderColor: 'rgba(14, 165, 233, 0.18)' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div className="premium-icon-box" style={{ background: 'rgba(14, 165, 233, 0.08)', color: '#0ea5e9', width: '48px', height: '48px', borderRadius: '14px' }}>
+                        <User size={24} />
+                      </div>
+                      <h3 style={{ margin: 0, fontSize: '20px', fontFamily: "'Syne', sans-serif", fontWeight: '700', color: '#0f172a' }}>Biometrics & Metrics</h3>
+                    </div>
+                    {(() => {
+                      const heightM = healthProfile?.height ? parseFloat(healthProfile.height) / 100 : 0;
+                      const weightKg = healthProfile?.weight ? parseFloat(healthProfile.weight) : 0;
+                      const bmiVal = heightM > 0 && weightKg > 0 ? (weightKg / (heightM * heightM)).toFixed(1) : '—';
+                      const getBmiCategory = (val) => {
+                        if (val === '—') return { text: '', color: '#64748b', bg: '#f1f5f9' };
+                        const num = parseFloat(val);
+                        if (num < 18.5) return { text: 'Underweight', color: '#b45309', bg: '#fef3c7' };
+                        if (num < 25) return { text: 'Normal weight', color: '#15803d', bg: '#dcfce7' };
+                        if (num < 30) return { text: 'Overweight', color: '#b45309', bg: '#fef3c7' };
+                        return { text: 'Obese', color: '#b91c1c', bg: '#fee2e2' };
+                      };
+                      const bmiCat = getBmiCategory(bmiVal);
+                      return (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
+                          <div style={{ background: 'white', padding: '16px', borderRadius: '16px', border: '1px solid #e2e8f0', transition: 'all 0.3s ease' }}
+                            onMouseEnter={(e) => e.currentTarget.style.borderColor = 'rgba(14, 165, 233, 0.3)'}
+                            onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e2e8f0'}
+                          >
+                            <span style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase', display: 'block', fontWeight: '700', letterSpacing: '0.5px', marginBottom: '6px' }}>Age / Sex</span>
+                            <strong style={{ fontSize: '15px', color: '#0f172a' }}>{healthProfile?.age ? `${healthProfile.age} yrs` : '—'} / {healthProfile?.gender || '—'}</strong>
+                          </div>
+                          <div style={{ background: 'white', padding: '16px', borderRadius: '16px', border: '1px solid #e2e8f0', transition: 'all 0.3s ease' }}
+                            onMouseEnter={(e) => e.currentTarget.style.borderColor = 'rgba(14, 165, 233, 0.3)'}
+                            onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e2e8f0'}
+                          >
+                            <span style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase', display: 'block', fontWeight: '700', letterSpacing: '0.5px', marginBottom: '6px' }}>BMI Score</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <strong style={{ fontSize: '15px', color: '#0f172a' }}>{bmiVal}</strong>
+                              {bmiVal !== '—' && (
+                                <span style={{ background: bmiCat.bg, color: bmiCat.color, fontSize: '10px', fontWeight: '800', padding: '2px 8px', borderRadius: '50px' }}>
+                                  {bmiCat.text}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div style={{ background: 'white', padding: '16px', borderRadius: '16px', border: '1px solid #e2e8f0', transition: 'all 0.3s ease' }}
+                            onMouseEnter={(e) => e.currentTarget.style.borderColor = 'rgba(14, 165, 233, 0.3)'}
+                            onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e2e8f0'}
+                          >
+                            <span style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase', display: 'block', fontWeight: '700', letterSpacing: '0.5px', marginBottom: '6px' }}>Active Meds</span>
+                            <strong style={{ fontSize: '15px', color: '#0f172a', display: 'block', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }} title={healthProfile?.medications}>{healthProfile?.medications || 'None'}</strong>
+                          </div>
+                          <div style={{ background: 'white', padding: '16px', borderRadius: '16px', border: '1px solid #e2e8f0', transition: 'all 0.3s ease' }}
+                            onMouseEnter={(e) => e.currentTarget.style.borderColor = 'rgba(14, 165, 233, 0.3)'}
+                            onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e2e8f0'}
+                          >
+                            <span style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase', display: 'block', fontWeight: '700', letterSpacing: '0.5px', marginBottom: '6px' }}>Target Goals</span>
+                            <strong style={{ fontSize: '15px', color: '#0f172a', display: 'block', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }} title={healthProfile?.healthGoals}>{healthProfile?.healthGoals || 'None'}</strong>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                  <div style={{ flexShrink: 0, alignSelf: 'center' }}>
+                    <button
+                      onClick={openEditModal}
+                      style={{ padding: '14px 24px', borderRadius: '14px', border: '1.5px solid #cbd5e1', background: 'white', color: '#475569', fontSize: '13px', fontWeight: '700', cursor: 'pointer', transition: 'all 0.25s ease', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.borderColor = '#0ea5e9'; e.currentTarget.style.color = '#0ea5e9'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = 'white'; e.currentTarget.style.borderColor = '#cbd5e1'; e.currentTarget.style.color = '#475569'; }}
+                    >
+                      Edit Profile
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 5: Community Feedback (Full Width Edge-to-Edge) */}
+            <div style={{ width: '100%', background: '#f4f9ff', padding: '96px 0' }}>
+              <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
+                <div style={{ marginBottom: '40px' }}>
+                  <div className="section-tag">✦ COMMUNITY SATISFACTION</div>
+                  <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: 'clamp(28px, 4vw, 42px)', color: '#0f172a', letterSpacing: '-0.8px', margin: '12px 0 16px' }}>
+                    Share Your Experience
+                  </h2>
+                  <p style={{ color: '#64748b', fontSize: '17px', maxWidth: '600px', margin: 0, lineHeight: 1.6 }}>
+                    Your reviews and ratings directly contribute to the continuous refinement of our medical models.
+                  </p>
+                </div>
+
+                <div className="horizontal-card" style={{ background: '#ffffff', borderColor: 'rgba(14, 165, 233, 0.18)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flex: 1, flexWrap: 'wrap' }}>
+                    <div className="premium-icon-box" style={{ background: 'rgba(14, 165, 233, 0.08)', color: '#0ea5e9' }}>
+                      <Sparkles size={32} />
+                    </div>
+                    <div>
+                      <h3 style={{ margin: 0, fontSize: '20px', fontFamily: "'Syne', sans-serif", fontWeight: '700', color: '#0f172a' }}>Community Feedback</h3>
+                      <p style={{ margin: '6px 0 0', color: '#64748b', fontSize: '14px', lineHeight: 1.6 }}>
+                        Your feedback is essential in shaping our interactive clinical features and diagnostic tools.
+                      </p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px' }}>
+                        <div style={{ display: 'flex', gap: '2px', fontSize: '16px', color: '#f59e0b' }}>
+                          ★ ★ ★ ★ ★
+                        </div>
+                        <span style={{ color: '#64748b', fontSize: '13px', fontWeight: '700' }}>(5.0 / 5.0 Rating based on user experiences)</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ flexShrink: 0 }}>
+                    <button
+                      onClick={() => setFeedbackOpen(true)}
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '16px 28px', borderRadius: '16px', border: 'none', background: 'linear-gradient(135deg, #0ea5e9, #0284c7)', color: 'white', fontSize: '14px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 8px 25px rgba(14, 165, 233, 0.2)', transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)'; e.currentTarget.style.boxShadow = '0 12px 30px rgba(14, 165, 233, 0.35)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}
+                    >
+                      <Sparkles size={16} /> Share Experience
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        )}
 
         {/* ── HISTORY TAB ── */}
         {activeTab === 'history' && (
-          <div>
+          <div className="animate-fade-in" style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 24px', width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div>
+              <h1 style={{ margin: 0, fontSize: '32px', fontFamily: "'Syne', sans-serif", fontWeight: '700', color: '#0f172a' }}>Analysis History</h1>
+              <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '15px' }}>Access your past symptom checks, AI predictions, and clinic suggestions.</p>
+            </div>
+
             {loading ? (
               <div style={{ textAlign: 'center', padding: '60px', color: '#64748b' }}>
                 <Brain size={40} style={{ opacity: 0.3, marginBottom: '12px' }} />
@@ -956,14 +1373,6 @@ function PatientDashboard() {
                             alignItems: 'center',
                             justifyContent: 'center'
                           }}
-                          onMouseEnter={(e) => {
-                            e.target.style.background = '#f0f9ff';
-                            e.target.style.color = '#0ea5e9';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.target.style.background = 'none';
-                            e.target.style.color = '#0284c7';
-                          }}
                           title="Download as PDF"
                         >
                           <Download size={18} />
@@ -1002,14 +1411,35 @@ function PatientDashboard() {
                                 </ul>
                               </div>
                             )}
-                            {r.recommendedMedicines?.length > 0 && (
-                              <div>
-                                <h4 style={{ margin: '0 0 10px', fontSize: '13px', fontWeight: '600', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}><Pill size={15} color="#0284c7" /> Medicines</h4>
-                                <ul style={{ margin: 0, paddingLeft: '18px', color: '#475569', fontSize: '13px', lineHeight: '1.9' }}>
-                                  {r.recommendedMedicines.map((m, i) => <li key={i}>{m}</li>)}
-                                </ul>
-                              </div>
-                            )}
+                            {(() => {
+                              const recommendedMeds = r.recommendedMedicines || [];
+                              const profileMeds = healthProfile?.medications
+                                ? healthProfile.medications.split(',').map(m => m.trim()).filter(m => m && m.toLowerCase() !== 'none')
+                                : [];
+                              const combined = [...new Set([...recommendedMeds, ...profileMeds])];
+                              const interactions = checkInteractionsLocally(combined);
+                              
+                              return recommendedMeds.length > 0 ? (
+                                <div>
+                                  <h4 style={{ margin: '0 0 10px', fontSize: '13px', fontWeight: '600', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}><Pill size={15} color="#0284c7" /> Medicines</h4>
+                                  <ul style={{ margin: 0, paddingLeft: '18px', color: '#475569', fontSize: '13px', lineHeight: '1.9' }}>
+                                    {recommendedMeds.map((m, i) => <li key={i}>{m}</li>)}
+                                  </ul>
+                                  {interactions.length > 0 && (
+                                    <div style={{ marginTop: '12px', padding: '12px', background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                      <p style={{ margin: 0, fontSize: '11px', fontWeight: '700', color: '#ef4444', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <AlertTriangle size={12} /> Interaction Warning!
+                                      </p>
+                                      {interactions.map((inter, i) => (
+                                        <p key={i} style={{ margin: 0, fontSize: '11px', color: '#991b1b', lineHeight: 1.4 }}>
+                                          <strong>{inter.medicationA}</strong> + <strong>{inter.medicationB}</strong>: {inter.description}
+                                        </p>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              ) : null;
+                            })()}
                             {r.dietRecommendation && (
                               <div>
                                 <h4 style={{ margin: '0 0 10px', fontSize: '13px', fontWeight: '600', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}><Leaf size={15} color="#059669" /> Diet</h4>
@@ -1069,7 +1499,12 @@ function PatientDashboard() {
 
         {/* ── HEALTH PROFILE TAB ── */}
         {activeTab === 'health' && (
-          <div>
+          <div className="animate-fade-in" style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 24px', width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div>
+              <h1 style={{ margin: 0, fontSize: '32px', fontFamily: "'Syne', sans-serif", fontWeight: '700', color: '#0f172a' }}>Health Profile</h1>
+              <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '15px' }}>Manage your general health metrics, existing conditions, medications, and allergies.</p>
+            </div>
+
             {!healthProfile ? (
               <div className="profile-card" style={{ textAlign: 'center', padding: '60px' }}>
                 <HeartPulse size={48} color="#cbd5e1" style={{ marginBottom: '16px' }} />
@@ -1090,8 +1525,6 @@ function PatientDashboard() {
                     <button
                       onClick={openEditModal}
                       style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '8px 18px', fontSize: '13px', fontWeight: '600', color: '#475569', cursor: 'pointer', transition: 'all 0.3s ease' }}
-                      onMouseEnter={(e) => { e.target.style.background = '#e2e8f0'; }}
-                      onMouseLeave={(e) => { e.target.style.background = '#f1f5f9'; }}
                     >
                       ✏️ Edit Profile
                     </button>
@@ -1103,7 +1536,7 @@ function PatientDashboard() {
                       { label: 'Height', value: healthProfile.height ? `${healthProfile.height} cm` : '—', icon: <Stethoscope size={22} color="#7c3aed" /> },
                       { label: 'Weight', value: healthProfile.weight ? `${healthProfile.weight} kg` : '—', icon: <Pill size={22} color="#059669" /> },
                     ].map((f, i) => (
-                      <div key={i} style={{ background: '#f8fafc', borderRadius: '12px', padding: '16px', border: '1px solid #f1f5f9', transition: 'all 0.3s ease' }}>
+                      <div key={i} style={{ background: '#f8fafc', borderRadius: '12px', padding: '16px', border: '1px solid #f1f5f9' }}>
                         <p style={{ margin: '0 0 6px' }}>{f.icon}</p>
                         <p style={{ margin: '0 0 4px', fontSize: '11px', fontWeight: '600', color: '#94a3b8', textTransform: 'uppercase' }}>{f.label}</p>
                         <p style={{ margin: 0, fontSize: '18px', fontFamily: "'Syne', sans-serif", fontWeight: '700', color: '#0f172a' }}>{f.value}</p>
@@ -1113,7 +1546,7 @@ function PatientDashboard() {
                 </div>
 
                 {/* Medical Details */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
                   {[
                     { label: 'Existing Diseases', value: healthProfile.diseases, icon: <ShieldAlert size={20} color="#dc2626" />, bg: '#fef2f2', border: '#fecaca' },
                     { label: 'Current Medications', value: healthProfile.medications, icon: <Pill size={20} color="#7c3aed" />, bg: '#f5f3ff', border: '#ddd6fe' },
@@ -1129,7 +1562,7 @@ function PatientDashboard() {
                   ))}
                 </div>
 
-                {/* Conditions timeline */}
+                {/* Conditions Timeline */}
                 {analyses.length > 0 && (
                   <div className="profile-card">
                     <h2 style={{ margin: '0 0 20px', fontSize: '18px', fontFamily: "'Syne', sans-serif", fontWeight: '600', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1137,7 +1570,7 @@ function PatientDashboard() {
                     </h2>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                       {[...new Set(analyses.map(a => getResult(a).possibleCondition).filter(Boolean))].map((cond, i) => (
-                        <span key={i} style={{ background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', borderRadius: '999px', padding: '6px 16px', fontSize: '13px', fontWeight: '600', transition: 'all 0.3s ease', cursor: 'default' }}>
+                        <span key={i} style={{ background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', borderRadius: '999px', padding: '6px 16px', fontSize: '13px', fontWeight: '600', cursor: 'default' }}>
                           {cond}
                         </span>
                       ))}
@@ -1148,154 +1581,202 @@ function PatientDashboard() {
             )}
           </div>
         )}
+
+        {/* ── HEALTH STATISTICS TAB ── */}
+        {activeTab === 'statistics' && (
+          <div className="animate-fade-in" style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 24px', width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div>
+              <h1 style={{ margin: 0, fontSize: '32px', fontFamily: "'Syne', sans-serif", fontWeight: '700', color: '#0f172a' }}>Health Statistics</h1>
+              <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '15px' }}>Comprehensive metrics, trends, and analytical insights about your symptoms.</p>
+            </div>
+            <HealthStatisticsDashboard />
+          </div>
+        )}
+
+        {/* ── MEDICINE INTERACTION CHECKER TAB ── */}
+        {activeTab === 'medicine' && (
+          <div className="animate-fade-in" style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 24px', width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div>
+              <h1 style={{ margin: 0, fontSize: '32px', fontFamily: "'Syne', sans-serif", fontWeight: '700', color: '#0f172a' }}>Medicine Interaction Checker</h1>
+              <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '15px' }}>Input medications to screen for dangerous warnings or negative combinations instantly.</p>
+            </div>
+            <MedicineInteractionChecker />
+          </div>
+        )}
+
+        {/* ── DAILY HEALTH TIPS TAB ── */}
+        {activeTab === 'tips' && (
+          <div className="animate-fade-in" style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 24px', width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div>
+              <h1 style={{ margin: 0, fontSize: '32px', fontFamily: "'Syne', sans-serif", fontWeight: '700', color: '#0f172a' }}>Daily Health Tips</h1>
+              <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '15px' }}>Personalized advice curated by AI based on your conditions, liked by the patient community.</p>
+            </div>
+            <HealthTipsFeed />
+          </div>
+        )}
+
       </div>
+      {/* ── FEEDBACK MODAL ── */}
+      {feedbackOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '540px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+              <h2 style={{ margin: 0, fontSize: '20px', fontFamily: "'Syne', sans-serif", fontWeight: '600', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                ⭐ Share Your Experience
+              </h2>
+              <button onClick={() => setFeedbackOpen(false)} style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#94a3b8', transition: 'color 0.3s' }}
+                onMouseEnter={(e) => e.target.style.color = '#0f172a'}
+                onMouseLeave={(e) => e.target.style.color = '#94a3b8'}
+              >✕</button>
+            </div>
 
-      {/* ── FEEDBACK SECTION ── */}
-      <section className="feedback-section">
-        <div className="feedback-container">
-          <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(28px,4vw,42px)', color: 'white', fontWeight: '700', letterSpacing: '-0.8px', marginBottom: 16 }}>
-              Share Your Experience
-            </h2>
-            <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: 16, maxWidth: 600, margin: '0 auto' }}>
-              Your feedback helps us improve and guides other patients
-            </p>
-          </div>
-
-          {/* Feedback Tabs */}
-          <div style={{ display: 'flex', gap: 24, marginBottom: 32, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-            <button
-              onClick={() => setFeedbackTab('submit')}
-              className={`tab-button ${feedbackTab === 'submit' ? 'active' : ''}`}
-              style={{
-                color: feedbackTab === 'submit' ? 'white' : 'rgba(255,255,255,0.6)',
-                fontWeight: feedbackTab === 'submit' ? 600 : 500,
-                fontSize: 15,
-              }}
-            >
-              Submit Feedback
-            </button>
-            <button
-              onClick={() => setFeedbackTab('my-feedbacks')}
-              className={`tab-button ${feedbackTab === 'my-feedbacks' ? 'active' : ''}`}
-              style={{
-                color: feedbackTab === 'my-feedbacks' ? 'white' : 'rgba(255,255,255,0.6)',
-                fontWeight: feedbackTab === 'my-feedbacks' ? 600 : 500,
-                fontSize: 15,
-              }}
-            >
-              My Feedbacks ({userFeedbacks.length})
-            </button>
-          </div>
-
-          {/* Submit Feedback Tab */}
-          {feedbackTab === 'submit' && (
-            <div style={{ background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)', borderRadius: 24, padding: 32, border: '1px solid rgba(255,255,255,0.5)', boxShadow: '0 25px 80px rgba(0,0,0,0.2)' }}>
-              <div style={{ marginBottom: 24 }}>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  Rating
-                </label>
-                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      onClick={() => setFeedbackForm({ ...feedbackForm, rating: star })}
-                      className="star-button"
-                      style={{
-                        opacity: star <= feedbackForm.rating ? 1 : 0.3,
-                      }}
-                    >
-                      ★
-                    </button>
-                  ))}
-                  <span style={{ color: '#64748b', fontSize: 14, marginLeft: 12 }}>
-                    {feedbackForm.rating}/5 Stars
-                  </span>
-                </div>
-              </div>
-
-              <div style={{ marginBottom: 24 }}>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  Your Feedback
-                </label>
-                <textarea
-                  value={feedbackForm.feedbackText}
-                  onChange={(e) => setFeedbackForm({ ...feedbackForm, feedbackText: e.target.value })}
-                  placeholder="Share your experience using MedCheck... (minimum 10 characters)"
-                  className="textarea-field"
-                />
-                <p style={{ margin: '8px 0 0', fontSize: 12, color: '#94a3b8' }}>
-                  {feedbackForm.feedbackText.length}/500 characters
-                </p>
-              </div>
-
+            {/* Feedback Tabs */}
+            <div style={{ display: 'flex', gap: 24, marginBottom: 24, borderBottom: '1px solid #e2e8f0' }}>
               <button
-                onClick={handleFeedbackSubmit}
-                disabled={feedbackSubmitting}
-                className={`btn-primary ${feedbackSuccess ? 'btn-success' : ''}`}
-                style={{ width: '100%' }}
+                onClick={() => setFeedbackTab('submit')}
+                className={`tab-button ${feedbackTab === 'submit' ? 'active' : ''}`}
+                style={{
+                  color: feedbackTab === 'submit' ? '#0ea5e9' : '#64748b',
+                  fontWeight: feedbackTab === 'submit' ? 600 : 500,
+                  fontSize: 15,
+                  paddingBottom: '8px',
+                  borderBottom: `2px solid ${feedbackTab === 'submit' ? '#0ea5e9' : 'transparent'}`,
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
               >
-                {feedbackSubmitting ? 'Submitting...' : feedbackSuccess ? '✅ Feedback Submitted!' : 'Submit Feedback'}
+                Submit Feedback
+              </button>
+              <button
+                onClick={() => setFeedbackTab('my-feedbacks')}
+                className={`tab-button ${feedbackTab === 'my-feedbacks' ? 'active' : ''}`}
+                style={{
+                  color: feedbackTab === 'my-feedbacks' ? '#0ea5e9' : '#64748b',
+                  fontWeight: feedbackTab === 'my-feedbacks' ? 600 : 500,
+                  fontSize: 15,
+                  paddingBottom: '8px',
+                  borderBottom: `2px solid ${feedbackTab === 'my-feedbacks' ? '#0ea5e9' : 'transparent'}`,
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                My Feedbacks ({userFeedbacks.length})
               </button>
             </div>
-          )}
 
-          {/* My Feedbacks Tab */}
-          {feedbackTab === 'my-feedbacks' && (
-            <div>
-              {loadingFeedbacks ? (
-                <div style={{ textAlign: 'center', padding: 40, color: 'white' }}>
-                  <p>Loading feedbacks...</p>
+            {/* Submit Feedback Tab */}
+            {feedbackTab === 'submit' && (
+              <div>
+                <div style={{ marginBottom: 20 }}>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 8, textTransform: 'uppercase' }}>
+                    Rating
+                  </label>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        onClick={() => setFeedbackForm({ ...feedbackForm, rating: star })}
+                        className="star-button"
+                        style={{
+                          opacity: star <= feedbackForm.rating ? 1 : 0.3,
+                          fontSize: '28px',
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        ★
+                      </button>
+                    ))}
+                    <span style={{ color: '#64748b', fontSize: 14, marginLeft: 12 }}>
+                      {feedbackForm.rating}/5 Stars
+                    </span>
+                  </div>
                 </div>
-              ) : userFeedbacks.length === 0 ? (
-                <div style={{ background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)', borderRadius: 24, padding: 40, textAlign: 'center', border: '1px solid rgba(255,255,255,0.5)' }}>
-                  <p style={{ color: '#64748b', marginBottom: 16 }}>No feedbacks yet. Share your experience!</p>
+
+                <div style={{ marginBottom: 24 }}>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 8, textTransform: 'uppercase' }}>
+                    Your Feedback
+                  </label>
+                  <textarea
+                    value={feedbackForm.feedbackText}
+                    onChange={(e) => setFeedbackForm({ ...feedbackForm, feedbackText: e.target.value })}
+                    placeholder="Share your experience using MedCheck... (minimum 10 characters)"
+                    className="textarea-field"
+                  />
+                  <p style={{ margin: '8px 0 0', fontSize: 12, color: '#94a3b8' }}>
+                    {feedbackForm.feedbackText.length}/500 characters
+                  </p>
                 </div>
-              ) : (
-                <div style={{ display: 'grid', gap: 16 }}>
-                  {userFeedbacks.map((feedback) => (
-                    <div key={feedback._id} style={{ background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)', borderRadius: 16, padding: 24, border: '1px solid rgba(255,255,255,0.5)', transition: 'all 0.3s ease' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: 16 }}>
-                        <div>
-                          <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
-                            {Array(feedback.rating).fill(0).map((_, i) => (
-                              <span key={i} style={{ color: '#F59E0B', fontSize: 18 }}>★</span>
-                            ))}
+
+                <button
+                  onClick={handleFeedbackSubmit}
+                  disabled={feedbackSubmitting}
+                  className={`btn-primary ${feedbackSuccess ? 'btn-success' : ''}`}
+                  style={{ width: '100%', padding: '14px' }}
+                >
+                  {feedbackSubmitting ? 'Submitting...' : feedbackSuccess ? '✅ Feedback Submitted!' : 'Submit Feedback'}
+                </button>
+              </div>
+            )}
+
+            {/* My Feedbacks Tab */}
+            {feedbackTab === 'my-feedbacks' && (
+              <div style={{ maxHeight: '350px', overflowY: 'auto' }}>
+                {loadingFeedbacks ? (
+                  <div style={{ textAlign: 'center', padding: 20, color: '#64748b' }}>
+                    <p>Loading feedbacks...</p>
+                  </div>
+                ) : userFeedbacks.length === 0 ? (
+                  <div style={{ padding: 20, textAlign: 'center' }}>
+                    <p style={{ color: '#64748b', margin: 0 }}>No feedbacks yet. Share your experience!</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'grid', gap: 12 }}>
+                    {userFeedbacks.map((feedback) => (
+                      <div key={feedback._id} style={{ background: '#f8fafc', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: '12px' }}>
+                          <div>
+                            <div style={{ display: 'flex', gap: 2, marginBottom: 4 }}>
+                              {Array(feedback.rating).fill(0).map((_, i) => (
+                                <span key={i} style={{ color: '#F59E0B', fontSize: 14 }}>★</span>
+                              ))}
+                            </div>
+                            <p style={{ margin: 0, color: '#475569', fontSize: 13, lineHeight: 1.5 }}>
+                              {feedback.feedbackText}
+                            </p>
                           </div>
-                          <p style={{ color: '#64748b', lineHeight: 1.6, fontSize: 14 }}>
-                            {feedback.feedbackText}
-                          </p>
+                          <button
+                            onClick={() => handleDeleteFeedback(feedback._id)}
+                            style={{
+                              background: '#fee2e2',
+                              border: 'none',
+                              color: '#dc2626',
+                              padding: '4px 8px',
+                              borderRadius: 6,
+                              fontSize: 11,
+                              fontWeight: 600,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            Delete
+                          </button>
                         </div>
-                        <button
-                          onClick={() => handleDeleteFeedback(feedback._id)}
-                          style={{
-                            background: '#fee2e2',
-                            border: 'none',
-                            color: '#dc2626',
-                            padding: '6px 12px',
-                            borderRadius: 8,
-                            fontSize: 12,
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            transition: 'all 0.3s ease',
-                          }}
-                          onMouseEnter={(e) => { e.target.style.background = '#fca5a5'; }}
-                          onMouseLeave={(e) => { e.target.style.background = '#fee2e2'; }}
-                        >
-                          Delete
-                        </button>
+                        <p style={{ margin: '8px 0 0', fontSize: 11, color: '#94a3b8' }}>
+                          {new Date(feedback.createdAt).toLocaleDateString()}
+                        </p>
                       </div>
-                      <p style={{ margin: 0, fontSize: 12, color: '#94a3b8' }}>
-                        {new Date(feedback.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-      </section>
+      )}
+
 
       {/* ── EDIT PROFILE MODAL ── */}
       {editOpen && (
@@ -1364,6 +1845,128 @@ function PatientDashboard() {
               </button>
               <button onClick={handleEditSave} disabled={editSaving} className={`btn-primary ${editSuccess ? 'btn-success' : ''}`} style={{ flex: 2 }}>
                 {editSaving ? 'Saving...' : editSuccess ? '✅ Saved!' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── DAILY METRICS MODAL ── */}
+      {metricsOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '480px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+              <h2 style={{ margin: 0, fontSize: '20px', fontFamily: "'Syne', sans-serif", fontWeight: '600', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                📊 Log Daily Health Metrics
+              </h2>
+              <button onClick={() => setMetricsOpen(false)} style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#94a3b8', transition: 'color 0.3s' }}
+                onMouseEnter={(e) => e.target.style.color = '#0f172a'}
+                onMouseLeave={(e) => e.target.style.color = '#94a3b8'}
+              >✕</button>
+            </div>
+
+            <div style={{ display: 'grid', gap: '16px', marginBottom: '24px' }}>
+              
+              {/* Date */}
+              <div>
+                <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#374151', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Date</label>
+                <input
+                  type="date"
+                  value={metricsForm.date}
+                  onChange={e => setMetricsForm({ ...metricsForm, date: e.target.value })}
+                  className="input-field"
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                {/* Heart Rate */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#374151', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Heart Rate (bpm)</label>
+                  <input
+                    type="number"
+                    placeholder="e.g. 72"
+                    value={metricsForm.heartRate}
+                    onChange={e => setMetricsForm({ ...metricsForm, heartRate: e.target.value })}
+                    className="input-field"
+                  />
+                </div>
+
+                {/* Weight */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#374151', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Weight (kg)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    placeholder="e.g. 70"
+                    value={metricsForm.weight}
+                    onChange={e => setMetricsForm({ ...metricsForm, weight: e.target.value })}
+                    className="input-field"
+                  />
+                </div>
+              </div>
+
+              {/* Blood Pressure Systolic & Diastolic */}
+              <div>
+                <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#374151', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Blood Pressure (mmHg)</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <input
+                    type="number"
+                    placeholder="Systolic (e.g. 120)"
+                    value={metricsForm.systolic}
+                    onChange={e => setMetricsForm({ ...metricsForm, systolic: e.target.value })}
+                    className="input-field"
+                    style={{ flex: 1 }}
+                  />
+                  <span style={{ color: '#94a3b8', fontWeight: '600' }}>/</span>
+                  <input
+                    type="number"
+                    placeholder="Diastolic (e.g. 80)"
+                    value={metricsForm.diastolic}
+                    onChange={e => setMetricsForm({ ...metricsForm, diastolic: e.target.value })}
+                    className="input-field"
+                    style={{ flex: 1 }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                {/* Sleep Duration */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#374151', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Sleep (hours)</label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    placeholder="e.g. 7.5"
+                    value={metricsForm.sleepDuration}
+                    onChange={e => setMetricsForm({ ...metricsForm, sleepDuration: e.target.value })}
+                    className="input-field"
+                  />
+                </div>
+
+                {/* Steps / Activity Level */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#374151', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Steps Count</label>
+                  <input
+                    type="number"
+                    placeholder="e.g. 8000"
+                    value={metricsForm.activityLevel}
+                    onChange={e => setMetricsForm({ ...metricsForm, activityLevel: e.target.value })}
+                    className="input-field"
+                  />
+                </div>
+              </div>
+
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button onClick={() => setMetricsOpen(false)} style={{ flex: 1, padding: '12px', borderRadius: '10px', border: '1.5px solid #e2e8f0', background: 'white', fontSize: '14px', fontWeight: '600', color: '#64748b', cursor: 'pointer', transition: 'all 0.3s ease' }}
+                onMouseEnter={(e) => { e.target.style.background = '#f8fafc'; }}
+                onMouseLeave={(e) => { e.target.style.background = 'white'; }}
+              >
+                Cancel
+              </button>
+              <button onClick={handleMetricsSave} disabled={metricsSaving} className={`btn-primary ${metricsSuccess ? 'btn-success' : ''}`} style={{ flex: 2 }}>
+                {metricsSaving ? 'Saving...' : metricsSuccess ? '✅ Logged!' : 'Save Metrics'}
               </button>
             </div>
           </div>

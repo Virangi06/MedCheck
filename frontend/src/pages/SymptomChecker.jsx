@@ -11,6 +11,7 @@ import {
 
 import { profileAPI } from '../services/api';
 import generateAnalysisPDF from '../utils/generateAnalysisPDF';
+import { checkInteractionsLocally } from '../utils/medicineChecker';
 
 const API = 'http://localhost:5000/api';
 
@@ -664,7 +665,7 @@ function SymptomChecker() {
 
             {/* Primary Condition Block */}
             <div style={{ background: '#f0f9ff', padding: '28px', borderRadius: '24px', marginBottom: '32px', border: '1.5px solid #bee3f8', position: 'relative' }}>
-              <div style={{ position: 'absolute', top: '16px', right: '16px', background: '#0284c7', color: 'white', padding: '4px 12px', borderRadius: '50px', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase' }}>
+              <div style={{ position: 'absolute', top: '16px', right: '16px', background: '#0284c7', color: 'white', padding: '4px 12px', borderRadius: '50px', fontSize: '12px', textTransform: 'uppercase' }}>
                 Primary Match
               </div>
               <h3 style={{ fontFamily: 'Syne, sans-serif', fontSize: '24px', color: '#0c2340', fontWeight: '800', marginBottom: '12px' }}>
@@ -714,16 +715,38 @@ function SymptomChecker() {
                 </div>
               )}
 
-              {analysis.recommendedMedicines?.length > 0 && (
-                <div>
-                  <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#0f172a', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #f1f5f9', paddingBottom: '8px' }}>
-                    <Pill size={18} color="#0ea5e9" /> Suggested Relief
-                  </h3>
-                  <ul style={{ margin: 0, paddingLeft: '18px', color: '#475569', fontSize: '14px', lineHeight: '1.9' }}>
-                    {analysis.recommendedMedicines.map((item, i) => <li key={i} style={{ marginBottom: '8px' }}>{item}</li>)}
-                  </ul>
-                </div>
-              )}
+              {(() => {
+                const recommendedMeds = analysis.recommendedMedicines || [];
+                const currentMeds = formData.medications === 'Other' ? customMedication : formData.medications;
+                const profileMeds = currentMeds
+                  ? currentMeds.split(',').map(m => m.trim()).filter(m => m && m.toLowerCase() !== 'none')
+                  : [];
+                const combined = [...new Set([...recommendedMeds, ...profileMeds])];
+                const interactions = checkInteractionsLocally(combined);
+                
+                return recommendedMeds.length > 0 ? (
+                  <div>
+                    <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#0f172a', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #f1f5f9', paddingBottom: '8px' }}>
+                      <Pill size={18} color="#0ea5e9" /> Suggested Relief
+                    </h3>
+                    <ul style={{ margin: 0, paddingLeft: '18px', color: '#475569', fontSize: '14px', lineHeight: '1.9' }}>
+                      {recommendedMeds.map((item, i) => <li key={i} style={{ marginBottom: '8px' }}>{item}</li>)}
+                    </ul>
+                    {interactions.length > 0 && (
+                      <div style={{ marginTop: '12px', padding: '12px', background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: '#ef4444', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <AlertTriangle size={14} /> Interaction Warning!
+                        </p>
+                        {interactions.map((inter, i) => (
+                          <p key={i} style={{ margin: 0, fontSize: '12px', color: '#991b1b', lineHeight: 1.4 }}>
+                            <strong>{inter.medicationA}</strong> interacts with <strong>{inter.medicationB}</strong>: {inter.description}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : null;
+              })()}
 
               {analysis.dietRecommendation && (
                 <div>
