@@ -12,6 +12,7 @@ import {
   FaExclamationTriangle,
   FaBell,
   FaUser,
+  FaDownload,
 } from 'react-icons/fa';
 import {
   MdAccessTime,
@@ -47,6 +48,7 @@ const iconMap = {
   BadgeAlert: FaExclamationTriangle,
   MapPin: FaMapMarkerAlt,
   ShieldCheck: BsShieldCheck,
+  Download: FaDownload,
   // helpers
   default: FaNotesMedical,
 };
@@ -88,6 +90,7 @@ export const ChevronLeft = (props) => <MedIcon name="default" {...props} />;
 export const Thermometer = (props) => <MedIcon name="Thermometer" {...props} />;
 export const Loader2 = (props) => <MedIcon name="Siren" {...props} />;
 export const Sparkles = (props) => <MedIcon name="default" {...props} />;
+export const Download = (props) => <MedIcon name="Download" {...props} />;
 
 
 export default MedIcon;

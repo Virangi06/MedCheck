@@ -9,11 +9,21 @@ function Results() {
   const analysisData = location.state || JSON.parse(localStorage.getItem('analysisData') || '{}');
 
   // Mock hospitals/medical facilities
-  const nearbyFacilities = [
+  const staticFacilities = [
     { name: 'City General Hospital', distance: '0.5 km', rating: 4.8, specialists: 'All Specialties', phone: '(555) 123-4567' },
     { name: 'Metro Medical Clinic', distance: '1.2 km', rating: 4.5, specialists: 'General & Specialists', phone: '(555) 234-5678' },
     { name: 'Community Health Center', distance: '2.1 km', rating: 4.3, specialists: 'Primary Care', phone: '(555) 345-6789' },
   ];
+
+  const nearbyFacilities = (analysisData.nearbyDoctors && analysisData.nearbyDoctors.length > 0)
+    ? analysisData.nearbyDoctors.map(doc => ({
+        name: doc.name,
+        distance: typeof doc.distance === 'number' ? `${doc.distance.toFixed(1)} km` : `${doc.distance || '0.0 km'}`,
+        rating: 4.8,
+        specialists: doc.type || 'Healthcare Facility',
+        phone: doc.phone || 'Phone unavailable'
+      }))
+    : staticFacilities;
 
   const getUrgencyColor = (urgency) => {
     switch (urgency) {

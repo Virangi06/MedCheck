@@ -524,24 +524,35 @@ function Home() {
             <div>
               <div style={{ fontWeight: 600, color: 'white', marginBottom: 16, fontSize: 14, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Product</div>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {['AI Symptom Analysis','Health Insights','Nearby Doctor Suggestions','Personal Health History'].map(l => (
-                  <li key={l}><a href="#" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: 14, transition: 'color 0.2s' }} onMouseOver={e => e.target.style.color = '#38BDF8'} onMouseOut={e => e.target.style.color = '#94a3b8'}>{l}</a></li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <div style={{ fontWeight: 600, color: 'white', marginBottom: 16, fontSize: 14, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Company</div>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {['About Us', 'For Doctors', 'Contact', 'Careers'].map(l => (
-                  <li key={l}><a href="#" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: 14 }} onMouseOver={e => e.target.style.color = '#38BDF8'} onMouseOut={e => e.target.style.color = '#94a3b8'}>{l}</a></li>
+                {[
+                  { name: 'AI Symptom Analysis', path: '/product/symptom-analysis' },
+                  { name: 'Health Insights', path: '/product/health-insights' },
+                  { name: 'Nearby Doctor Suggestions', path: '/product/doctor-suggestions' },
+                  { name: 'Personal Health History', path: '/product/health-history' }
+                ].map(l => (
+                  <li key={l.name}>
+                    <Link to={l.path} style={{ color: '#94a3b8', textDecoration: 'none', fontSize: 14, transition: 'color 0.2s' }} onMouseOver={e => e.target.style.color = '#38BDF8'} onMouseOut={e => e.target.style.color = '#94a3b8'}>
+                      {l.name}
+                    </Link>
+                  </li>
                 ))}
               </ul>
             </div>
             <div>
               <div style={{ fontWeight: 600, color: 'white', marginBottom: 16, fontSize: 14, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Legal</div>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {['Privacy Policy', 'Terms of Service', 'Medical Disclaimer', 'Cookie Policy'].map(l => (
-                  <li key={l}><a href="#" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: 14 }} onMouseOver={e => e.target.style.color = '#38BDF8'} onMouseOut={e => e.target.style.color = '#94a3b8'}>{l}</a></li>
+                {[
+                  { name: 'About Us', path: '/about' },
+                  { name: 'Privacy Policy', path: '/privacy-policy' },
+                  { name: 'Terms of Service', path: '/terms-of-service' },
+                  { name: 'Medical Disclaimer', path: '/medical-disclaimer' },
+                  { name: 'Cookie Policy', path: '/cookie-policy' }
+                ].map(l => (
+                  <li key={l.name}>
+                    <Link to={l.path} style={{ color: '#94a3b8', textDecoration: 'none', fontSize: 14, transition: 'color 0.2s' }} onMouseOver={e => e.target.style.color = '#38BDF8'} onMouseOut={e => e.target.style.color = '#94a3b8'}>
+                      {l.name}
+                    </Link>
+                  </li>
                 ))}
               </ul>
             </div>

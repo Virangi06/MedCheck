@@ -22,6 +22,14 @@ import Results from './pages/Results';
 import PatientDashboard from './pages/PatientDashboard';
 
 import AboutUs from './pages/AboutUs';
+import AISymptomAnalysis from './pages/AISymptomAnalysis';
+import HealthInsights from './pages/HealthInsights';
+import DoctorSuggestions from './pages/DoctorSuggestions';
+import HealthHistory from './pages/HealthHistory';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+import MedicalDisclaimer from './pages/MedicalDisclaimer';
+import CookiePolicy from './pages/CookiePolicy';
 
 function App() {
   const { user, loading, logout } =
@@ -112,6 +120,46 @@ function App() {
         <Route
           path="/about"
           element={<AboutUs />}
+        />
+
+        <Route
+          path="/product/symptom-analysis"
+          element={<AISymptomAnalysis />}
+        />
+
+        <Route
+          path="/product/health-insights"
+          element={<HealthInsights />}
+        />
+
+        <Route
+          path="/product/doctor-suggestions"
+          element={<DoctorSuggestions />}
+        />
+
+        <Route
+          path="/product/health-history"
+          element={<HealthHistory />}
+        />
+
+        <Route
+          path="/privacy-policy"
+          element={<PrivacyPolicy />}
+        />
+
+        <Route
+          path="/terms-of-service"
+          element={<TermsOfService />}
+        />
+
+        <Route
+          path="/medical-disclaimer"
+          element={<MedicalDisclaimer />}
+        />
+
+        <Route
+          path="/cookie-policy"
+          element={<CookiePolicy />}
         />
 
         <Route

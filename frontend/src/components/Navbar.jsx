@@ -163,7 +163,7 @@ function Navbar({ user, onLogout }) {
           }}
           className="desktop-nav"
         >
-          {navLink('/', 'Home')}
+          {!user && navLink('/', 'Home')}
 
           {user ? (
             <>
@@ -529,25 +529,27 @@ function Navbar({ user, onLogout }) {
               '12px 24px 20px',
           }}
         >
-          <Link
-            to="/"
-            onClick={() =>
-              setMobileMenuOpen(
-                false
-              )
-            }
-            style={{
-              display: 'block',
-              padding: '10px 0',
-              color: '#475569',
-              textDecoration:
-                'none',
-              fontSize: 15,
-              fontWeight: 500,
-            }}
-          >
-            Home
-          </Link>
+          {!user && (
+            <Link
+              to="/"
+              onClick={() =>
+                setMobileMenuOpen(
+                  false
+                )
+              }
+              style={{
+                display: 'block',
+                padding: '10px 0',
+                color: '#475569',
+                textDecoration:
+                  'none',
+                fontSize: 15,
+                fontWeight: 500,
+              }}
+            >
+              Home
+            </Link>
+          )}
 
           {user ? (
             <>

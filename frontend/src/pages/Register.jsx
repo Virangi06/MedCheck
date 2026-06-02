@@ -264,7 +264,7 @@ function Register() {
                 name="name"
                 value={form.name}
                 onChange={handleChange}
-                placeholder="John Doe"
+                placeholder="Enter you full name"
                 style={{
                   width: '100%',
                   padding:

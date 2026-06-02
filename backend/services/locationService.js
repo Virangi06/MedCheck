@@ -42,8 +42,11 @@ out center;`;
     for (const endpoint of endpoints) {
       try {
         console.log(`📡 Trying endpoint: ${endpoint}`);
-        response = await axios.post(endpoint, query, {
-          headers: { 'Accept': 'application/json' },
+        response = await axios.post(endpoint, 'data=' + encodeURIComponent(query), {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'User-Agent': 'MedCheckSymptomChecker/1.0 (contact@medcheck.com)'
+          },
           timeout: 15000,
         });
         console.log(`✅ Success with endpoint: ${endpoint}`);
