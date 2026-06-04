@@ -31,6 +31,7 @@ export const authAPI = {
   login:    (payload) => request('POST', '/auth/login',    payload),
   logout:   ()        => request('POST', '/auth/logout'),
   getMe:    ()        => request('GET',  '/auth/me'),
+  changePassword: (payload) => request('POST', '/auth/change-password', payload),
 };
 
 // ── Health Profile ────────────────────────────────────────────

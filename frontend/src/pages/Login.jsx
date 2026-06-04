@@ -116,7 +116,7 @@ function Login() {
       if (!response.ok) {
         setServerError(
           data.message ||
-            'Invalid email or password'
+          'Invalid email or password'
         );
 
         return;
@@ -135,358 +135,422 @@ function Login() {
   };
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: '#ffffff',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px',
-        fontFamily:
-          "'DM Sans', 'Segoe UI', sans-serif",
-      }}
-    >
-      {/* LOGIN CARD */}
-      <div
-        style={{
-          width: '100%',
-          maxWidth: '390px',
-          background: '#ffffff',
-          borderRadius: '18px',
-          padding: '28px 24px',
-          boxShadow:
-            '0 8px 28px rgba(15, 23, 42, 0.08)',
+    <div className="split-wrapper">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap');
+        
+        .split-wrapper {
+          display: flex;
+          min-height: 100vh;
+          width: 100vw;
+          overflow-x: hidden;
+          background: #ffffff;
+          font-family: 'DM Sans', 'Segoe UI', sans-serif;
+        }
 
-          border: '1px solid #e2e8f0',
-        }}
-      >
-        {/* LOGO */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            marginBottom: '24px',
-          }}
-        >
-          <Link
-            to="/"
-            style={{
-              textDecoration: 'none',
-              display: 'flex',
-              justifyContent: 'center',
-              marginBottom: '16px',
-            }}
-          >
-            <MedCheckLogo
-              size="md"
-              showSubtitle={true}
-            />
-          </Link>
+        .brand-pane {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg, #0c1f35 0%, #0a2a4a 40%, #0d3b6e 70%, #0ea5e9 100%);
+          position: relative;
+          overflow: hidden;
+          padding: 40px;
+          color: white;
+          text-align: center;
+        }
+        
+        .brand-pane::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(ellipse 80% 60% at 60% 40%, rgba(14,165,233,0.18) 0%, transparent 70%),
+                      radial-gradient(ellipse 40% 40% at 20% 80%, rgba(56,189,248,0.12) 0%, transparent 60%);
+          pointer-events: none;
+        }
 
-          <h1
-            style={{
-              fontSize: '24px',
-              fontWeight: '700',
-              color: '#0f172a',
-              marginBottom: '6px',
-            }}
-          >
-            Welcome Back
-          </h1>
+        .brand-grid {
+          position: absolute;
+          inset: 0;
+          background-image: linear-gradient(rgba(14,165,233,0.08) 1px, transparent 1px),
+                            linear-gradient(90deg, rgba(14,165,233,0.08) 1px, transparent 1px);
+          background-size: 60px 60px;
+          pointer-events: none;
+        }
 
-          <p
-            style={{
-              fontSize: '13px',
-              color: '#64748b',
-              textAlign: 'center',
-            }}
-          >
-            Sign in to continue your
-            healthcare journey
+        .brand-content {
+          position: relative;
+          z-index: 1;
+          max-width: 520px;
+          margin: 0 auto;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .brand-logo-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 16px;
+          background: rgba(255,255,255,0.08);
+          border: 1px solid rgba(255,255,255,0.15);
+          border-radius: 20px;
+          padding: 16px 28px;
+          backdrop-filter: blur(8px);
+          margin-bottom: 40px;
+          animation: floatCard 6s ease-in-out infinite;
+        }
+
+        @keyframes floatCard {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+
+        .brand-title {
+          font-family: 'Syne', sans-serif;
+          font-size: clamp(32px, 4vw, 54px);
+          font-weight: 500;
+          line-height: 1.1;
+          margin-bottom: 20px;
+          letter-spacing: -1.5px;
+          color: white;
+        }
+
+        .brand-subtitle {
+          font-size: clamp(14px, 1.5vw, 17px);
+          color: rgba(186, 230, 253, 0.85);
+          line-height: 1.7;
+          max-width: 440px;
+          margin: 0 auto;
+        }
+
+        .form-pane {
+          width: 100%;
+          max-width: 550px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 40px 24px;
+          background: #ffffff;
+          flex-shrink: 0;
+        }
+
+        .form-logo-wrapper {
+          display: none;
+        }
+
+        @media (max-width: 1024px) {
+          .brand-pane {
+            display: none;
+          }
+          .form-pane {
+            max-width: 100%;
+            flex: 1;
+            padding: 20px;
+          }
+          .form-logo-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+          }
+        }
+      `}</style>
+
+      {/* LEFT SIDE - BRANDING */}
+      <div className="brand-pane">
+        <div className="brand-grid" />
+        <div className="brand-content">
+          <div className="brand-logo-pill">
+            <MedCheckLogo size="sm" showSubtitle={false} darkTheme={true} />
+          </div>
+          <h2 className="brand-title">
+            Your Health,<br />
+            <span style={{ color: '#38BDF8' }}>Understood</span> Instantly
+          </h2>
+          <p className="brand-subtitle">
+            AI-powered symptom analysis that helps you better understand your health instantly.
           </p>
         </div>
+      </div>
 
-        {/* SERVER ERROR */}
-        {serverError && (
-          <div
-            style={{
-              background: '#FEF2F2',
-              color: '#DC2626',
-              border:
-                '1px solid #FECACA',
-
-              padding: '10px 12px',
-              borderRadius: '10px',
-              fontSize: '12px',
-              marginBottom: '14px',
-            }}
-          >
-            {serverError}
-          </div>
-        )}
-
-        {/* FORM */}
-        <form
-          onSubmit={handleSubmit}
+      {/* RIGHT SIDE - FORM */}
+      <div className="form-pane">
+        <div
           style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '14px',
+            width: '100%',
+            maxWidth: '390px',
+            background: '#ffffff',
+            borderRadius: '18px',
+            padding: '28px 24px',
+            boxShadow: '0 8px 28px rgba(15, 23, 42, 0.08)',
+            border: '1px solid #e2e8f0',
           }}
         >
-          {/* EMAIL */}
-          <div>
-            <label
-              style={{
-                display: 'block',
-                marginBottom: '6px',
-                fontSize: '13px',
-                fontWeight: '500',
-                color: '#334155',
-              }}
-            >
-              Email Address
-            </label>
-
-            <div
-              style={{
-                position: 'relative',
-              }}
-            >
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '12px',
-                  transform:
-                    'translateY(-50%)',
-                }}
-              >
-                <Mail
-                  size={15}
-                  color="#64748b"
-                />
-              </div>
-
-              <input
-                type="email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                placeholder="you@example.com"
-                style={{
-                  width: '100%',
-                  padding:
-                    '11px 12px 11px 38px',
-
-                  borderRadius: '10px',
-
-                  border: errors.email
-                    ? '1.5px solid #ef4444'
-                    : '1.5px solid #e2e8f0',
-
-                  outline: 'none',
-                  fontSize: '13px',
-                  boxSizing: 'border-box',
-                }}
-              />
-            </div>
-
-            {errors.email && (
-              <p
-                style={{
-                  color: '#ef4444',
-                  fontSize: '11px',
-                  marginTop: '5px',
-                }}
-              >
-                {errors.email}
-              </p>
-            )}
+          {/* Logo on mobile only */}
+          <div className="form-logo-wrapper">
+            <Link to="/" style={{ textDecoration: 'none' }}>
+              <MedCheckLogo size="md" showSubtitle={true} />
+            </Link>
           </div>
 
-          {/* PASSWORD */}
-          <div>
-            <div
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              marginBottom: '24px',
+            }}
+          >
+            <h1
               style={{
-                display: 'flex',
-                justifyContent:
-                  'space-between',
-
-                alignItems: 'center',
+                fontSize: '24px',
+                fontWeight: '500',
+                color: '#0f172a',
                 marginBottom: '6px',
               }}
             >
+              Welcome Back
+            </h1>
+            <p
+              style={{
+                fontSize: '13px',
+                color: '#64748b',
+                textAlign: 'center',
+              }}
+            >
+              Sign in to continue your healthcare journey
+            </p>
+          </div>
+
+          {/* SERVER ERROR */}
+          {serverError && (
+            <div
+              style={{
+                background: '#FEF2F2',
+                color: '#DC2626',
+                border: '1px solid #FECACA',
+                padding: '10px 12px',
+                borderRadius: '10px',
+                fontSize: '12px',
+                marginBottom: '14px',
+              }}
+            >
+              {serverError}
+            </div>
+          )}
+
+          {/* FORM */}
+          <form
+            onSubmit={handleSubmit}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '14px',
+            }}
+          >
+            {/* EMAIL */}
+            <div>
               <label
                 style={{
+                  display: 'block',
+                  marginBottom: '6px',
                   fontSize: '13px',
                   fontWeight: '500',
                   color: '#334155',
                 }}
               >
-                Password
+                Email Address
               </label>
 
-              {/* FORGOT PASSWORD LINK */}
-              <Link
-                to="/forgot-password"
-                style={{
-                  fontSize: '12px',
-                  color: '#0EA5E9',
-                  textDecoration: 'none',
-                  fontWeight: '600',
-                }}
-              >
-                Forgot Password?
-              </Link>
-            </div>
+              <div style={{ position: 'relative' }}>
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '12px',
+                    transform: 'translateY(-50%)',
+                  }}
+                >
+                  <Mail size={15} color="#64748b" />
+                </div>
 
-            <div
-              style={{
-                position: 'relative',
-              }}
-            >
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '12px',
-                  transform:
-                    'translateY(-50%)',
-                }}
-              >
-                <Lock
-                  size={15}
-                  color="#64748b"
+                <input
+                  type="email"
+                  name="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  placeholder="you@example.com"
+                  style={{
+                    width: '100%',
+                    padding: '11px 12px 11px 38px',
+                    borderRadius: '10px',
+                    border: errors.email
+                      ? '1.5px solid #ef4444'
+                      : '1.5px solid #e2e8f0',
+                    outline: 'none',
+                    fontSize: '13px',
+                    boxSizing: 'border-box',
+                  }}
                 />
               </div>
 
-              <input
-                type={
-                  showPassword
-                    ? 'text'
-                    : 'password'
-                }
-                name="password"
-                value={form.password}
-                onChange={handleChange}
-                placeholder="Enter your password"
-                style={{
-                  width: '100%',
-                  padding:
-                    '11px 40px 11px 38px',
-
-                  borderRadius: '10px',
-
-                  border: errors.password
-                    ? '1.5px solid #ef4444'
-                    : '1.5px solid #e2e8f0',
-
-                  outline: 'none',
-                  fontSize: '13px',
-                  boxSizing: 'border-box',
-                }}
-              />
-
-              <button
-                type="button"
-                onClick={() =>
-                  setShowPassword(
-                    !showPassword
-                  )
-                }
-                style={{
-                  position: 'absolute',
-                  right: '10px',
-                  top: '50%',
-                  transform:
-                    'translateY(-50%)',
-
-                  border: 'none',
-                  background:
-                    'transparent',
-
-                  cursor: 'pointer',
-                }}
-              >
-                {showPassword ? (
-                  <EyeOff
-                    size={15}
-                    color="#64748b"
-                  />
-                ) : (
-                  <Eye
-                    size={15}
-                    color="#64748b"
-                  />
-                )}
-              </button>
+              {errors.email && (
+                <p
+                  style={{
+                    color: '#ef4444',
+                    fontSize: '11px',
+                    marginTop: '5px',
+                  }}
+                >
+                  {errors.email}
+                </p>
+              )}
             </div>
 
-            {errors.password && (
-              <p
+            {/* PASSWORD */}
+            <div>
+              <div
                 style={{
-                  color: '#ef4444',
-                  fontSize: '11px',
-                  marginTop: '5px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '6px',
                 }}
               >
-                {errors.password}
-              </p>
-            )}
-          </div>
+                <label
+                  style={{
+                    fontSize: '13px',
+                    fontWeight: '500',
+                    color: '#334155',
+                  }}
+                >
+                  Password
+                </label>
 
-          {/* BUTTON */}
-          <button
-            type="submit"
-            disabled={loading}
+                {/* FORGOT PASSWORD LINK */}
+                <Link
+                  to="/forgot-password"
+                  style={{
+                    fontSize: '12px',
+                    color: '#0EA5E9',
+                    textDecoration: 'none',
+                    fontWeight: '600',
+                  }}
+                >
+                  Forgot Password?
+                </Link>
+              </div>
+
+              <div style={{ position: 'relative' }}>
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '12px',
+                    transform: 'translateY(-50%)',
+                  }}
+                >
+                  <Lock size={15} color="#64748b" />
+                </div>
+
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  placeholder="Enter your password"
+                  style={{
+                    width: '100%',
+                    padding: '11px 40px 11px 38px',
+                    borderRadius: '10px',
+                    border: errors.password
+                      ? '1.5px solid #ef4444'
+                      : '1.5px solid #e2e8f0',
+                    outline: 'none',
+                    fontSize: '13px',
+                    boxSizing: 'border-box',
+                  }}
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '10px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    border: 'none',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {showPassword ? (
+                    <EyeOff size={15} color="#64748b" />
+                  ) : (
+                    <Eye size={15} color="#64748b" />
+                  )}
+                </button>
+              </div>
+
+              {errors.password && (
+                <p
+                  style={{
+                    color: '#ef4444',
+                    fontSize: '11px',
+                    marginTop: '5px',
+                  }}
+                >
+                  {errors.password}
+                </p>
+              )}
+            </div>
+
+            {/* BUTTON */}
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                width: '100%',
+                marginTop: '6px',
+                padding: '12px',
+                borderRadius: '10px',
+                border: 'none',
+                background: 'linear-gradient(135deg, #0EA5E9, #0284c7)',
+                color: 'white',
+                fontSize: '13px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                boxShadow: '0 4px 14px rgba(14,165,233,0.25)',
+              }}
+            >
+              {loading ? 'Signing In...' : 'Sign In'}
+            </button>
+          </form>
+
+          {/* REGISTER */}
+          <div
             style={{
-              width: '100%',
-              marginTop: '6px',
-              padding: '12px',
-              borderRadius: '10px',
-              border: 'none',
-
-              background:
-                'linear-gradient(135deg, #0EA5E9, #0284c7)',
-
-              color: 'white',
+              textAlign: 'center',
+              marginTop: '18px',
               fontSize: '13px',
-              fontWeight: '600',
-              cursor: 'pointer',
-
-              boxShadow:
-                '0 4px 14px rgba(14,165,233,0.25)',
+              color: '#64748b',
             }}
           >
-            {loading
-              ? 'Signing In...'
-              : 'Sign In'}
-          </button>
-        </form>
-
-        {/* REGISTER */}
-        <div
-          style={{
-            textAlign: 'center',
-            marginTop: '18px',
-            fontSize: '13px',
-            color: '#64748b',
-          }}
-        >
-          Don&apos;t have an account?{' '}
-          <Link
-            to="/register"
-            style={{
-              color: '#0EA5E9',
-              textDecoration: 'none',
-              fontWeight: '600',
-            }}
-          >
-            Sign Up
-          </Link>
+            Don&apos;t have an account?{' '}
+            <Link
+              to="/register"
+              style={{
+                color: '#0EA5E9',
+                textDecoration: 'none',
+                fontWeight: '600',
+              }}
+            >
+              Sign Up
+            </Link>
+          </div>
         </div>
       </div>
     </div>

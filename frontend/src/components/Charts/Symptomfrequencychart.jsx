@@ -11,6 +11,7 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts';
+import { ClipboardList, BarChart3, Star } from 'lucide-react';
 
 /**
  * SymptomFrequencyChart Component
@@ -23,11 +24,23 @@ const SymptomFrequencyChart = ({ data }) => {
   // Handle empty data
   if (!data || data.length === 0) {
     return (
-      <div className="p-6 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-        <p className="text-center text-gray-500 font-medium">
-          📊 No symptom data available yet
+      <div 
+        style={{
+          padding: '40px 24px',
+          background: '#f8fafc',
+          borderRadius: '24px',
+          border: '2px dashed #cbd5e1',
+          textAlign: 'center',
+          fontFamily: "'DM Sans', sans-serif"
+        }}
+      >
+        <div style={{ display: 'inline-flex', padding: '12px', borderRadius: '16px', background: '#f1f5f9', color: '#64748b', marginBottom: '16px' }}>
+          <BarChart3 size={32} />
+        </div>
+        <p style={{ margin: 0, color: '#475569', fontWeight: '700', fontSize: '16px' }}>
+          No symptom data available yet
         </p>
-        <p className="text-center text-gray-400 text-sm mt-2">
+        <p style={{ margin: '8px 0 0', color: '#94a3b8', fontSize: '14px' }}>
           Complete a symptom check to see patterns
         </p>
       </div>
@@ -35,73 +48,173 @@ const SymptomFrequencyChart = ({ data }) => {
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow">
+    <div className="symptom-card-premium" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <style>{`
+        .symptom-card-premium {
+          background: white;
+          border-radius: 24px;
+          border: 1px solid #e2e8f0;
+          padding: 28px;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 10px 30px rgba(15, 23, 42, 0.02);
+        }
+        .symptom-card-premium:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 20px 40px rgba(15, 23, 42, 0.05);
+        }
+        .symptom-header-icon {
+          width: 42px;
+          height: 42px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #EFF9FF;
+          color: #0ea5e9;
+          flex-shrink: 0;
+        }
+        .symptom-tag-premium {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 14px 20px;
+          background: linear-gradient(135deg, #EFF9FF 0%, #F5F3FF 100%);
+          border-radius: 16px;
+          border: 1px solid #E0F2FE;
+          transition: all 0.25s ease;
+          position: relative;
+          overflow: hidden;
+        }
+        .symptom-tag-premium::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          width: 4px;
+          background: linear-gradient(180deg, #0ea5e9 0%, #8b5cf6 100%);
+          opacity: 0;
+          transition: opacity 0.2s ease;
+        }
+        .symptom-tag-premium:hover {
+          background: linear-gradient(135deg, #E0F2FE 0%, #EDE9FE 100%);
+          transform: translateX(4px);
+          border-color: #BAE6FD;
+        }
+        .symptom-tag-premium:hover::before {
+          opacity: 1;
+        }
+        .symptom-badge {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 24px;
+          height: 24px;
+          border-radius: 8px;
+          background: white;
+          color: #0284c7;
+          font-weight: 700;
+          font-size: 12px;
+          box-shadow: 0 2px 8px rgba(14, 165, 233, 0.1);
+        }
+      `}</style>
+
       {/* Header */}
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold text-gray-800">
-          📋 Top 10 Most Frequent Symptoms
-        </h3>
-        <p className="text-sm text-gray-500 mt-1">
-          Symptoms you've reported most frequently
-        </p>
+      <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '24px' }}>
+        <div className="symptom-header-icon">
+          <ClipboardList size={22} />
+        </div>
+        <div>
+          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>
+            Top 10 Most Frequent Symptoms
+          </h3>
+          <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#64748b' }}>
+            Symptoms you've reported most frequently
+          </p>
+        </div>
       </div>
       
       {/* Chart */}
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart 
-          data={data}
-          margin={{ top: 5, right: 30, left: 0, bottom: 80 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-          <XAxis 
-            dataKey="symptom" 
-            angle={-45}
-            textAnchor="end"
-            height={100}
-            tick={{ fontSize: 12, fill: '#6b7280' }}
-            interval={0}
-          />
-          <YAxis 
-            label={{ value: 'Frequency', angle: -90, position: 'insideLeft' }}
-            tick={{ fontSize: 12, fill: '#6b7280' }}
-          />
-          <Tooltip 
-            contentStyle={{
-              backgroundColor: '#fff',
-              border: '1px solid #e5e7eb',
-              borderRadius: '8px',
-              boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-            }}
-            formatter={(value) => [value, 'Count']}
-            cursor={{ fill: 'rgba(2, 132, 199, 0.1)' }}
-          />
-          <Legend wrapperStyle={{ paddingTop: '20px' }} />
-          <Bar 
-            dataKey="count" 
-            fill="#0284c7" 
-            name="Occurrences" 
-            radius={[8, 8, 0, 0]}
-          />
-        </BarChart>
-      </ResponsiveContainer>
+      <div style={{ width: '100%', height: 320, position: 'relative' }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart 
+            data={data}
+            margin={{ top: 10, right: 10, left: -25, bottom: 65 }}
+          >
+            <defs>
+              <linearGradient id="symptomGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#0ea5e9" stopOpacity={0.95} />
+                <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.5} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+            <XAxis 
+              dataKey="symptom" 
+              angle={-35}
+              textAnchor="end"
+              height={70}
+              tick={{ fontSize: 11, fill: '#64748b', fontWeight: '600' }}
+              interval={0}
+              tickLine={false}
+              axisLine={{ stroke: '#e2e8f0' }}
+            />
+            <YAxis 
+              tick={{ fontSize: 11, fill: '#64748b', fontWeight: '600' }}
+              tickLine={false}
+              axisLine={false}
+            />
+            <Tooltip 
+              contentStyle={{
+                backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid #e2e8f0',
+                borderRadius: '16px',
+                boxShadow: '0 10px 30px rgba(15, 23, 42, 0.08)',
+                padding: '12px 16px',
+                fontFamily: "'DM Sans', sans-serif"
+              }}
+              itemStyle={{ color: '#0f172a', fontWeight: '700', fontSize: '13px' }}
+              labelStyle={{ color: '#64748b', fontSize: '12px', fontWeight: '500', marginBottom: '4px' }}
+              formatter={(value) => [value, 'Occurrences']}
+              cursor={{ fill: 'rgba(14, 165, 233, 0.04)', radius: 8 }}
+            />
+            <Legend 
+              verticalAlign="top" 
+              height={36} 
+              iconType="circle"
+              iconSize={8}
+              wrapperStyle={{ fontSize: '12px', fontWeight: '600', color: '#64748b', paddingBottom: '10px' }}
+            />
+            <Bar 
+              dataKey="count" 
+              fill="url(#symptomGrad)" 
+              name="Occurrences" 
+              radius={[6, 6, 0, 0]}
+              maxBarSize={40}
+            />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
 
       {/* Top 3 Summary */}
-      <div className="mt-6 pt-4 border-t border-gray-200">
-        <p className="text-sm font-semibold text-gray-700 mb-3">Most Common:</p>
-        <div className="grid grid-cols-1 gap-2">
+      <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid #f1f5f9' }}>
+        <p style={{ margin: '0 0 14px', fontSize: '14px', fontWeight: '800', color: '#475569', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <Star size={14} style={{ color: '#eab308', fill: '#eab308' }} /> Most Common Baseline
+        </p>
+        <div style={{ display: 'grid', gap: '10px' }}>
           {data.slice(0, 3).map((item, idx) => (
-            <div 
-              key={idx} 
-              className="flex justify-between items-center p-2 bg-blue-50 rounded border border-blue-100 hover:bg-blue-100 transition-colors"
-            >
-              <span className="font-medium text-gray-700">
-                {idx + 1}. {item.symptom}
-              </span>
-              <div className="text-right">
-                <span className="text-blue-600 font-bold block text-sm">
+            <div key={idx} className="symptom-tag-premium">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span className="symptom-badge">{idx + 1}</span>
+                <span style={{ fontWeight: '700', color: '#1e293b', fontSize: '14px' }}>
+                  {item.symptom}
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <span style={{ color: '#0ea5e9', fontWeight: '800', fontSize: '14.5px' }}>
                   {item.count}x
                 </span>
-                <span className="text-gray-500 text-xs">
+                <span style={{ background: 'white', color: '#64748b', fontSize: '11px', fontWeight: '700', padding: '3px 8px', borderRadius: '20px', border: '1px solid #e2e8f0' }}>
                   {item.percentage}%
                 </span>
               </div>

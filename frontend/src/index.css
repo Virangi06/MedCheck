@@ -1,3 +1,22 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Global Typography Overrides */
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  font-weight: 500 !important;
+}
+
+/* Force font-weight: 500 for any elements that have a bold weight of 800 */
+*[style*="font-weight: 800"],
+*[style*="font-weight:800"],
+*[style*="font-weight: '800'"],
+*[style*="font-weight:'800'"],
+*[style*="fontWeight: 800"],
+*[style*="fontWeight:800"],
+*[style*="fontWeight: '800'"],
+*[style*="fontWeight:'800'"],
+.font-extrabold {
+  font-weight: 500 !important;
+}

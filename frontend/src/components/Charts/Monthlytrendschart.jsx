@@ -12,6 +12,7 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts';
+import { TrendingUp, Calendar, Sparkles } from 'lucide-react';
 
 /**
  * MonthlyTrendsChart Component
@@ -25,11 +26,23 @@ const MonthlyTrendsChart = ({ data }) => {
   // Handle empty data
   if (!data || data.length === 0) {
     return (
-      <div className="p-6 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-        <p className="text-center text-gray-500 font-medium">
-          📊 No monthly data available yet
+      <div 
+        style={{
+          padding: '40px 24px',
+          background: '#f8fafc',
+          borderRadius: '24px',
+          border: '2px dashed #cbd5e1',
+          textAlign: 'center',
+          fontFamily: "'DM Sans', sans-serif"
+        }}
+      >
+        <div style={{ display: 'inline-flex', padding: '12px', borderRadius: '16px', background: '#f1f5f9', color: '#64748b', marginBottom: '16px' }}>
+          <TrendingUp size={32} />
+        </div>
+        <p style={{ margin: 0, color: '#475569', fontWeight: '700', fontSize: '16px' }}>
+          No monthly data available yet
         </p>
-        <p className="text-center text-gray-400 text-sm mt-2">
+        <p style={{ margin: '8px 0 0', color: '#94a3b8', fontSize: '14px' }}>
           Complete analyses over time to see trends
         </p>
       </div>
@@ -54,138 +67,246 @@ const MonthlyTrendsChart = ({ data }) => {
   const avgAnalysesPerMonth = (totalAnalyses / data.length).toFixed(1);
   const highRiskTotal = data.reduce((sum, item) => sum + item.highUrgencyCount, 0);
 
+  // Helper for text-based risk status
+  const getUrgencyStatusText = (avg) => {
+    if (avg <= 1.5) return { text: 'Low Risk', color: '#059669', bg: '#ecfdf5', dot: '#10b981' };
+    if (avg <= 2.5) return { text: 'Moderate Risk', color: '#d97706', bg: '#fffbeb', dot: '#f59e0b' };
+    return { text: 'High Risk', color: '#dc2626', bg: '#fef2f2', dot: '#ef4444' };
+  };
+
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow">
+    <div className="trends-card-premium" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <style>{`
+        .trends-card-premium {
+          background: white;
+          border-radius: 24px;
+          border: 1px solid #e2e8f0;
+          padding: 28px;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 10px 30px rgba(15, 23, 42, 0.02);
+        }
+        .trends-card-premium:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 20px 40px rgba(15, 23, 42, 0.05);
+        }
+        .trends-header-icon {
+          width: 42px;
+          height: 42px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #EFF9FF;
+          color: #0ea5e9;
+          flex-shrink: 0;
+        }
+        .trend-record-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 14px 20px;
+          background: #F8FAFC;
+          border-radius: 16px;
+          border: 1px solid #E2E8F0;
+          transition: all 0.2s ease;
+        }
+        .trend-record-item:hover {
+          background: #F1F5F9;
+          border-color: #CBD5E1;
+          transform: translateY(-1px);
+        }
+        .trend-metric-card {
+          padding: 14px;
+          background: #f8fafc;
+          border-radius: 16px;
+          border: 1px solid #e2e8f0;
+          text-align: center;
+          transition: all 0.2s ease;
+        }
+        .trend-metric-card:hover {
+          background: white;
+          border-color: #cbd5e1;
+          box-shadow: 0 6px 16px rgba(15, 23, 42, 0.03);
+        }
+        .trend-analysis-box {
+          margin-top: 16px;
+          padding: 16px 20px;
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          background: #ECFDF5;
+          border: 1.5px solid #A7F3D0;
+        }
+        .status-dot-pulse {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          display: inline-block;
+          margin-right: 6px;
+        }
+      `}</style>
+
       {/* Header */}
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold text-gray-800">
-          📈 Monthly Health Analysis Trends
-        </h3>
-        <p className="text-sm text-gray-500 mt-1">
-          Track your analysis frequency and urgency levels over time
-        </p>
+      <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '24px' }}>
+        <div className="trends-header-icon">
+          <TrendingUp size={22} />
+        </div>
+        <div>
+          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>
+            Monthly Health Analysis Trends
+          </h3>
+          <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#64748b' }}>
+            Track your analysis frequency and urgency levels over time
+          </p>
+        </div>
       </div>
       
       {/* Chart */}
-      <ResponsiveContainer width="100%" height={350}>
-        <ComposedChart 
-          data={chartData}
-          margin={{ top: 5, right: 30, left: 0, bottom: 20 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-          <XAxis 
-            dataKey="monthLabel"
-            tick={{ fontSize: 12, fill: '#6b7280' }}
-            angle={data.length > 6 ? -45 : 0}
-            textAnchor={data.length > 6 ? "end" : "middle"}
-            height={data.length > 6 ? 80 : 40}
-          />
-          <YAxis 
-            yAxisId="left"
-            label={{ value: 'Analysis Count', angle: -90, position: 'insideLeft' }}
-            tick={{ fontSize: 12, fill: '#6b7280' }}
-          />
-          <YAxis 
-            yAxisId="right" 
-            orientation="right"
-            domain={[0, 4]}
-            label={{ value: 'Avg Urgency (1-4)', angle: 90, position: 'insideRight' }}
-            tick={{ fontSize: 12, fill: '#6b7280' }}
-          />
-          <Tooltip 
-            contentStyle={{
-              backgroundColor: '#fff',
-              border: '1px solid #e5e7eb',
-              borderRadius: '8px',
-              boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-            }}
-            formatter={(value, name) => {
-              if (name === 'analysisCount') return [value, 'Analyses'];
-              if (name === 'averageUrgency') return [value.toFixed(2), 'Avg Urgency'];
-              return [value, name];
-            }}
-          />
-          <Legend 
-            wrapperStyle={{ paddingTop: '20px' }}
-            verticalAlign="bottom"
-            height={36}
-          />
-          <Bar 
-            yAxisId="left"
-            dataKey="analysisCount" 
-            fill="#0284c7" 
-            name="Total Analyses"
-            radius={[8, 8, 0, 0]}
-          />
-          <Line 
-            yAxisId="right"
-            type="monotone" 
-            dataKey="averageUrgency" 
-            stroke="#ef4444" 
-            name="Avg Urgency Level"
-            strokeWidth={3}
-            dot={{ fill: '#ef4444', r: 5 }}
-            activeDot={{ r: 7 }}
-          />
-        </ComposedChart>
-      </ResponsiveContainer>
+      <div style={{ width: '100%', height: 350, position: 'relative' }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart 
+            data={chartData}
+            margin={{ top: 10, right: -5, left: -25, bottom: 20 }}
+          >
+            <defs>
+              <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#0ea5e9" stopOpacity={0.9} />
+                <stop offset="100%" stopColor="#0ea5e9" stopOpacity={0.4} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+            <XAxis 
+              dataKey="monthLabel"
+              tick={{ fontSize: 11, fill: '#64748b', fontWeight: '600' }}
+              angle={data.length > 6 ? -30 : 0}
+              textAnchor={data.length > 6 ? "end" : "middle"}
+              height={data.length > 6 ? 60 : 40}
+              tickLine={false}
+              axisLine={{ stroke: '#e2e8f0' }}
+            />
+            <YAxis 
+              yAxisId="left"
+              tick={{ fontSize: 11, fill: '#64748b', fontWeight: '600' }}
+              tickLine={false}
+              axisLine={false}
+            />
+            <YAxis 
+              yAxisId="right" 
+              orientation="right"
+              domain={[0, 4]}
+              tick={{ fontSize: 11, fill: '#64748b', fontWeight: '600' }}
+              tickLine={false}
+              axisLine={false}
+            />
+            <Tooltip 
+              contentStyle={{
+                backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid #e2e8f0',
+                borderRadius: '16px',
+                boxShadow: '0 10px 30px rgba(15, 23, 42, 0.08)',
+                padding: '12px 16px',
+                fontFamily: "'DM Sans', sans-serif"
+              }}
+              formatter={(value, name) => {
+                if (name === 'analysisCount') return [value, 'Analyses'];
+                if (name === 'averageUrgency') return [value.toFixed(2), 'Avg Urgency'];
+                return [value, name];
+              }}
+            />
+            <Legend 
+              iconType="circle"
+              iconSize={8}
+              wrapperStyle={{ fontSize: '12px', fontWeight: '600', color: '#64748b', paddingTop: '10px' }}
+            />
+            <Bar 
+              yAxisId="left"
+              dataKey="analysisCount" 
+              fill="url(#barGrad)" 
+              name="Total Analyses"
+              radius={[6, 6, 0, 0]}
+              maxBarSize={36}
+            />
+            <Line 
+              yAxisId="right"
+              type="monotone" 
+              dataKey="averageUrgency" 
+              stroke="#ef4444" 
+              name="Avg Urgency Level"
+              strokeWidth={3}
+              dot={{ fill: '#ef4444', r: 4, strokeWidth: 2, stroke: 'white' }}
+              activeDot={{ r: 6, strokeWidth: 0 }}
+            />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
 
       {/* Recent Months Summary */}
-      <div className="mt-6 pt-4 border-t border-gray-200">
-        <p className="text-sm font-semibold text-gray-700 mb-3">Recent Trends (Last 3 Months):</p>
-        <div className="space-y-2">
-          {chartData.slice(-3).reverse().map((item, idx) => (
-            <div 
-              key={idx}
-              className="flex justify-between items-center p-3 bg-blue-50 rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors"
-            >
-              <div>
-                <p className="font-semibold text-gray-800">{item.monthLabel}</p>
-                <p className="text-xs text-gray-600 mt-1">
-                  Urgency Level: {item.averageUrgency <= 1.5 ? '🟢 Low' : item.averageUrgency <= 2.5 ? '🟡 Moderate' : '🔴 High'}
-                </p>
+      <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid #f1f5f9' }}>
+        <p style={{ margin: '0 0 14px', fontSize: '14px', fontWeight: '800', color: '#475569', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <Calendar size={14} style={{ color: '#0ea5e9' }} /> Recent Trends (Last 3 Months)
+        </p>
+        <div style={{ display: 'grid', gap: '10px' }}>
+          {chartData.slice(-3).reverse().map((item, idx) => {
+            const status = getUrgencyStatusText(item.averageUrgency);
+            return (
+              <div key={idx} className="trend-record-item">
+                <div>
+                  <p style={{ margin: 0, fontWeight: '700', color: '#1e293b', fontSize: '14px' }}>
+                    {item.monthLabel}
+                  </p>
+                  <p style={{ margin: '4px 0 0', fontSize: '12px', display: 'inline-flex', alignItems: 'center', color: status.color, background: status.bg, padding: '2px 8px', borderRadius: '12px', fontWeight: '700' }}>
+                    <span className="status-dot-pulse" style={{ backgroundColor: status.dot }} />
+                    {status.text}
+                  </p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{ textAlign: 'right' }}>
+                    <span style={{ color: '#0ea5e9', fontWeight: '800', fontSize: '16px', display: 'block', lineHeight: 1 }}>
+                      {item.analysisCount}
+                    </span>
+                    <span style={{ fontSize: '10.5px', color: '#94a3b8', fontWeight: '600' }}>
+                      analyses
+                    </span>
+                  </div>
+                  <span style={{ background: item.highUrgencyCount > 0 ? '#FEF2F2' : '#f8fafc', color: item.highUrgencyCount > 0 ? '#ef4444' : '#64748b', fontSize: '11px', fontWeight: '700', padding: '4px 10px', borderRadius: '20px', border: '1px solid', borderColor: item.highUrgencyCount > 0 ? '#FCA5A5' : '#e2e8f0' }}>
+                    {item.highUrgencyCount} high-risk
+                  </span>
+                </div>
               </div>
-              <div className="text-right">
-                <p className="text-lg font-bold text-blue-600">
-                  {item.analysisCount}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {item.highUrgencyCount} high-risk
-                </p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
-      {/* Overall Statistics */}
-      <div className="mt-4 grid grid-cols-3 gap-3">
-        <div className="p-3 bg-gray-50 rounded border border-gray-200 text-center">
-          <p className="text-xs text-gray-600">Total Analyses</p>
-          <p className="text-lg font-bold text-blue-600 mt-1">{totalAnalyses}</p>
+      {/* Overall Statistics Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginTop: '20px' }}>
+        <div className="trend-metric-card">
+          <p style={{ margin: 0, fontSize: '11px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Analyses</p>
+          <p style={{ margin: '6px 0 0', fontSize: '20px', fontWeight: '800', color: '#0ea5e9' }}>{totalAnalyses}</p>
         </div>
-        <div className="p-3 bg-gray-50 rounded border border-gray-200 text-center">
-          <p className="text-xs text-gray-600">Avg/Month</p>
-          <p className="text-lg font-bold text-blue-600 mt-1">{avgAnalysesPerMonth}</p>
+        <div className="trend-metric-card">
+          <p style={{ margin: 0, fontSize: '11px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Avg / Month</p>
+          <p style={{ margin: '6px 0 0', fontSize: '20px', fontWeight: '800', color: '#0ea5e9' }}>{avgAnalysesPerMonth}</p>
         </div>
-        <div className="p-3 bg-gray-50 rounded border border-gray-200 text-center">
-          <p className="text-xs text-gray-600">High-Risk</p>
-          <p className="text-lg font-bold text-red-600 mt-1">{highRiskTotal}</p>
+        <div className="trend-metric-card">
+          <p style={{ margin: 0, fontSize: '11px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>High Urgency</p>
+          <p style={{ margin: '6px 0 0', fontSize: '20px', fontWeight: '800', color: '#ef4444' }}>{highRiskTotal}</p>
         </div>
       </div>
 
       {/* Trend Indicator */}
       {chartData.length >= 2 && (
-        <div className="mt-4 p-3 bg-green-50 rounded border border-green-200">
-          <p className="text-xs text-green-800 font-semibold mb-1">📊 TREND ANALYSIS:</p>
+        <div className="trend-analysis-box">
+          <Sparkles size={18} style={{ color: '#059669', flexShrink: 0 }} />
           {(() => {
             const recent = chartData[chartData.length - 1].analysisCount;
             const previous = chartData[chartData.length - 2].analysisCount;
-            const trend = recent > previous ? 'Increasing' : recent < previous ? 'Decreasing' : 'Stable';
-            const emoji = recent > previous ? '📈' : recent < previous ? '📉' : '➡️';
+            const trend = recent > previous ? 'increased' : recent < previous ? 'decreased' : 'remained stable';
             return (
-              <p className="text-sm text-green-900">
-                Analyses are {emoji} <span className="font-semibold">{trend}</span> compared to previous month
+              <p style={{ margin: 0, fontSize: '13px', color: '#065f46', lineHeight: 1.5 }}>
+                Your assessments have <strong style={{ fontWeight: '800' }}>{trend}</strong> this month compared to the previous month.
               </p>
             );
           })()}

@@ -405,11 +405,18 @@ const verifyOtp = async (
       });
     }
 
+    // Generate reset token signed with JWT_SECRET, valid for 15 minutes
+    const resetToken = jwt.sign(
+      { email: email.toLowerCase(), verified: true },
+      process.env.JWT_SECRET,
+      { expiresIn: '15m' }
+    );
+
     // Success
     res.status(200).json({
       success: true,
-      message:
-        'OTP verified successfully.',
+      message: 'OTP verified successfully.',
+      resetToken,
     });
 
   } catch (error) {
@@ -438,13 +445,39 @@ const resetPassword = async (
   try {
 
     const {
-      email,
+      token,
       password,
     } = req.body;
 
+    if (!token || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Token and password are required.',
+      });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired reset token.',
+      });
+    }
+
+    if (!decoded.verified || !decoded.email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid reset token permissions.',
+      });
+    }
+
+    const email = decoded.email;
+
     // Find user
     const user = await User.findOne({
-      email,
+      email: email.toLowerCase(),
     });
 
     if (!user) {
@@ -493,6 +526,69 @@ const resetPassword = async (
 };
 
 // ─────────────────────────────────────────────
+// CHANGE PASSWORD (LOGGED IN)
+// POST /api/auth/change-password
+// Protected Route
+// ─────────────────────────────────────────────
+const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current password and new password are required.',
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password must be at least 6 characters.',
+      });
+    }
+
+    // Find user by ID (from protect middleware)
+    const user = await User.findById(req.user.id).select('+password');
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found.',
+      });
+    }
+
+    // Check if current password matches
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: 'Incorrect current password.',
+      });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Update password
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Password changed successfully.',
+    });
+
+  } catch (error) {
+    console.error('[CHANGE PASSWORD ERROR]', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Server error.',
+    });
+  }
+};
+
+// ─────────────────────────────────────────────
 // EXPORTS
 // ─────────────────────────────────────────────
 module.exports = {
@@ -504,4 +600,5 @@ module.exports = {
   forgotPassword,
   verifyOtp,
   resetPassword,
+  changePassword,
 };

@@ -11,6 +11,7 @@ const {
   forgotPassword,
   verifyOtp,
   resetPassword,
+  changePassword,
 
 } = require('../controllers/authController');
 
@@ -67,6 +68,13 @@ router.get(
   '/me',
   protect,
   getMe
+);
+
+// Change Password
+router.post(
+  '/change-password',
+  protect,
+  changePassword
 );
 
 module.exports = router;

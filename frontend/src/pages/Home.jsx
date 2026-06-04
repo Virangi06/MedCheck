@@ -217,7 +217,7 @@ function Home() {
           {/* Logo badge */}
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 32 }}>
             <div className="float-card" style={{ display: 'flex', alignItems: 'center', gap: 16, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 20, padding: '16px 28px', backdropFilter: 'blur(8px)' }}>
-              <MedCheckLogo size="sm" showSubtitle={false} />
+              <MedCheckLogo size="sm" showSubtitle={false} darkTheme={true} />
             </div>
           </div>
 
@@ -517,7 +517,7 @@ function Home() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 40, marginBottom: 48 }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-                <MedCheckLogo size="sm" showSubtitle={false} />
+                <MedCheckLogo size="sm" showSubtitle={false} darkTheme={true} />
               </div>
               <p style={{ fontSize: 14, lineHeight: 1.7, maxWidth: 220 }}>Intelligent health insights connecting patients with verified medical professionals.</p>
             </div>

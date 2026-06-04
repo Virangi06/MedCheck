@@ -82,13 +82,13 @@ function AISymptomAnalysis() {
         <div className="hero-grid"></div>
         <div style={{ position: 'relative', zIndex: 2, maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 30 }}>
-            <MedCheckLogo size="lg" />
+            <MedCheckLogo size="lg" darkTheme={true} />
           </div>
           <div className="section-tag">✦ Core Feature</div>
           <h1
             style={{
               fontFamily: 'Syne, sans-serif',
-              fontWeight: 800,
+              fontWeight: 500,
               fontSize: 'clamp(38px, 7vw, 68px)',
               color: 'white',
               lineHeight: 1.1,
@@ -156,7 +156,7 @@ function AISymptomAnalysis() {
         }}
       >
         <div style={{ maxWidth: 700, margin: '0 auto' }}>
-          <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: 'clamp(32px,5vw,52px)', fontWeight: 800, color: 'white', margin: '0 0 24px' }}>
+          <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: 'clamp(32px,5vw,52px)', fontWeight: 500, color: 'white', margin: '0 0 24px' }}>
             Ready to Check Your Symptoms?
           </h2>
           <p style={{ color: 'rgba(255,255,255,0.85)', lineHeight: 1.8, marginBottom: 36, fontSize: 17 }}>

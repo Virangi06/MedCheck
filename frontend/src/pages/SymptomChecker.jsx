@@ -622,7 +622,7 @@ function SymptomChecker() {
                     onClick={() => selectOption('severity', s.name)}
                   >
                     <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: s.color }} />
-                    <span style={{ fontWeight: '800', fontSize: '16px', color: formData.severity === s.name ? '#0f172a' : '#475569' }}>{s.name}</span>
+                    <span style={{ fontWeight: '500', fontSize: '16px', color: formData.severity === s.name ? '#0f172a' : '#475569' }}>{s.name}</span>
                     <span style={{ fontSize: '11px', color: '#64748b' }}>{s.desc}</span>
                   </div>
                 ))}
@@ -668,7 +668,7 @@ function SymptomChecker() {
               <div style={{ position: 'absolute', top: '16px', right: '16px', background: '#0284c7', color: 'white', padding: '4px 12px', borderRadius: '50px', fontSize: '12px', textTransform: 'uppercase' }}>
                 Primary Match
               </div>
-              <h3 style={{ fontFamily: 'Syne, sans-serif', fontSize: '24px', color: '#0c2340', fontWeight: '800', marginBottom: '12px' }}>
+              <h3 style={{ fontFamily: 'Syne, sans-serif', fontSize: '24px', color: '#0c2340', fontWeight: '500', marginBottom: '12px' }}>
                 {analysis.possibleCondition || 'No major condition detected'}
               </h3>
               <p style={{ color: '#2d3748', lineHeight: '1.8', fontSize: '15px', margin: 0 }}>
@@ -691,7 +691,7 @@ function SymptomChecker() {
                     <p style={{ fontSize: '11px', color: '#64748b', margin: 0, fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{item.label}</p>
                     <p style={{
                       fontSize: '18px',
-                      fontWeight: '800',
+                      fontWeight: '500',
                       color: item.isUrgency && isHigh ? '#ef4444' : '#0f172a',
                       margin: 0
                     }}>
@@ -786,7 +786,7 @@ function SymptomChecker() {
                     <MapPin size={22} color="#0284c7" />
                   </div>
                   <div>
-                    <h3 style={{ fontFamily: 'Syne, sans-serif', fontSize: '22px', fontWeight: '800', color: '#0f172a', margin: 0 }}>Nearby Medical Facilities</h3>
+                    <h3 style={{ fontFamily: 'Syne, sans-serif', fontSize: '22px', fontWeight: '500', color: '#0f172a', margin: 0 }}>Nearby Medical Facilities</h3>
                     <p style={{ margin: 0, color: '#64748b', fontSize: '13px' }}>Matching specialists closest to your coordinates</p>
                   </div>
                 </div>
@@ -808,7 +808,7 @@ function SymptomChecker() {
                             📍 {typeof doctor.distance === 'number' ? `${doctor.distance.toFixed(1)} km` : doctor.distance}
                           </span>
                         </div>
-                        <h4 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: '0 0 8px 0', lineHeight: '1.4' }}>
+                        <h4 style={{ fontSize: '16px', fontWeight: '500', color: '#0f172a', margin: '0 0 8px 0', lineHeight: '1.4' }}>
                           {doctor.name}
                         </h4>
                         <p style={{ fontSize: '13px', color: '#64748b', margin: 0, lineHeight: '1.6' }}>

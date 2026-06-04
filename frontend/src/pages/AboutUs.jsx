@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Target, Brain, ShieldCheck, Activity, Sparkles, MapPin, Calendar, HelpCircle, ArrowRight } from 'lucide-react';
 import MedCheckLogo from '../components/MedCheckLogo';
 
 function AboutUs() {
@@ -103,15 +104,18 @@ function AboutUs() {
               marginBottom: 30,
             }}
           >
-            <MedCheckLogo size="lg" />
+            <MedCheckLogo size="lg" darkTheme={true} />
           </div>
 
-          <div className="section-tag">✦ About MedCheck</div>
+          <div className="section-tag">
+            <Sparkles size={14} strokeWidth={2.5} />
+            About MedCheck
+          </div>
 
           <h1
             style={{
               fontFamily: 'Syne, sans-serif',
-              fontWeight: 800,
+              fontWeight: 500,
               fontSize: 'clamp(38px, 7vw, 68px)',
               color: 'white',
               lineHeight: 1.1,
@@ -159,7 +163,22 @@ function AboutUs() {
             }}
           >
             <div className="glass-card">
-              <div style={{ fontSize: 46, marginBottom: 18 }}>🎯</div>
+              <div
+                style={{
+                  width: 56,
+                  height: 56,
+                  background: '#EFF9FF',
+                  borderRadius: 16,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: 20,
+                  border: '1px solid #BAE6FD',
+                  boxShadow: '0 4px 12px rgba(14,165,233,0.08)',
+                }}
+              >
+                <Target size={28} color="#0284c7" strokeWidth={2} />
+              </div>
 
               <h2
                 style={{
@@ -187,7 +206,22 @@ function AboutUs() {
             </div>
 
             <div className="glass-card">
-              <div style={{ fontSize: 46, marginBottom: 18 }}>🧠</div>
+              <div
+                style={{
+                  width: 56,
+                  height: 56,
+                  background: '#EFF9FF',
+                  borderRadius: 16,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: 20,
+                  border: '1px solid #BAE6FD',
+                  boxShadow: '0 4px 12px rgba(14,165,233,0.08)',
+                }}
+              >
+                <Brain size={28} color="#0284c7" strokeWidth={2} />
+              </div>
 
               <h2
                 style={{
@@ -215,7 +249,22 @@ function AboutUs() {
             </div>
 
             <div className="glass-card">
-              <div style={{ fontSize: 46, marginBottom: 18 }}>🔒</div>
+              <div
+                style={{
+                  width: 56,
+                  height: 56,
+                  background: '#EFF9FF',
+                  borderRadius: 16,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: 20,
+                  border: '1px solid #BAE6FD',
+                  boxShadow: '0 4px 12px rgba(14,165,233,0.08)',
+                }}
+              >
+                <ShieldCheck size={28} color="#0284c7" strokeWidth={2} />
+              </div>
 
               <h2
                 style={{
@@ -258,13 +307,16 @@ function AboutUs() {
             textAlign: 'center',
           }}
         >
-          <div className="section-tag">✦ Why Choose MedCheck</div>
+          <div className="section-tag">
+            <Sparkles size={14} strokeWidth={2.5} />
+            Why Choose MedCheck
+          </div>
 
           <h2
             style={{
               fontFamily: 'Syne, sans-serif',
               fontSize: 'clamp(30px,5vw,48px)',
-              fontWeight: 800,
+              fontWeight: 500,
               color: '#0f172a',
               marginBottom: 22,
             }}
@@ -294,46 +346,50 @@ function AboutUs() {
             }}
           >
             {[
-              'AI Symptom Analysis',
-              'Health Risk Insights',
-              'Nearby Doctor Suggestions',
-              'Personal Health Tracking',
-            ].map((item, index) => (
-              <div
-                key={index}
-                className="glass-card"
-                style={{
-                  textAlign: 'center',
-                  padding: 28,
-                }}
-              >
+              { title: 'AI Symptom Analysis', icon: Brain },
+              { title: 'Health Risk Insights', icon: Activity },
+              { title: 'Nearby Doctor Suggestions', icon: MapPin },
+              { title: 'Personal Health Tracking', icon: Calendar },
+            ].map((item, index) => {
+              const IconComponent = item.icon;
+              return (
                 <div
+                  key={index}
+                  className="glass-card"
                   style={{
-                    width: 64,
-                    height: 64,
-                    background: '#EFF9FF',
-                    borderRadius: 18,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    margin: '0 auto 18px',
-                    fontSize: 28,
+                    textAlign: 'center',
+                    padding: 28,
                   }}
                 >
-                  ✨
-                </div>
+                  <div
+                    style={{
+                      width: 64,
+                      height: 64,
+                      background: '#EFF9FF',
+                      borderRadius: 18,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: '0 auto 18px',
+                      border: '1px solid #BAE6FD',
+                      boxShadow: '0 4px 12px rgba(14,165,233,0.08)',
+                    }}
+                  >
+                    <IconComponent size={28} color="#0284c7" strokeWidth={2} />
+                  </div>
 
-                <h3
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 700,
-                    color: '#0f172a',
-                  }}
-                >
-                  {item}
-                </h3>
-              </div>
-            ))}
+                  <h3
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 700,
+                      color: '#0f172a',
+                    }}
+                  >
+                    {item.title}
+                  </h3>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -356,32 +412,53 @@ function AboutUs() {
             style={{
               background: '#fff',
               borderLeft: '4px solid #0EA5E9',
+              display: 'flex',
+              gap: '20px',
+              alignItems: 'flex-start',
             }}
           >
-            <h3
+            <div
               style={{
-                fontSize: 24,
-                fontWeight: 700,
-                color: '#0f172a',
-                marginBottom: 16,
+                width: 48,
+                height: 48,
+                background: '#EFF9FF',
+                borderRadius: 12,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '1px solid #BAE6FD',
+                flexShrink: 0,
               }}
             >
-              Medical Disclaimer
-            </h3>
+              <HelpCircle size={24} color="#0284c7" />
+            </div>
+            <div>
+              <h3
+                style={{
+                  fontSize: 24,
+                  fontWeight: 700,
+                  color: '#0f172a',
+                  marginBottom: 16,
+                  marginTop: 4,
+                }}
+              >
+                Medical Disclaimer
+              </h3>
 
-            <p
-              style={{
-                color: '#64748b',
-                lineHeight: 1.9,
-                fontSize: 15,
-              }}
-            >
-              MedCheck provides AI-generated health insights for
-              educational and informational purposes only. It is not
-              intended to replace professional medical advice,
-              diagnosis, or treatment. Always consult a qualified
-              healthcare professional regarding medical concerns.
-            </p>
+              <p
+                style={{
+                  color: '#64748b',
+                  lineHeight: 1.9,
+                  fontSize: 15,
+                }}
+              >
+                MedCheck provides AI-generated health insights for
+                educational and informational purposes only. It is not
+                intended to replace professional medical advice,
+                diagnosis, or treatment. Always consult a qualified
+                healthcare professional regarding medical concerns.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -391,7 +468,7 @@ function AboutUs() {
         style={{
           padding: '100px 24px',
           background:
-            'linear-gradient(135deg, #0EA5E9 0%, #0284c7 100%)',
+            'linear-gradient(135deg, #0f172a 0%, #2f4371ff 100%)',
           textAlign: 'center',
         }}
       >
@@ -401,13 +478,13 @@ function AboutUs() {
             margin: '0 auto',
           }}
         >
-          <MedCheckLogo size="lg" />
+          <MedCheckLogo size="lg" darkTheme={true} />
 
           <h2
             style={{
               fontFamily: 'Syne, sans-serif',
               fontSize: 'clamp(32px,5vw,52px)',
-              fontWeight: 800,
+              fontWeight: 500,
               color: 'white',
               margin: '24px 0',
             }}
@@ -428,7 +505,7 @@ function AboutUs() {
           </p>
 
           <Link to="/register" className="btn-primary">
-            Get Started →
+            Get Started <ArrowRight size={16} strokeWidth={2.5} style={{ marginLeft: 4 }} />
           </Link>
         </div>
       </section>

@@ -2,6 +2,8 @@
 // Uses GroqCloud + Llama 3.3 70B
 // Dynamic Medical AI Analysis
 
+const { checkEmergency } = require('../utils/emergencyCheck');
+
 const analyzeAI = async (data) => {
   try {
     /* =====================================================
@@ -225,30 +227,10 @@ RETURN THIS EXACT JSON STRUCTURE:
       'Consult a doctor if symptoms persist';
 
     /* =====================================================
-       EMERGENCY KEYWORD DETECTION
+       EMERGENCY KEYWORD DETECTION (WITH NEGATION CHECK)
     ===================================================== */
 
-    const symptomsText = (
-      data.symptoms || ''
-    ).toLowerCase();
-
-    const emergencyKeywords = [
-      'chest pain',
-      'difficulty breathing',
-      'stroke',
-      'unconscious',
-      'blood vomiting',
-      'seizure',
-      'heart attack',
-      'severe bleeding',
-    ];
-
-    const isEmergency =
-      emergencyKeywords.some((word) =>
-        symptomsText.includes(word)
-      );
-
-    if (isEmergency) {
+    if (checkEmergency(data.symptoms)) {
       parsed.urgencyLevel = 'High';
 
       parsed.emergencyWarning =

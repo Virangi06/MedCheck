@@ -146,6 +146,10 @@ function VerifyOtp() {
         'OTP verified successfully'
       );
 
+      if (data.resetToken) {
+        localStorage.setItem('resetToken', data.resetToken);
+      }
+
       // Redirect
       setTimeout(() => {
 

@@ -83,13 +83,13 @@ function TermsOfService() {
         <div className="hero-grid"></div>
         <div style={{ position: 'relative', zIndex: 2, maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
-            <MedCheckLogo size="md" />
+            <MedCheckLogo size="md" darkTheme={true} />
           </div>
           <div className="section-tag">✦ Terms & Rules</div>
           <h1
             style={{
               fontFamily: 'Syne, sans-serif',
-              fontWeight: 800,
+              fontWeight: 500,
               fontSize: 'clamp(32px, 6vw, 56px)',
               color: 'white',
               lineHeight: 1.1,

@@ -104,6 +104,16 @@ function ResetPassword() {
       return;
     }
 
+    const token = localStorage.getItem('resetToken');
+
+    if (!token) {
+      setErrors({
+        password: 'Reset token is missing or expired. Please request a new OTP.',
+      });
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -119,7 +129,7 @@ function ResetPassword() {
           },
 
           body: JSON.stringify({
-            email,
+            token,
 
             password,
           }),
@@ -145,9 +155,12 @@ function ResetPassword() {
         'Password reset successful'
       );
 
-      // Remove stored email
+      // Remove stored email and token
       localStorage.removeItem(
         'resetEmail'
+      );
+      localStorage.removeItem(
+        'resetToken'
       );
 
       // Redirect login

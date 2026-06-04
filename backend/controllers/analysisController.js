@@ -106,33 +106,6 @@ exports.analyzeSymptoms = async (
     }
 
     /* =====================================================
-       EMERGENCY OVERRIDE
-    ===================================================== */
-
-    const symptomsText = (body.symptoms || '').toLowerCase();
-
-    const emergencyKeywords = [
-      'chest pain',
-      'difficulty breathing',
-      'stroke',
-      'heart attack',
-      'severe bleeding',
-      'blood vomiting',
-      'unconscious',
-      'seizure',
-    ];
-
-    const emergencyDetected = emergencyKeywords.some((word) =>
-      symptomsText.includes(word)
-    );
-
-    if (emergencyDetected) {
-      aiResult.urgencyLevel = 'High';
-      aiResult.emergencyWarning =
-        'Potential medical emergency detected. Seek immediate medical care immediately.';
-    }
-
-    /* =====================================================
        FINAL RESPONSE OBJECT
     ===================================================== */
 
