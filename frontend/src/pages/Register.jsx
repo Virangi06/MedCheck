@@ -8,6 +8,7 @@ import {
   Lock,
   Eye,
   EyeOff,
+  Phone,
 } from 'lucide-react';
 import MedCheckLogo from '../components/MedCheckLogo';
 
@@ -21,9 +22,12 @@ function Register() {
   const [form, setForm] = useState({
     name: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: '',
   });
+
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -67,6 +71,10 @@ function Register() {
       newErrors.email = 'Enter valid email';
     }
 
+    if (form.phone && !/^[+]?[0-9]{7,15}$/.test(form.phone.replace(/\s/g, ''))) {
+      newErrors.phone = 'Enter a valid phone number';
+    }
+
     if (form.password.length < 6) {
       newErrors.password =
         'Password must be at least 6 characters';
@@ -75,6 +83,10 @@ function Register() {
     if (form.password !== form.confirmPassword) {
       newErrors.confirmPassword =
         'Passwords do not match';
+    }
+
+    if (!agreedToTerms) {
+      newErrors.agreedToTerms = 'You must agree to the Terms of Service to continue';
     }
 
     return newErrors;
@@ -603,6 +615,138 @@ function Register() {
                   }}
                 >
                   {errors.confirmPassword}
+                </p>
+              )}
+            </div>
+
+            {/* PHONE */}
+            <div>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '6px',
+                  fontSize: '13px',
+                  fontWeight: '500',
+                  color: '#334155',
+                }}
+              >
+                Phone Number <span style={{ color: '#94a3b8', fontWeight: 400 }}>(Optional)</span>
+              </label>
+
+              <div style={{ position: 'relative' }}>
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '12px',
+                    transform: 'translateY(-50%)',
+                  }}
+                >
+                  <Phone size={15} color="#64748b" />
+                </div>
+
+                <input
+                  type="tel"
+                  name="phone"
+                  value={form.phone}
+                  onChange={handleChange}
+                  placeholder="e.g. +91 98765 43210"
+                  style={{
+                    width: '100%',
+                    padding: '11px 12px 11px 38px',
+                    borderRadius: '10px',
+                    border: errors.phone
+                      ? '1.5px solid #ef4444'
+                      : '1.5px solid #e2e8f0',
+                    outline: 'none',
+                    fontSize: '13px',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              {errors.phone && (
+                <p
+                  style={{
+                    color: '#ef4444',
+                    fontSize: '11px',
+                    marginTop: '5px',
+                  }}
+                >
+                  {errors.phone}
+                </p>
+              )}
+            </div>
+
+            {/* DISCLAIMER CHECKBOX */}
+            <div
+              style={{
+                background: agreedToTerms ? '#EFF9FF' : errors.agreedToTerms ? '#FEF2F2' : '#f8fafc',
+                border: `1.5px solid ${agreedToTerms ? '#BAE6FD' : errors.agreedToTerms ? '#FECACA' : '#e2e8f0'}`,
+                borderRadius: '12px',
+                padding: '14px 16px',
+                transition: 'all 0.2s',
+              }}
+            >
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '10px',
+                  cursor: 'pointer',
+                  userSelect: 'none',
+                }}
+              >
+                <div style={{ position: 'relative', flexShrink: 0, marginTop: '1px' }}>
+                  <input
+                    type="checkbox"
+                    id="agreedToTerms"
+                    checked={agreedToTerms}
+                    onChange={(e) => {
+                      setAgreedToTerms(e.target.checked);
+                      if (errors.agreedToTerms) {
+                        setErrors({ ...errors, agreedToTerms: '' });
+                      }
+                    }}
+                    style={{ opacity: 0, position: 'absolute', width: 0, height: 0 }}
+                  />
+                  <div
+                    style={{
+                      width: '18px',
+                      height: '18px',
+                      borderRadius: '5px',
+                      border: agreedToTerms ? '2px solid #0EA5E9' : '2px solid #cbd5e1',
+                      background: agreedToTerms ? '#0EA5E9' : 'white',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.2s',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {agreedToTerms && (
+                      <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                        <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </div>
+                </div>
+                <span style={{ fontSize: '12px', color: '#334155', lineHeight: 1.6 }}>
+                  I have read and agree to the{' '}
+                  <Link
+                    to="/terms-of-service"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: '#0EA5E9', textDecoration: 'underline', fontWeight: 600 }}
+                  >
+                    Terms of Service
+                  </Link>
+                  {' '}and understand that this is an educational tool only, not a substitute for professional medical advice.
+                </span>
+              </label>
+              {errors.agreedToTerms && (
+                <p style={{ color: '#ef4444', fontSize: '11px', marginTop: '8px', marginLeft: '28px' }}>
+                  {errors.agreedToTerms}
                 </p>
               )}
             </div>

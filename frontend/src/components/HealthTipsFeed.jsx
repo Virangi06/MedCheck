@@ -1,343 +1,331 @@
 // frontend/src/components/HealthTipsFeed.jsx
-
 import React, { useState, useEffect } from 'react';
-import { getHealthTips, toggleRecommendationCompletion } from '../services/tipsService';
-import { Sparkles, RefreshCw, BookOpen, AlertCircle, CheckCircle2, ChevronDown, ChevronUp, Calendar, Target, Award } from 'lucide-react';
-import { toast } from 'react-hot-toast';
+import { getHealthTips } from '../services/tipsService';
+import {
+  Sparkles, RefreshCw, AlertCircle, ChevronRight,
+  Lightbulb, Heart, Activity, Moon, Droplets, Shield,
+  Pill, Apple, Brain, Zap, Info,
+} from 'lucide-react';
 
-const feedStyles = `
-  .goal-card {
-    background: white;
-    border-radius: 20px;
-    padding: 24px;
-    border: 1.5px solid #e2e8f0;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    box-shadow: 0 4px 15px rgba(15, 23, 42, 0.01);
-  }
-  .goal-card.completed {
-    background: #f8fafc;
-    border-color: #cbd5e1;
-  }
-  .goal-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 30px rgba(14, 165, 233, 0.08);
-    border-color: rgba(14, 165, 233, 0.3);
-  }
-  .checkbox-btn {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: 2px solid #cbd5e1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    background: white;
-    transition: all 0.25s ease;
-    flex-shrink: 0;
-  }
-  .checkbox-btn.checked {
-    background: #10b981;
-    border-color: #10b981;
-    color: white;
-    box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
-  }
-  .checkbox-btn:hover {
-    border-color: #10b981;
-    transform: scale(1.05);
-  }
-  .priority-badge {
-    padding: 3px 10px;
-    border-radius: 50px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-  }
-  .category-label {
-    background: #e0f2fe;
-    color: #0369a1;
-    border: 1px solid #bae6fd;
-    border-radius: 6px;
-    padding: 3px 10px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-  }
-  .progress-container {
-    background: white;
-    padding: 28px;
-    border-radius: 24px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 15px rgba(15, 23, 42, 0.02);
-  }
-  .goal-text {
-    font-size: 16px;
-    font-weight: 600;
-    color: #0f172a;
-    transition: all 0.2s ease;
-  }
-  .goal-text.completed {
-    color: #64748b;
-    text-decoration: line-through;
-  }
-  .details-trigger {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #0ea5e9;
-    font-size: 13px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 0;
-    width: fit-content;
-  }
-`;
+/* ─── Category config ─────────────────────────────────── */
+const CAT_CONFIG = {
+  cardiovascular: { icon: <Heart size={20} />,    gradient: 'linear-gradient(135deg,#fda4af,#f43f5e)', light: '#fff1f2', text: '#be123c' },
+  hydration:      { icon: <Droplets size={20} />, gradient: 'linear-gradient(135deg,#7dd3fc,#0ea5e9)', light: '#f0f9ff', text: '#0369a1' },
+  sleep:          { icon: <Moon size={20} />,     gradient: 'linear-gradient(135deg,#c4b5fd,#8b5cf6)', light: '#f5f3ff', text: '#6d28d9' },
+  activity:       { icon: <Activity size={20} />, gradient: 'linear-gradient(135deg,#86efac,#22c55e)', light: '#f0fdf4', text: '#15803d' },
+  medication:     { icon: <Pill size={20} />,     gradient: 'linear-gradient(135deg,#fcd34d,#f59e0b)', light: '#fffbeb', text: '#b45309' },
+  diet:           { icon: <Apple size={20} />,    gradient: 'linear-gradient(135deg,#f9a8d4,#ec4899)', light: '#fdf2f8', text: '#9d174d' },
+  nutrition:      { icon: <Apple size={20} />,    gradient: 'linear-gradient(135deg,#f9a8d4,#ec4899)', light: '#fdf2f8', text: '#9d174d' },
+  mental:         { icon: <Brain size={20} />,    gradient: 'linear-gradient(135deg,#a5b4fc,#6366f1)', light: '#eef2ff', text: '#4338ca' },
+  stress:         { icon: <Brain size={20} />,    gradient: 'linear-gradient(135deg,#a5b4fc,#6366f1)', light: '#eef2ff', text: '#4338ca' },
+  immunity:       { icon: <Shield size={20} />,   gradient: 'linear-gradient(135deg,#6ee7b7,#10b981)', light: '#ecfdf5', text: '#065f46' },
+  energy:         { icon: <Zap size={20} />,      gradient: 'linear-gradient(135deg,#fde68a,#eab308)', light: '#fefce8', text: '#854d0e' },
+};
 
+const getCat = (cat = '') => {
+  const key = cat.toLowerCase().split(' ')[0];
+  return CAT_CONFIG[key] || {
+    icon: <Lightbulb size={20} />,
+    gradient: 'linear-gradient(135deg,#93c5fd,#3b82f6)',
+    light: '#eff6ff',
+    text: '#1d4ed8',
+  };
+};
+
+/* ═══════════════════════════════════════════════════════ */
 const HealthTipsFeed = () => {
-  const [recommendations, setRecommendations] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [refreshing, setRefreshing] = useState(false);
-  const [expandedId, setExpandedId] = useState(null);
+  const [tips, setTips]               = useState([]);
+  const [loading, setLoading]         = useState(true);
+  const [refreshing, setRefreshing]   = useState(false);
+  const [error, setError]             = useState(null);
+  const [expanded, setExpanded]       = useState(null);
+  const [activeFilter, setActiveFilter] = useState('All');
 
-  useEffect(() => {
-    fetchRecommendations();
-  }, []);
+  useEffect(() => { fetchTips(); }, []);
 
-  const fetchRecommendations = async (isSilent = false) => {
-    if (!isSilent) setLoading(true);
+  const fetchTips = async (silent = false) => {
+    if (!silent) setLoading(true);
     setError(null);
     try {
-      const response = await getHealthTips();
-      if (response.success) {
-        setRecommendations(response.recommendations || []);
-      } else {
-        throw new Error(response.message || 'Failed to fetch daily goals');
-      }
-    } catch (err) {
-      setError(err.message || 'Failed to load recommendations');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+      const res = await getHealthTips();
+      if (res.success) { setTips(res.recommendations || []); setExpanded(null); }
+      else throw new Error(res.message || 'Failed to load');
+    } catch (err) { setError(err.message || 'Unable to load tips'); }
+    finally { setLoading(false); setRefreshing(false); }
   };
 
-  const handleToggle = async (recId, currentStatus) => {
-    try {
-      const targetState = !currentStatus;
-      const response = await toggleRecommendationCompletion(recId, targetState);
-      if (response.success) {
-        setRecommendations(response.recommendations || []);
-        if (targetState) {
-          toast.success('Goal completed! Keep it up! 🎉');
-        } else {
-          toast('Goal marked as pending', { icon: '⏳' });
-        }
-      }
-    } catch (err) {
-      toast.error('Failed to update goal completion status');
-    }
-  };
+  const handleRefresh = () => { setRefreshing(true); fetchTips(true); };
 
-  const handleRefresh = async () => {
-    try {
-      setRefreshing(true);
-      // Wait a moment for generation
-      await fetchRecommendations(true);
-    } catch (err) {
-      toast.error('Failed to refresh daily goals');
-    } finally {
-      setRefreshing(false);
-    }
-  };
+  const categories = ['All', ...new Set(tips.map(t => t.category).filter(Boolean))];
+  const filtered   = activeFilter === 'All' ? tips : tips.filter(t => t.category === activeFilter);
 
-  const getPriorityStyle = (priority) => {
-    const p = (priority || '').toLowerCase();
-    if (p === 'high') {
-      return { bg: '#fee2e2', color: '#dc2626' };
-    }
-    if (p === 'medium') {
-      return { bg: '#fef3c7', color: '#d97706' };
-    }
-    return { bg: '#dcfce7', color: '#166534' };
-  };
+  /* ── LOADING ── */
+  if (loading) return (
+    <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+      padding:'80px 24px', background:'white', borderRadius:'24px',
+      border:'1.5px solid #f1f5f9', minHeight:'360px' }}>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <div style={{ width:'48px', height:'48px', borderRadius:'50%',
+        border:'4px solid #f1f5f9', borderTop:'4px solid #0ea5e9',
+        animation:'spin 0.85s linear infinite', marginBottom:'20px' }} />
+      <p style={{ margin:0, fontWeight:'700', fontSize:'17px', color:'#0f172a', fontFamily:"'Syne',sans-serif" }}>
+        Generating your tips…
+      </p>
+      <p style={{ margin:'6px 0 0', fontSize:'13px', color:'#94a3b8' }}>
+        Analysing your symptoms &amp; health profile
+      </p>
+    </div>
+  );
 
-  const completedCount = recommendations.filter(r => r.completed).length;
-  const totalCount = recommendations.length;
-  const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-  const allCompleted = totalCount > 0 && completedCount === totalCount;
+  /* ── ERROR ── */
+  if (error) return (
+    <div style={{ background:'#fef2f2', border:'1.5px solid #fecaca',
+      borderRadius:'20px', padding:'40px 32px', textAlign:'center' }}>
+      <AlertCircle size={40} color="#ef4444" style={{ marginBottom:'14px' }} />
+      <h3 style={{ margin:'0 0 8px', color:'#991b1b', fontSize:'17px', fontWeight:'700' }}>
+        Could not load tips
+      </h3>
+      <p style={{ margin:'0 0 20px', color:'#b91c1c', fontSize:'13.5px' }}>{error}</p>
+      <button onClick={fetchTips} style={{
+        padding:'11px 26px', borderRadius:'12px', border:'none',
+        background:'#dc2626', color:'white', fontWeight:'600', fontSize:'14px', cursor:'pointer',
+      }}>Try Again</button>
+    </div>
+  );
 
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px', background: 'white', borderRadius: '24px', border: '1px solid #e2e8f0', minHeight: '350px' }}>
-        <style>{feedStyles}</style>
-        <div style={{ width: '40px', height: '40px', borderRadius: '50%', border: '4px solid #f3f3f3', borderTop: '4px solid #0ea5e9', animation: 'spin 1s linear infinite', marginBottom: '16px' }} />
-        <p style={{ margin: 0, fontWeight: '700', fontSize: '18px', color: '#0f172a' }}>Curating Personalized AI Coach Suggestions...</p>
-        <p style={{ margin: '4px 0 0', fontSize: '14px', color: '#64748b' }}>Parsing lifestyle habits and medical profile...</p>
-        <style>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: '24px', padding: '32px', textAlign: 'center', maxWidth: '600px', margin: '40px auto' }}>
-        <style>{feedStyles}</style>
-        <AlertCircle style={{ color: '#ef4444', marginBottom: '16px' }} size={48} />
-        <h3 style={{ margin: '0 0 8px', color: '#991b1b', fontSize: '18px', fontWeight: '700' }}>Unable to Load Health Suggestions</h3>
-        <p style={{ margin: '0 0 20px', color: '#b91c1c', fontSize: '14px' }}>{error}</p>
-        <button onClick={() => fetchRecommendations()} style={{ padding: '12px 24px', borderRadius: '12px', border: 'none', background: '#dc2626', color: 'white', fontWeight: '600', cursor: 'pointer' }}>
-          Retry Fetch
-        </button>
-      </div>
-    );
-  }
-
+  /* ── MAIN ── */
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-      <style>{feedStyles}</style>
+    <div style={{ display:'flex', flexDirection:'column', gap:'22px' }}>
+      <style>{`
+        @keyframes spin  { to { transform:rotate(360deg) } }
+        @keyframes fadeUp{
+          from{ opacity:0; transform:translateY(14px) }
+          to  { opacity:1; transform:translateY(0) }
+        }
+        .tip-row { cursor:pointer; transition:background 0.18s ease; }
+        .tip-row:hover { background:#f8fafc !important; }
+        .filter-btn { cursor:pointer; transition:all 0.16s ease; border:none; }
+        .filter-btn:hover { transform:translateY(-1px); }
+        .refresh-btn:hover { background:#f1f5f9 !important; }
+      `}</style>
 
-      {/* Progress & Header Card */}
-      <div className="progress-container">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', flexWrap: 'wrap', gap: '16px', marginBottom: '20px' }}>
+      {/* ── HERO HEADER ── */}
+      <div style={{
+        background:'linear-gradient(135deg,#0c4a6e 0%,#0369a1 55%,#38bdf8 100%)',
+        borderRadius:'22px', padding:'30px 34px',
+        display:'flex', justifyContent:'space-between', alignItems:'center',
+        flexWrap:'wrap', gap:'16px', position:'relative', overflow:'hidden',
+      }}>
+        {/* decorative blobs */}
+        <div style={{ position:'absolute', top:'-40px', right:'-40px', width:'160px', height:'160px',
+          borderRadius:'50%', background:'rgba(255,255,255,0.07)', pointerEvents:'none' }} />
+        <div style={{ position:'absolute', bottom:'-20px', right:'140px', width:'80px', height:'80px',
+          borderRadius:'50%', background:'rgba(255,255,255,0.06)', pointerEvents:'none' }} />
+
+        <div style={{ display:'flex', alignItems:'center', gap:'16px', position:'relative' }}>
+          <div style={{
+            width:'52px', height:'52px', borderRadius:'16px', flexShrink:0,
+            background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.25)',
+            display:'flex', alignItems:'center', justifyContent:'center',
+          }}>
+            <Sparkles size={26} color="white" />
+          </div>
           <div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.15)', padding: '6px 12px', borderRadius: '50px', fontWeight: '700', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#0284c7', marginBottom: '10px' }}>
-              <Target size={12} /> Daily Health Coach
-            </div>
-            <h2 style={{ margin: 0, fontSize: '24px', fontFamily: "'Syne', sans-serif", fontWeight: '700', color: '#0f172a' }}>
-              Your Daily Actions
+            <h2 style={{ margin:0, fontSize:'20px', fontFamily:"'Syne',sans-serif",
+              fontWeight:'800', color:'white', letterSpacing:'-0.3px' }}>
+              AI Health Tips
             </h2>
-            <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '14px' }}>
-              Personalized checkbox goals generated by MedCheck AI based on your lifestyle profile and metrics.
+            <p style={{ margin:'3px 0 0', fontSize:'13px', color:'rgba(255,255,255,0.75)' }}>
+              {tips.length} personalised tip{tips.length !== 1 ? 's' : ''} based on your profile
             </p>
           </div>
-
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', borderRadius: '10px', border: '1px solid #e2e8f0', background: 'white', color: '#475569', fontSize: '13px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }}
-          >
-            <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
-            {refreshing ? 'Refreshing Suggestions...' : 'Refresh Plan'}
-          </button>
         </div>
 
-        {/* Progress bar */}
-        {totalCount > 0 ? (
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: '#475569' }}>
-              <span>Completion Rate</span>
-              <span>{completedCount} of {totalCount} Goals ({progressPercent}%)</span>
-            </div>
-            <div style={{ height: '10px', background: '#f1f5f9', borderRadius: '10px', overflow: 'hidden' }}>
-              <div style={{ width: `${progressPercent}%`, height: '100%', background: 'linear-gradient(90deg, #10b981, #34d399)', borderRadius: '10px', transition: 'width 0.4s ease' }} />
-            </div>
-          </div>
-        ) : (
-          <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>No goals generated for today. Check your metrics or history.</p>
-        )}
+        <button
+          className="refresh-btn"
+          onClick={handleRefresh}
+          disabled={refreshing}
+          style={{
+            display:'flex', alignItems:'center', gap:'7px',
+            padding:'10px 18px', borderRadius:'12px',
+            border:'1px solid rgba(255,255,255,0.25)',
+            background:'rgba(255,255,255,0.12)',
+            color:'white', fontSize:'13px', fontWeight:'600',
+            cursor:refreshing ? 'not-allowed':'pointer',
+            backdropFilter:'blur(6px)', position:'relative',
+          }}
+        >
+          <RefreshCw size={14} style={refreshing ? { animation:'spin 0.9s linear infinite' } : {}} />
+          {refreshing ? 'Refreshing…' : 'Refresh'}
+        </button>
       </div>
 
-      {/* Completion Congratulatory Message */}
-      {allCompleted && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'linear-gradient(135deg, #dcfce7, #bbf7d0)', border: '1px solid #86efac', borderRadius: '20px', padding: '20px 28px', animation: 'scaleUp 0.3s ease-out' }}>
-          <Award size={36} color="#166534" style={{ flexShrink: 0 }} />
-          <div>
-            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#14532d' }}>Splendid Work! All Daily Goals Completed</h3>
-            <p style={{ margin: '2px 0 0', fontSize: '13px', color: '#166534', lineHeight: 1.5 }}>
-              You've completed all actions requested by your AI Health Coach today. Keep maintaining these consistency patterns for optimal results.
-            </p>
-          </div>
+      {/* ── CATEGORY FILTER STRIP ── */}
+      {categories.length > 2 && (
+        <div style={{ display:'flex', flexWrap:'wrap', gap:'8px' }}>
+          {categories.map(cat => {
+            const isActive = activeFilter === cat;
+            const cfg = getCat(cat);
+            return (
+              <button
+                key={cat}
+                className="filter-btn"
+                onClick={() => setActiveFilter(cat)}
+                style={{
+                  display:'inline-flex', alignItems:'center', gap:'6px',
+                  padding:'7px 16px', borderRadius:'999px',
+                  background: isActive ? (cat === 'All' ? '#0284c7' : cfg.text) : 'white',
+                  color: isActive ? 'white' : '#64748b',
+                  border:`1.5px solid ${isActive ? 'transparent' : '#e2e8f0'}`,
+                  fontSize:'12.5px', fontWeight: isActive ? '700' : '500',
+                  boxShadow: isActive ? '0 4px 12px rgba(0,0,0,0.12)' : 'none',
+                }}
+              >
+                {cat !== 'All' && React.cloneElement(cfg.icon, { size: 12 })}
+                {cat}
+              </button>
+            );
+          })}
         </div>
       )}
 
-      {/* Actionable Suggestions List */}
-      {recommendations.length === 0 ? (
-        <div className="profile-card" style={{ textAlign: 'center', padding: '60px' }}>
-          <BookOpen size={40} style={{ opacity: 0.3, marginBottom: '12px', color: '#94a3b8' }} />
-          <p style={{ fontSize: '15px', color: '#64748b', margin: 0 }}>No recommendations found. Try clicking "Refresh Plan" above.</p>
+      {/* ── TIPS LIST ── */}
+      {filtered.length === 0 ? (
+        <div style={{ textAlign:'center', padding:'60px 24px', background:'white',
+          borderRadius:'20px', border:'1.5px solid #f1f5f9' }}>
+          <Lightbulb size={42} color="#cbd5e1" style={{ marginBottom:'12px' }} />
+          <p style={{ margin:0, fontSize:'15px', color:'#64748b' }}>No tips in this category.</p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-          {recommendations.map((rec) => {
-            const isCompleted = rec.completed;
-            const priorityStyle = getPriorityStyle(rec.priority);
-            const isExpanded = expandedId === rec._id;
+        <div style={{ display:'flex', flexDirection:'column', gap:'0', borderRadius:'20px',
+          border:'1.5px solid #e2e8f0', overflow:'hidden',
+          boxShadow:'0 4px 20px rgba(15,23,42,0.04)' }}>
+
+          {filtered.map((tip, idx) => {
+            const cfg        = getCat(tip.category);
+            const isExpanded = expanded === idx;
+            const isLast     = idx === filtered.length - 1;
 
             return (
-              <div key={rec._id} className={`goal-card ${isCompleted ? 'completed' : ''}`}>
-                <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
-                  
-                  {/* Custom Checkbox */}
-                  <button
-                    onClick={() => handleToggle(rec._id, isCompleted)}
-                    className={`checkbox-btn ${isCompleted ? 'checked' : ''}`}
-                    title={isCompleted ? "Mark as pending" : "Mark as completed"}
-                  >
-                    {isCompleted && <span style={{ fontSize: '14px', fontWeight: '700' }}>✓</span>}
-                  </button>
+              <div key={idx} style={{ animation:`fadeUp 0.35s ease ${idx * 0.06}s both` }}>
 
-                  {/* Goal Contents */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '6px' }}>
-                      <span className="category-label">{rec.category}</span>
-                      <span className="priority-badge" style={{ background: priorityStyle.bg, color: priorityStyle.color }}>
-                        {rec.priority} Priority
-                      </span>
-                    </div>
-
-                    <h3 className={`goal-text ${isCompleted ? 'completed' : ''}`}>
-                      {rec.actionable}
-                    </h3>
+                {/* ── MAIN ROW ── */}
+                <div
+                  className="tip-row"
+                  onClick={() => setExpanded(isExpanded ? null : idx)}
+                  style={{
+                    display:'flex', alignItems:'center', gap:'18px',
+                    padding:'20px 24px',
+                    background: isExpanded ? '#f8fafc' : 'white',
+                    borderBottom: isLast && !isExpanded ? 'none' : '1px solid #f1f5f9',
+                  }}
+                >
+                  {/* gradient icon bubble */}
+                  <div style={{
+                    width:'48px', height:'48px', borderRadius:'14px', flexShrink:0,
+                    background: cfg.gradient,
+                    display:'flex', alignItems:'center', justifyContent:'center',
+                    color:'white', boxShadow:`0 6px 16px ${cfg.light}88`,
+                  }}>
+                    {cfg.icon}
                   </div>
 
-                  {/* Expander Button */}
-                  <button 
-                    onClick={() => setExpandedId(isExpanded ? null : rec._id)}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: '4px' }}
-                  >
-                    {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                  </button>
+                  {/* text */}
+                  <div style={{ flex:1, minWidth:0 }}>
+                    {/* category label */}
+                    <span style={{
+                      display:'inline-block', marginBottom:'5px',
+                      fontSize:'10.5px', fontWeight:'700', textTransform:'uppercase',
+                      letterSpacing:'0.07em', color: cfg.text,
+                    }}>
+                      {tip.category || 'General'}
+                    </span>
 
+                    {/* title */}
+                    <p style={{
+                      margin:0, fontSize:'15px', fontWeight:'700',
+                      color:'#0f172a', lineHeight:1.4,
+                      fontFamily:"'Syne',sans-serif",
+                    }}>
+                      {tip.title}
+                    </p>
+
+                    {/* action pill — only visible when collapsed */}
+                    {!isExpanded && tip.actionable && (
+                      <p style={{
+                        margin:'6px 0 0', fontSize:'12.5px', color:'#64748b', lineHeight:1.5,
+                        display:'-webkit-box', WebkitLineClamp:1,
+                        WebkitBoxOrient:'vertical', overflow:'hidden',
+                      }}>
+                        💡 {tip.actionable}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* chevron */}
+                  <ChevronRight size={18} color="#94a3b8" style={{
+                    flexShrink:0,
+                    transform: isExpanded ? 'rotate(90deg)' : 'rotate(0)',
+                    transition:'transform 0.2s ease',
+                  }} />
                 </div>
 
-                {/* Collapsible Details */}
+                {/* ── EXPANDED DETAIL ── */}
                 {isExpanded && (
-                  <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '16px', animation: 'slideDown 0.25s ease' }}>
-                    <h4 style={{ margin: '0 0 6px', fontSize: '14px', fontWeight: '700', color: '#0f172a' }}>{rec.title}</h4>
-                    <p style={{ margin: 0, fontSize: '13px', color: '#475569', lineHeight: 1.6 }}>
-                      {rec.content}
+                  <div style={{
+                    background: cfg.light,
+                    borderBottom: isLast ? 'none' : '1px solid #f1f5f9',
+                    padding:'0 24px 22px 90px',
+                    animation:'fadeUp 0.22s ease',
+                  }}>
+                    {/* full tip content */}
+                    <p style={{
+                      margin:'0 0 16px', fontSize:'14px', color:'#334155',
+                      lineHeight:1.8,
+                    }}>
+                      {tip.content}
                     </p>
+
+                    {/* actionable tip */}
+                    {tip.actionable && (
+                      <div style={{
+                        display:'inline-flex', alignItems:'flex-start', gap:'10px',
+                        background:'white', border:`1.5px solid ${cfg.text}22`,
+                        borderRadius:'12px', padding:'12px 16px',
+                      }}>
+                        <Zap size={15} color={cfg.text} style={{ flexShrink:0, marginTop:'1px' }} />
+                        <div>
+                          <span style={{ display:'block', fontSize:'10px', fontWeight:'700',
+                            textTransform:'uppercase', letterSpacing:'0.07em',
+                            color: cfg.text, marginBottom:'3px' }}>
+                            Tip
+                          </span>
+                          <span style={{ fontSize:'13.5px', color:'#1e293b', fontWeight:'600', lineHeight:1.5 }}>
+                            {tip.actionable}
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
-
-                {/* Micro Expand Link (Only visible when collapsed) */}
-                {!isExpanded && (
-                  <button 
-                    onClick={() => setExpandedId(rec._id)}
-                    className="details-trigger"
-                    style={{ marginLeft: '44px' }}
-                  >
-                    View explanation <Sparkles size={12} />
-                  </button>
-                )}
-
               </div>
             );
           })}
         </div>
       )}
+
+      {/* ── DISCLAIMER ── */}
+      <div style={{
+        display:'flex', gap:'12px', alignItems:'flex-start',
+        background:'#fffbeb', border:'1.5px solid #fde68a',
+        borderRadius:'14px', padding:'14px 18px',
+      }}>
+        <Info size={16} color="#d97706" style={{ flexShrink:0, marginTop:'2px' }} />
+        <p style={{ margin:0, fontSize:'12px', color:'#92400e', lineHeight:1.65 }}>
+          These tips are AI-generated for educational purposes based on your profile.
+          They are not a substitute for professional medical advice.
+        </p>
+      </div>
     </div>
   );
 };

@@ -3,6 +3,7 @@
 // Dynamic Medical AI Analysis
 
 const { checkEmergency } = require('../utils/emergencyCheck');
+const { callGroqWithFallback } = require('../utils/groqHelper');
 
 const analyzeAI = async (data) => {
   try {
@@ -35,7 +36,7 @@ IMPORTANT RULES:
 - Never generate fake distances
 - Never claim certainty
 - Mention possible conditions only
-- Use professional medical language
+- Use simple, common layperson language for condition names (e.g., 'Acid reflux' instead of 'Gastroesophageal reflux disease', 'Heart attack' instead of 'Myocardial infarction', 'Stomach flu' instead of 'Gastroenteritis'). Avoid complex medical jargon.
 - Keep explanations concise and safe
 
 PATIENT DETAILS:
@@ -71,95 +72,25 @@ RETURN THIS EXACT JSON STRUCTURE:
        GROQ API CALL
     ===================================================== */
 
-    const response = await fetch(
-      'https://api.groq.com/openai/v1/chat/completions',
-      {
-        method: 'POST',
-
-        headers: {
-          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
-          'Content-Type':
-            'application/json',
+    const cleanedText = await callGroqWithFallback({
+      messages: [
+        {
+          role: 'system',
+          content:
+            'You are a professional medical AI assistant. Always return ONLY valid raw JSON.',
         },
-
-        body: JSON.stringify({
-          model:
-            'llama-3.3-70b-versatile',
-
-          messages: [
-            {
-              role: 'system',
-
-              content:
-                'You are a professional medical AI assistant. Always return ONLY valid raw JSON.',
-            },
-
-            {
-              role: 'user',
-
-              content: prompt,
-            },
-          ],
-
-          temperature: 0.2,
-
-          max_tokens: 1200,
-
-          top_p: 1,
-
-          stream: false,
-        }),
-      }
-    );
-
-    /* =====================================================
-       HANDLE API ERRORS
-    ===================================================== */
-
-    if (!response.ok) {
-      const errBody =
-        await response.text();
-
-      throw new Error(
-        `Groq API Error ${response.status}: ${errBody}`
-      );
-    }
-
-    /* =====================================================
-       PARSE RESPONSE
-    ===================================================== */
-
-    const json = await response.json();
-
-    const text =
-      json?.choices?.[0]?.message
-        ?.content;
-
-    if (!text) {
-      throw new Error(
-        'Empty response from Groq AI'
-      );
-    }
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+      temperature: 0.2,
+      max_tokens: 1200,
+    });
 
     console.log(
-      '✅ RAW GROQ RESPONSE:',
-      text
-    );
-
-    /* =====================================================
-       CLEAN JSON RESPONSE
-    ===================================================== */
-
-    let cleanedText = text.trim();
-
-    cleanedText = cleanedText.replace(
-      /```json/g,
-      ''
-    );
-
-    cleanedText = cleanedText.replace(
-      /```/g,
-      ''
+      '✅ RAW GROQ RESPONSE (Cleaned):',
+      cleanedText
     );
 
     /* =====================================================

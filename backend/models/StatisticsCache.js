@@ -95,6 +95,16 @@ const statisticsCacheSchema = new Schema({
     calculatedAt: { type: Date }
   },
 
+  // Cached AI Assessment
+  aiAssessment: {
+    type: Object,
+    default: null
+  },
+  aiAssessmentCount: {
+    type: Number,
+    default: 0
+  },
+
   // Cache management
   lastUpdated: {
     type: Date,

@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   Brain, HeartPulse, ShieldAlert, Pill, Activity, User, Calendar, Siren,
-  ChevronDown, Stethoscope, Leaf, Clock3, BadgeAlert, MapPin, AlertTriangle, LayoutDashboard, Sparkles, ArrowRight, Download, TrendingUp
+  ChevronDown, Stethoscope, Leaf, Clock3, BadgeAlert, MapPin, AlertTriangle, LayoutDashboard, Sparkles, ArrowRight, Download, TrendingUp, Info
 } from 'lucide-react';
 import { profileAPI, analysisAPI } from '../services/api';
 import { feedbackAPI } from '../services/feedbackAPI';
@@ -12,7 +12,7 @@ import HealthStatisticsDashboard from '../components/HealthStatisticsDashboard';
 import MedicineInteractionChecker from '../components/MedicineInteractionChecker';
 import HealthTipsFeed from '../components/HealthTipsFeed';
 import { checkInteractionsLocally } from '../utils/medicineChecker';
-import healthMetricsImg from '../assets/health_metrics.png';
+import MedCheckLogo from '../components/MedCheckLogo';
 import aiAssistantImg from '../assets/ai_assistant.png';
 
 const dashboardStyles = `
@@ -959,14 +959,14 @@ function PatientDashboard() {
         {activeTab === 'overview' && (
           <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
 
-            {/* Section 1: Welcome Banner Section (2-Column Layout) */}
+            {/* Redesigned Consolidated Hero Section */}
             <div className="welcome-glow-card" style={{ width: '100%', position: 'relative', overflow: 'hidden', padding: '64px 0' }}>
               <div className="hero-grid" style={{ opacity: 0.4 }} />
               <div className="welcome-radial-glow" />
               <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', alignItems: 'center', gap: '48px', position: 'relative', zIndex: 2 }}>
                 
-                {/* Left Column: Text & Welcome */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {/* Left Column: Text, Welcome & Actions */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
                     <div className="premium-icon-box" style={{ background: 'rgba(255, 255, 255, 0.1)', color: '#38bdf8', width: '52px', height: '52px', borderRadius: '14px' }}>
                       <Activity size={28} />
@@ -976,76 +976,109 @@ function PatientDashboard() {
                         Welcome back, <span style={{ color: '#38bdf8' }}>{user.name}</span>
                       </h1>
                       <p style={{ margin: '6px 0 0', color: '#93c5fd', fontSize: '16px', lineHeight: 1.5 }}>
-                        Access your clinical screening dashboard. Check your symptoms with advanced AI, view history trends, and analyze your diagnostic results.
+                        Your personal clinical intelligence hub. Screen symptoms with AI, check drug interactions, and track your clinical analytics in real-time.
                       </p>
                     </div>
                   </div>
-                </div>
 
-                {/* Right Column: Flat Vector Image */}
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                  <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '24px', padding: '20px', maxWidth: '380px', width: '100%', boxSizing: 'border-box' }}>
-                    <img 
-                      src={healthMetricsImg} 
-                      alt="Clinical Screening Overview" 
-                      style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '16px' }} 
-                    />
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
-            {/* Section 2: AI Clinical Assistant (2-Column Layout) */}
-            <div style={{ width: '100%', background: '#ffffff', padding: '80px 0', borderBottom: '1px solid #f1f5f9' }}>
-              <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', alignItems: 'center', gap: '48px' }}>
-                
-                {/* Left Column: Text & CTA */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  <div>
-                    <div className="section-tag">✦ SMART CLINICAL QUERY</div>
-                    <h2 style={{ fontSize: '30px', fontFamily: "'Syne', sans-serif", fontWeight: '500', color: '#0f172a', letterSpacing: '-0.8px', margin: '12px 0 16px' }}>
-                      AI Clinical Assistant
-                    </h2>
-                    <p style={{ color: '#64748b', fontSize: '16px', margin: 0, lineHeight: 1.6 }}>
-                      Initiate a symptom query powered by clinical AI. Instantly screen for urgency levels, precautions, recovery guidance, and medical specialist recommendations.
-                    </p>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div style={{ display: 'flex', alignItems: 'start', gap: '12px' }}>
-                      <div style={{ background: '#eff9ff', color: '#0ea5e9', padding: '6px', borderRadius: '8px', marginTop: '2px' }}>
-                        <Brain size={16} />
-                      </div>
-                      <span style={{ fontSize: '14px', color: '#475569', lineHeight: 1.4 }}>
-                        Fast clinical symptom screening analysis takes less than 3 minutes.
-                      </span>
+                  {/* Bullet features */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', margin: '4px 0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#e2e8f0', fontSize: '13.5px' }}>
+                      <span style={{ color: '#38bdf8', fontWeight: '800' }}>✓</span> AI Symptom Assessment
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'start', gap: '12px' }}>
-                      <div style={{ background: '#eff9ff', color: '#0ea5e9', padding: '6px', borderRadius: '8px', marginTop: '2px' }}>
-                        <ShieldAlert size={16} />
-                      </div>
-                      <span style={{ fontSize: '14px', color: '#475569', lineHeight: 1.4 }}>
-                        Urgency levels and self-care recovery precautions provided instantly.
-                      </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#e2e8f0', fontSize: '13.5px' }}>
+                      <span style={{ color: '#38bdf8', fontWeight: '800' }}>✓</span> Drug Interaction Checker
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#e2e8f0', fontSize: '13.5px' }}>
+                      <span style={{ color: '#38bdf8', fontWeight: '800' }}>✓</span> Visual Health Analytics
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#e2e8f0', fontSize: '13.5px' }}>
+                      <span style={{ color: '#38bdf8', fontWeight: '800' }}>✓</span> AI-Generated Health Tips
                     </div>
                   </div>
 
-                  <div style={{ marginTop: '8px' }}>
+                  {/* Stats pills */}
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                    <div className="premium-pill">
+                      <Activity size={14} color="#38bdf8" style={{ marginRight: '6px' }} />
+                      <span>{analyses.length} Assessments Completed</span>
+                    </div>
+                    {healthProfile?.medications && healthProfile.medications.toLowerCase() !== 'none' && (
+                      <div className="premium-pill">
+                        <Pill size={14} color="#38bdf8" style={{ marginRight: '6px' }} />
+                        <span>Active Medications Tracking</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Action buttons */}
+                  <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginTop: '8px' }}>
                     <button
                       onClick={() => navigate('/symptom-checker')}
-                      style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 28px', borderRadius: '14px', border: 'none', background: 'linear-gradient(135deg, #0ea5e9, #0284c7)', color: 'white', fontSize: '14px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 8px 25px rgba(14, 165, 233, 0.2)', transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}
-                      onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)'; e.currentTarget.style.boxShadow = '0 12px 30px rgba(14, 165, 233, 0.35)'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 8px 25px rgba(14, 165, 233, 0.2)'; }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '14px 28px',
+                        borderRadius: '14px',
+                        border: 'none',
+                        background: 'white',
+                        color: '#0f172a',
+                        fontSize: '14.5px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)',
+                        transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                        e.currentTarget.style.boxShadow = '0 12px 30px rgba(255, 255, 255, 0.25)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'none';
+                        e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.1)';
+                      }}
                     >
                       <Brain size={18} /> Start AI Assessment
+                    </button>
+                    <button
+                      onClick={() => {
+                        setActiveTab('medicine');
+                        navigate('/patient/dashboard?tab=medicine');
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '14px 28px',
+                        borderRadius: '14px',
+                        border: '1.5px solid rgba(255, 255, 255, 0.3)',
+                        background: 'rgba(255, 255, 255, 0.08)',
+                        color: 'white',
+                        fontSize: '14.5px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
+                        e.currentTarget.style.borderColor = 'white';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'none';
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+                        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                      }}
+                    >
+                      <Pill size={18} /> Check Drug Interactions
                     </button>
                   </div>
                 </div>
 
                 {/* Right Column: Flat Vector Image */}
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                  <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '24px', padding: '20px', maxWidth: '360px', width: '100%', boxSizing: 'border-box' }}>
+                  <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '24px', padding: '20px', maxWidth: '380px', width: '100%', boxSizing: 'border-box' }}>
                     <img 
                       src={aiAssistantImg} 
                       alt="AI Clinical Assistant Illustration" 
@@ -1182,6 +1215,48 @@ function PatientDashboard() {
                   </button>
                 </div>
 
+              </div>
+            </div>
+
+            {/* Section: AI Health Assistance */}
+            <div style={{ width: '100%', background: '#ffffff', padding: '80px 0', borderBottom: '1px solid #f1f5f9' }}>
+              <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
+                <div style={{ marginBottom: '32px' }}>
+                  <div className="section-tag">✦ CLINICAL ANALYTICS</div>
+                  <h2 style={{ fontSize: '28px', fontFamily: "'Syne', sans-serif", fontWeight: '500', color: '#0f172a', letterSpacing: '-0.8px', margin: '12px 0 16px' }}>
+                    AI Health Assistance
+                  </h2>
+                  <p style={{ color: '#64748b', fontSize: '15px', maxWidth: '600px', margin: 0, lineHeight: 1.6 }}>
+                    Access your AI-synthesized health assessment, probable condition analysis, recurring symptoms tracking, and clinical statistics graphs.
+                  </p>
+                </div>
+
+                <div className="horizontal-card" style={{ background: 'linear-gradient(135deg, #ffffff 0%, #f9fafb 100%)', borderColor: '#e2e8f0' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flex: 1, flexWrap: 'wrap' }}>
+                    <div className="premium-icon-box" style={{ background: 'rgba(14, 165, 233, 0.08)', color: '#0ea5e9', width: '52px', height: '52px', borderRadius: '14px' }}>
+                      <Brain size={28} />
+                    </div>
+                    <div>
+                      <h3 style={{ margin: 0, fontSize: '18px', fontFamily: "'Syne', sans-serif", fontWeight: '700', color: '#0f172a' }}>AI Health Dashboard</h3>
+                      <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '14px', lineHeight: 1.5 }}>
+                        Check your personalized health score, historical trends, visual screening analytics, and urgent clinical guidelines.
+                      </p>
+                    </div>
+                  </div>
+                  <div style={{ flexShrink: 0 }}>
+                    <button
+                      onClick={() => {
+                        setActiveTab('statistics');
+                        navigate('/patient/dashboard?tab=statistics');
+                      }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '14px 24px', borderRadius: '12px', border: 'none', background: 'linear-gradient(135deg, #0ea5e9, #0284c7)', color: 'white', fontSize: '14px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 8px 25px rgba(14, 165, 233, 0.2)', transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)'; e.currentTarget.style.boxShadow = '0 12px 30px rgba(14, 165, 233, 0.35)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 8px 25px rgba(14, 165, 233, 0.2)'; }}
+                    >
+                      <TrendingUp size={16} /> Open Health Statistics
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -1521,6 +1596,48 @@ function PatientDashboard() {
               <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '15px' }}>Input medications to screen for dangerous warnings or negative combinations instantly.</p>
             </div>
             <MedicineInteractionChecker />
+
+            {/* Premium Guide Description Section */}
+            <div className="profile-card" style={{ padding: '30px', marginTop: '12px' }}>
+              <h3 style={{ margin: '0 0 16px', fontSize: '18px', fontFamily: "'Syne', sans-serif", fontWeight: '700', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Info size={18} color="#0284c7" /> How the Interaction Checker Works
+              </h3>
+              <p style={{ margin: '0 0 20px', fontSize: '14.5px', color: '#475569', lineHeight: 1.7 }}>
+                The MedCheck Medicine Interaction Checker provides comprehensive analysis of your drug list to prevent dangerous adverse combinations. By combining clinical databases with advanced medical AI, the checker screens for:
+              </p>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
+                <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#0284c7' }}>
+                    <ShieldAlert size={18} />
+                  </div>
+                  <div>
+                    <h4 style={{ margin: '0 0 4px', fontSize: '14.5px', fontWeight: '600', color: '#1e293b' }}>Drug-to-Drug Interactions</h4>
+                    <p style={{ margin: 0, fontSize: '13px', color: '#64748b', lineHeight: 1.6 }}>Checks if the active compounds in separate drugs trigger harmful physiological reactions or decrease treatment effectiveness when taken concurrently.</p>
+                  </div>
+                </div>
+                
+                <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#dc2626' }}>
+                    <AlertTriangle size={18} />
+                  </div>
+                  <div>
+                    <h4 style={{ margin: '0 0 4px', fontSize: '14.5px', fontWeight: '600', color: '#1e293b' }}>Contraindications</h4>
+                    <p style={{ margin: 0, fontSize: '13px', color: '#64748b', lineHeight: 1.6 }}>Identifies drug classes that should be avoided based on conditions in your health profile (such as high blood pressure, diabetes, or active allergies).</p>
+                  </div>
+                </div>
+                
+                <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#f5f3ff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#7c3aed' }}>
+                    <Pill size={18} />
+                  </div>
+                  <div>
+                    <h4 style={{ margin: '0 0 4px', fontSize: '14.5px', fontWeight: '600', color: '#1e293b' }}>Precautions & Side Effects</h4>
+                    <p style={{ margin: 0, fontSize: '13px', color: '#64748b', lineHeight: 1.6 }}>Highlights common side effects (e.g., drowsiness, stomach bleeding) and gives actionable precautions (e.g., take with meals, avoid driving).</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -1528,74 +1645,88 @@ function PatientDashboard() {
         {activeTab === 'tips' && (
           <div className="animate-fade-in" style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 24px', width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <div>
-              <h1 style={{ margin: 0, fontSize: '32px', fontFamily: "'Syne', sans-serif", fontWeight: '700', color: '#0f172a' }}>Daily Health Tips</h1>
-              <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '15px' }}>Personalized advice curated by AI based on your conditions, liked by the patient community.</p>
+              <h1 style={{ margin: 0, fontSize: '32px', fontFamily: "'Syne', sans-serif", fontWeight: '700', color: '#0f172a' }}>AI Tips</h1>
+              <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '15px' }}>Personalized health tips generated by AI based on your symptoms and health profile.</p>
             </div>
             <HealthTipsFeed />
           </div>
         )}
 
-        {/* ── PREMIUM DASHBOARD FOOTER ── */}
-        <footer style={{ marginTop: 'auto', background: '#ffffff', borderTop: '1px solid #e2e8f0', padding: '48px 24px 24px 24px', width: '100%', boxSizing: 'border-box' }}>
-          <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '32px' }}>
-            {/* Brand Column */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <HeartPulse size={24} color="#0ea5e9" />
-                <span style={{ fontSize: '18px', fontWeight: '700', fontFamily: "'Syne', sans-serif", color: '#0f172a', letterSpacing: '-0.5px' }}>MedCheck</span>
+        {/* ── STANDARD DARK BLUE DASHBOARD FOOTER ── */}
+        <footer style={{ background: '#0c1f35', color: '#94a3b8', padding: '64px 24px 40px', width: '100%', boxSizing: 'border-box', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 40, marginBottom: 48 }}>
+              {/* Brand Column */}
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                  <MedCheckLogo size="sm" showSubtitle={false} darkTheme={true} />
+                </div>
+                <p style={{ fontSize: 14, lineHeight: 1.7, maxWidth: 260 }}>
+                  Intelligent health insights connecting patients with verified medical professionals.
+                </p>
+                <span style={{ fontSize: 12, color: '#64748b', display: 'block', marginTop: '16px' }}>
+                  © {new Date().getFullYear()} MedCheck Healthcare. All rights reserved.
+                </span>
               </div>
-              <p style={{ margin: 0, fontSize: '13px', color: '#64748b', lineHeight: 1.5 }}>
-                Your personal AI-powered clinical screening companion. Tracking vitals, symptom trends, and medicine interactions for a healthier tomorrow.
-              </p>
-              <span style={{ fontSize: '12px', color: '#94a3b8' }}>
-                © {new Date().getFullYear()} MedCheck Healthcare. All rights reserved.
-              </span>
-            </div>
 
-            {/* Quick Navigation Column */}
-            <div>
-              <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '700', textTransform: 'uppercase', color: '#0f172a', letterSpacing: '0.5px' }}>Quick Navigation</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {[
-                  { name: 'Overview Dashboard', tab: 'overview' },
-                  { name: 'Health Statistics', tab: 'statistics' },
-                  { name: 'Symptom History', tab: 'history' },
-                  { name: 'Interaction Checker', tab: 'interactions' },
-                  { name: 'Daily Health Tips', tab: 'tips' }
-                ].map((lnk) => (
-                  <button
-                    key={lnk.tab}
-                    onClick={() => {
-                      setActiveTab(lnk.tab);
-                      navigate(`/patient/dashboard?tab=${lnk.tab}`);
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                    style={{ background: 'none', border: 'none', padding: 0, margin: 0, textAlign: 'left', color: activeTab === lnk.tab ? '#0ea5e9' : '#64748b', fontSize: '13px', fontWeight: activeTab === lnk.tab ? '600' : '400', cursor: 'pointer', transition: 'color 0.2s' }}
-                    onMouseEnter={(e) => e.target.style.color = '#0ea5e9'}
-                    onMouseLeave={(e) => { if (activeTab !== lnk.tab) e.target.style.color = '#64748b'; }}
-                  >
-                    {lnk.name}
-                  </button>
-                ))}
+              {/* Quick Navigation Column */}
+              <div>
+                <div style={{ fontWeight: 600, color: 'white', marginBottom: 16, fontSize: 14, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Quick Navigation</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {[
+                    { name: 'Overview Dashboard', tab: 'overview' },
+                    { name: 'Health Statistics', tab: 'statistics' },
+                    { name: 'Symptom History', tab: 'history' },
+                    { name: 'Interaction Checker', tab: 'medicine' },
+                    { name: 'AI Tips', tab: 'tips' }
+                  ].map((lnk) => (
+                    <button
+                      key={lnk.tab}
+                      onClick={() => {
+                        setActiveTab(lnk.tab);
+                        navigate(`/patient/dashboard?tab=${lnk.tab}`);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      style={{ background: 'none', border: 'none', padding: 0, margin: 0, textAlign: 'left', color: activeTab === lnk.tab ? '#38bdf8' : '#94a3b8', fontSize: 14, fontWeight: activeTab === lnk.tab ? '600' : '400', cursor: 'pointer', transition: 'color 0.2s', fontFamily: "'DM Sans', sans-serif" }}
+                      onMouseEnter={(e) => e.target.style.color = '#38bdf8'}
+                      onMouseLeave={(e) => { if (activeTab !== lnk.tab) e.target.style.color = '#94a3b8'; }}
+                    >
+                      {lnk.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Legal Column */}
+              <div>
+                <div style={{ fontWeight: 600, color: 'white', marginBottom: 16, fontSize: 14, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Legal & Resources</div>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {[
+                    { name: 'Symptoms Library', path: '/symptoms' },
+                    { name: 'Privacy Policy', path: '/privacy-policy' },
+                    { name: 'Terms of Service', path: '/terms-of-service' },
+                    { name: 'Medical Disclaimer', path: '/medical-disclaimer' },
+                    { name: 'Cookie Policy', path: '/cookie-policy' }
+                  ].map(l => (
+                    <li key={l.name}>
+                      <Link to={l.path} style={{ color: '#94a3b8', textDecoration: 'none', fontSize: 14, transition: 'color 0.2s' }} onMouseOver={e => e.target.style.color = '#38BDF8'} onMouseOut={e => e.target.style.color = '#94a3b8'}>
+                        {l.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
 
-            {/* Clinical Disclaimer Column */}
-            <div>
-              <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '700', textTransform: 'uppercase', color: '#0f172a', letterSpacing: '0.5px' }}>Clinical Disclaimer</h4>
-              <p style={{ margin: 0, fontSize: '12px', color: '#64748b', lineHeight: 1.6 }}>
-                MedCheck provides AI-powered medical insights for educational and screening purposes only. It is not a replacement for professional medical advice, clinical diagnosis, or treatment. Always consult a certified healthcare professional.
-              </p>
-            </div>
-          </div>
-
-          {/* Bottom Emergency Banner */}
-          <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '20px', maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '12px', padding: '12px 16px', width: '100%' }}>
-              <Siren size={18} color="#ef4444" style={{ flexShrink: 0 }} />
-              <span style={{ fontSize: '12px', color: '#991b1b', fontWeight: '500', lineHeight: 1.5 }}>
-                <strong>EMERGENCY NOTICE:</strong> If you are experiencing a life-threatening medical emergency (such as severe chest pain, sudden weakness, or breathing difficulties), please immediately call your local emergency number (e.g. 102 / 911) or visit the nearest emergency room.
-              </span>
+            {/* Bottom Emergency Disclaimer */}
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16, fontSize: 13 }}>
+                <p style={{ margin: 0 }}>MedCheck is an informational screening tool — not a substitute for clinical diagnosis or treatment.</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e' }} />
+                  <span style={{ fontSize: 13, color: '#4ade80' }}>All systems operational</span>
+                </div>
+              </div>
             </div>
           </div>
         </footer>

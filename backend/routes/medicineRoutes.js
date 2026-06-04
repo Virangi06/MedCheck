@@ -20,4 +20,10 @@ router.post('/check', medicineController.checkMedicineInteractions);
  */
 router.get('/my-medications', medicineController.getMyMedications);
 
+/**
+ * POST /api/medicine/lookup
+ * Look up full medicine info (overview, uses, pros/cons, side effects, etc.)
+ */
+router.post('/lookup', medicineController.lookupMedicineInfo);
+
 module.exports = router;

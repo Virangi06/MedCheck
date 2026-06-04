@@ -2,6 +2,7 @@
 
 const UserProfile = require('../models/UserProfile');
 const { checkInteractions } = require('../utils/medicineChecker');
+const { callGroqWithFallback } = require('../utils/groqHelper');
 
 /**
  * Helper to call Groq AI to check interactions
@@ -32,42 +33,20 @@ Return ONLY valid JSON. Absolutely no markdown fences, no backticks, no text bef
 `;
 
   try {
-    const response = await fetch(
-      'https://api.groq.com/openai/v1/chat/completions',
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
-          'Content-Type': 'application/json',
+    const cleanedText = await callGroqWithFallback({
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a professional medical AI pharmacist. You always return ONLY valid raw JSON objects.',
         },
-        body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a professional medical AI pharmacist. You always return ONLY valid raw JSON objects.',
-            },
-            {
-              role: 'user',
-              content: prompt,
-            },
-          ],
-          temperature: 0.2,
-          max_tokens: 1500,
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`Groq returned status ${response.status}`);
-    }
-
-    const result = await response.json();
-    const text = result?.choices?.[0]?.message?.content;
-    if (!text) throw new Error('Empty response from Groq');
-
-    let cleanedText = text.trim();
-    cleanedText = cleanedText.replace(/```json/g, '').replace(/```/g, '').trim();
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+      temperature: 0.2,
+      max_tokens: 1500,
+    });
 
     return JSON.parse(cleanedText);
   } catch (err) {
@@ -190,5 +169,69 @@ exports.getMyMedications = async (req, res) => {
       success: false,
       message: 'Failed to retrieve profile medications'
     });
+  }
+};
+
+/**
+ * Look up comprehensive information about a single medicine
+ * POST /api/medicine/lookup
+ */
+exports.lookupMedicineInfo = async (req, res) => {
+  try {
+    const { medicineName, details } = req.body;
+
+    if (!medicineName || !medicineName.trim()) {
+      return res.status(400).json({ success: false, message: 'Medicine name is required' });
+    }
+
+    if (!process.env.GROQ_API_KEY) {
+      throw new Error('GROQ_API_KEY is not defined');
+    }
+
+    const detailsContext = details ? ` Additional patient context: ${details}` : '';
+
+    const prompt = `
+You are a medical information specialist. Provide a comprehensive, detailed, and easy-to-understand medicine guide for: "${medicineName.trim()}".${detailsContext}
+
+Return ONLY a valid raw JSON object (no markdown, no backticks, no extra text) with exactly these fields:
+
+{
+  "name": "Official medicine name",
+  "genericName": "Generic/chemical name if different",
+  "category": "Drug category/class (e.g., NSAID, Antibiotic, Beta-blocker)",
+  "overview": "2-3 sentence plain-language overview of what this medicine is and how it works",
+  "howItWorks": "Brief explanation of the mechanism of action in simple terms",
+  "usedFor": ["condition/situation 1", "condition/situation 2", ...],
+  "dosageInfo": "General dosage information (typical adult dose, frequency, available forms)",
+  "whenToTake": "Instructions on when/how to take (with food, time of day, etc.)",
+  "benefits": ["benefit/pro 1", "benefit/pro 2", ...],
+  "commonSideEffects": ["mild side effect 1", "mild side effect 2", ...],
+  "seriousSideEffects": ["serious side effect 1", "serious side effect 2", ...],
+  "contraindications": ["do not use if 1", "do not use if 2", ...],
+  "precautions": ["important precaution 1", "important precaution 2", ...],
+  "drugInteractionWarnings": "Brief note about important drug classes to avoid combining with",
+  "storage": "How to store this medicine",
+  "overdoseInfo": "Brief what to do in case of overdose",
+  "confidenceScore": integer between 70 and 98
+}
+
+All array fields must have at least 3 items. All string fields must be non-empty. Return ONLY valid JSON.
+`;
+
+    const cleaned = await callGroqWithFallback({
+      messages: [
+        { role: 'system', content: 'You are a medical information specialist. Always return ONLY valid raw JSON objects with no markdown, no backticks, no explanation.' },
+        { role: 'user', content: prompt },
+      ],
+      temperature: 0.2,
+      max_tokens: 2000,
+    });
+
+    const data = JSON.parse(cleaned);
+
+    return res.status(200).json({ success: true, medicine: data });
+  } catch (error) {
+    console.error('Medicine lookup error:', error.message);
+    res.status(500).json({ success: false, message: 'Failed to look up medicine information', error: error.message });
   }
 };

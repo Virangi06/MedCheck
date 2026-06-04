@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Brain, MapPin, CalendarDays, AlertTriangle, UserRound, ShieldCheck } from 'lucide-react';
+import { Brain, MapPin, CalendarDays, AlertTriangle, UserRound, ShieldCheck, Heart } from 'lucide-react';
 import MedCheckLogo from '../components/MedCheckLogo';
 import { feedbackAPI } from '../services/feedbackAPI'; // ADD THIS IMPORT
 
@@ -178,7 +178,7 @@ function Home() {
           text-transform: uppercase;
         }
         .testimonial {
-          background: white;
+          background: #f8fafc;
           border-radius: 20px;
           padding: 28px;
           border: 1px solid #e2e8f0;
@@ -329,8 +329,73 @@ function Home() {
         </div>
       </section>
 
+      {/* ─── OUR MISSION ─── */}
+      <section style={{ padding: '96px 24px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '48px', alignItems: 'center' }}>
+            <div>
+              <div className="section-tag">✦ Our Mission</div>
+              <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: 'clamp(28px,4vw,42px)', color: '#0f172a', letterSpacing: '-0.8px', marginBottom: 20 }}>
+                Empowering Every Patient With Clarity & Confidence
+              </h2>
+              <p style={{ color: '#475569', fontSize: 16, lineHeight: 1.8, marginBottom: 20 }}>
+                We believe that healthcare starts with understanding. Our mission is to bridge the gap between complex medical jargon and human curiosity, providing clear, secure, and instant guidance to help you navigate your wellness journey.
+              </p>
+              <p style={{ color: '#475569', fontSize: 16, lineHeight: 1.8, marginBottom: 24 }}>
+                At MedCheck, we build tools that democratize access to health intelligence. Whether you are checking a symptom or monitoring wellness patterns, we are here to support your health journey with care.
+              </p>
+              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                <Link to="/symptom-checker" className="btn-primary" style={{ padding: '12px 28px', fontSize: 15 }}>
+                  Check Symptoms Now <span>→</span>
+                </Link>
+              </div>
+            </div>
+            
+            <div style={{ display: 'grid', gap: '24px' }}>
+              {[
+                { 
+                  icon: <Heart size={26} color="white" strokeWidth={1.8} />, 
+                  title: 'Patient-First Focus', 
+                  desc: 'We translate complex symptom patterns into clear language, helping you understand your body before speaking with a professional.' 
+                },
+                { 
+                  icon: <Brain size={26} color="white" strokeWidth={1.8} />, 
+                  title: 'Intelligent Guidance', 
+                  desc: 'By cross-referencing global medical insights with custom symptom metrics, we deliver contextually relevant health suggestions.' 
+                },
+                { 
+                  icon: <ShieldCheck size={26} color="white" strokeWidth={1.8} />, 
+                  title: 'Privacy as a Foundation', 
+                  desc: 'Your health data belongs to you. We secure your personal symptom reports with industry-grade encryption and full data control.' 
+                }
+              ].map((item, idx) => (
+                <div key={idx} className="feature-card" style={{ padding: '24px', display: 'flex', gap: '20px', alignItems: 'start' }}>
+                  <div style={{
+                    width: 52,
+                    height: 52,
+                    background: 'linear-gradient(135deg, #0c1f35 0%, #0a3a6e 100%)',
+                    borderRadius: 14,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 4px 16px rgba(14,165,233,0.25)',
+                    flexShrink: 0
+                  }}>
+                    {item.icon}
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: '#0f172a', fontFamily: 'Syne, sans-serif' }}>{item.title}</h3>
+                    <p style={{ color: '#475569', lineHeight: 1.6, fontSize: 14, margin: 0 }}>{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ─── TESTIMONIALS ─── */}
-      <section style={{ padding: '96px 24px', background: '#f8fafc' }}>
+      <section style={{ padding: '96px 24px', background: '#ffffff' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 64 }}>
             <div className="section-tag">✦ Patient Stories</div>
@@ -542,7 +607,7 @@ function Home() {
               <div style={{ fontWeight: 600, color: 'white', marginBottom: 16, fontSize: 14, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Legal</div>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {[
-                  { name: 'About Us', path: '/about' },
+                  { name: 'Symptoms Library', path: '/symptoms' },
                   { name: 'Privacy Policy', path: '/privacy-policy' },
                   { name: 'Terms of Service', path: '/terms-of-service' },
                   { name: 'Medical Disclaimer', path: '/medical-disclaimer' },

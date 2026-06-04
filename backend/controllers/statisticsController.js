@@ -6,6 +6,7 @@ const User = require('../models/User');
 const StatisticsCache = require('../models/StatisticsCache');
 const HealthMetric = require('../models/HealthMetric');
 const UserProfile = require('../models/UserProfile');
+const { callGroqWithFallback } = require('../utils/groqHelper');
 
 // ===== MAIN ENDPOINT =====
 // GET Dashboard Statistics - Returns all charts data
@@ -504,10 +505,146 @@ const saveHealthMetric = async (req, res) => {
   }
 };
 
+/**
+ * POST /api/statistics/ai-assessment
+ * Use Groq AI to analyse ALL user data and return a comprehensive health assessment
+ */
+const getAIHealthAssessment = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    if (!process.env.GROQ_API_KEY) {
+      return res.status(500).json({ success: false, message: 'AI service not configured' });
+    }
+
+    // Fetch profile + all analyses
+    const profile = await UserProfile.findOne({ user: userId }) || {};
+    const analyses = await Analysis.find({ user: userId }).sort({ createdAt: -1 }).limit(20);
+
+    if (analyses.length === 0) {
+      return res.status(200).json({
+        success: true,
+        assessment: null,
+        message: 'No analysis history found. Run a symptom check first.'
+      });
+    }
+
+    // Check if cache exists and contains a valid AI assessment for the current number of analyses
+    const cachedStats = await StatisticsCache.findOne({ userId });
+    if (
+      cachedStats &&
+      cachedStats.aiAssessment &&
+      cachedStats.aiAssessmentCount === analyses.length
+    ) {
+      console.log('🤖 [AI Health Assessment] Returning cached AI assessment');
+      return res.status(200).json({
+        success: true,
+        assessment: cachedStats.aiAssessment,
+        analysisCount: analyses.length,
+        fromCache: true
+      });
+    }
+
+    // Build BMI
+    let bmiStr = 'Not computed';
+    if (profile.height && profile.weight) {
+      const hm = parseFloat(profile.height) / 100;
+      const wkg = parseFloat(profile.weight);
+      if (hm > 0 && wkg > 0) {
+        const bmi = (wkg / (hm * hm)).toFixed(1);
+        const cat = bmi < 18.5 ? 'Underweight' : bmi < 25 ? 'Normal' : bmi < 30 ? 'Overweight' : 'Obese';
+        bmiStr = `${bmi} (${cat})`;
+      }
+    }
+
+    // Summarise analysis history
+    const analysisSummary = analyses.map((a, i) => {
+      const symptoms = a.inputData?.symptoms || a.symptoms || 'Unknown';
+      const condition = a.possibleCondition || a.result?.possibleCondition || 'Unknown';
+      const urgency = a.urgencyLevel || a.result?.urgencyLevel || 'Unknown';
+      const date = a.createdAt ? new Date(a.createdAt).toLocaleDateString('en-IN') : 'Unknown';
+      return `${i + 1}. [${date}] Symptoms: ${symptoms} → Condition: ${condition} (Urgency: ${urgency})`;
+    }).join('\n');
+
+    const prompt = `
+You are an expert medical AI assistant performing a comprehensive health assessment for a patient.
+
+Patient Profile:
+- Age: ${profile.age || 'Unknown'}
+- Gender: ${profile.gender || 'Unknown'}
+- BMI: ${bmiStr}
+- Existing Conditions: ${profile.diseases || 'None'}
+- Current Medications: ${profile.medications || 'None'}
+- Allergies: ${profile.allergies || 'None'}
+- Sleep Patterns: ${profile.sleepPatterns || 'Not recorded'}
+- Activity Level: ${profile.activityLevel || 'Not recorded'}
+- Health Goals: ${profile.healthGoals || 'Not specified'}
+
+Symptom Analysis History (${analyses.length} screenings):
+${analysisSummary}
+
+Based on the complete history above, provide a thorough health assessment. 
+
+IMPORTANT: Always output disease and condition names in simple, common, layperson terms (e.g., 'Acid reflux' instead of 'Gastroesophageal reflux disease', 'Heart attack' instead of 'Myocardial infarction', 'Stomach flu' instead of 'Gastroenteritis'). Avoid complex doctor/medical jargon so that a general user can easily understand.
+
+Return ONLY a valid raw JSON object (no markdown, no backticks):
+
+{
+  "overallHealthStatus": "Good | Fair | Poor | Critical",
+  "healthScore": <number 0-100>,
+  "summary": "<2-3 sentence plain English overview of the patient's health situation>",
+  "probableConditions": [
+    { "name": "<condition name in simple layperson terms>", "likelihood": "<High|Moderate|Low>", "reason": "<brief reason based on their data>" }
+  ],
+  "recurringSymptoms": ["<symptom1>", "<symptom2>"],
+  "keyRiskFactors": ["<risk1>", "<risk2>"],
+  "specialistRecommendations": ["<specialist type>"],
+  "immediateActions": ["<action1>", "<action2>"],
+  "positiveIndicators": ["<good sign 1>", "<good sign 2>"],
+  "disclaimer": "This AI assessment is for informational purposes only and does not constitute medical advice."
+}
+`;
+
+    const text = await callGroqWithFallback({
+      messages: [
+        { role: 'system', content: 'You are an expert medical AI. Return ONLY valid raw JSON, no markdown.' },
+        { role: 'user', content: prompt },
+      ],
+      temperature: 0.4,
+      max_tokens: 1500,
+    });
+
+    const assessment = JSON.parse(text);
+
+    // Save/Update the AI assessment in the StatisticsCache
+    try {
+      await StatisticsCache.findOneAndUpdate(
+        { userId },
+        {
+          aiAssessment: assessment,
+          aiAssessmentCount: analyses.length,
+          lastUpdated: new Date()
+        },
+        { upsert: true, new: true }
+      );
+      console.log('💾 [AI Health Assessment] AI assessment cached successfully');
+    } catch (cacheError) {
+      console.warn('⚠️ [AI Health Assessment] Failed to cache assessment:', cacheError.message);
+    }
+
+    res.status(200).json({ success: true, assessment, analysisCount: analyses.length });
+
+  } catch (error) {
+    console.error('AI Health Assessment error:', error.message);
+    res.status(500).json({ success: false, message: 'Failed to generate AI health assessment' });
+  }
+};
+
 module.exports = {
   getDashboardStatistics,
   getStatisticsSummary,
   clearStatisticsCache,
   getHealthMetrics,
-  saveHealthMetric
+  saveHealthMetric,
+  getAIHealthAssessment
 };

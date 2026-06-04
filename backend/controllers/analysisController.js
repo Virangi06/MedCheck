@@ -199,14 +199,23 @@ exports.analyzeSymptoms = async (
 
     } 
     catch (dbError) {
-  console.error('FULL DB ERROR:', dbError);
+      console.error('FULL DB ERROR:', dbError);
 
-  return res.status(500).json({
-    success: false,
-    message: dbError.message,
-    error: dbError
-  });
-}
+      return res.status(500).json({
+        success: false,
+        message: dbError.message,
+        error: dbError
+      });
+    }
+
+    // Clear statistics cache so it is recalculated on next dashboard load
+    try {
+      const StatisticsCache = require('../models/StatisticsCache');
+      await StatisticsCache.deleteOne({ userId: req.user.id });
+      console.log('🧹 [Symptom Checker] Cleared statistics cache for user:', req.user.id);
+    } catch (cacheErr) {
+      console.warn('⚠️ [Symptom Checker] Failed to clear statistics cache:', cacheErr.message);
+    }
 
     /* =====================================================
        SEND RESPONSE TO FRONTEND

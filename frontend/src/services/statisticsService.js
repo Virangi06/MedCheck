@@ -155,6 +155,29 @@ export const saveHealthMetric = async (metricData) => {
   }
 };
 
+export const getAIHealthAssessment = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('No authentication token found');
+
+    const response = await axios.post(
+      `${API_URL}/api/statistics/ai-assessment`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        timeout: 40000, // AI can take up to 40s
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching AI health assessment:', error.message);
+    throw new Error(error.response?.data?.message || 'Failed to generate AI health assessment');
+  }
+};
+
 export default {
   getDashboardStatistics,
   getStatisticsSummary,
@@ -162,5 +185,6 @@ export default {
   isDataFromCache,
   logStatistics,
   getHealthMetrics,
-  saveHealthMetric
-};
+  saveHealthMetric,
+  getAIHealthAssessment,
+};

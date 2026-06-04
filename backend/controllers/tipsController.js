@@ -4,6 +4,7 @@ const HealthTip = require('../models/HealthTip');
 const UserProfile = require('../models/UserProfile');
 const Analysis = require('../models/Analysis');
 const PersonalizedRecommendation = require('../models/PersonalizedRecommendation');
+const { callGroqWithFallback } = require('../utils/groqHelper');
 
 // Fallback recommendations if AI fails
 const fallbackRecommendations = [
@@ -83,42 +84,20 @@ Return ONLY a valid JSON array of objects with the exact structure (no markdown 
 `;
 
   try {
-    const response = await fetch(
-      'https://api.groq.com/openai/v1/chat/completions',
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
-          'Content-Type': 'application/json',
+    const cleanedText = await callGroqWithFallback({
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a professional medical health coach. Always return ONLY valid raw JSON array of tips.',
         },
-        body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a professional medical health coach. Always return ONLY valid raw JSON array of tips.',
-            },
-            {
-              role: 'user',
-              content: prompt,
-            },
-          ],
-          temperature: 0.5,
-          max_tokens: 1200,
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`Groq returned status ${response.status}`);
-    }
-
-    const result = await response.json();
-    const text = result?.choices?.[0]?.message?.content;
-    if (!text) throw new Error('Empty response from Groq');
-
-    let cleanedText = text.trim();
-    cleanedText = cleanedText.replace(/```json/g, '').replace(/```/g, '').trim();
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+      temperature: 0.5,
+      max_tokens: 1200,
+    });
 
     return JSON.parse(cleanedText);
   } catch (err) {

@@ -248,7 +248,7 @@ function Navbar({ user, onLogout }) {
           {!user && (
             <>
               {navLink('/', 'Home')}
-              {navLink('/about', 'About Us')}
+              {navLink('/symptoms', 'Symptoms')}
               {navLink('/medical-disclaimer', 'Disclaimer')}
             </>
           )}
@@ -277,7 +277,7 @@ function Navbar({ user, onLogout }) {
 
               {navLink(
                 '/patient/dashboard?tab=tips',
-                'Daily AI Tips'
+                'AI Tips'
               )}
 
               {/* Divider */}
@@ -686,7 +686,7 @@ function Navbar({ user, onLogout }) {
                 Home
               </Link>
               <Link
-                to="/about"
+                to="/symptoms"
                 onClick={() => setMobileMenuOpen(false)}
                 style={{
                   display: 'block',
@@ -697,7 +697,7 @@ function Navbar({ user, onLogout }) {
                   fontWeight: 500,
                 }}
               >
-                About Us
+                Symptoms
               </Link>
               <Link
                 to="/medical-disclaimer"
@@ -723,7 +723,7 @@ function Navbar({ user, onLogout }) {
                 { to: '/symptom-checker', label: 'Check Symptoms' },
                 { to: '/patient/dashboard?tab=statistics', label: 'Health Statistics' },
                 { to: '/patient/dashboard?tab=medicine', label: 'Medicine Checker' },
-                { to: '/patient/dashboard?tab=tips', label: 'Daily AI Tips' }
+                { to: '/patient/dashboard?tab=tips', label: 'AI Tips' }
               ].map((lnk) => (
                 <Link
                   key={lnk.to}

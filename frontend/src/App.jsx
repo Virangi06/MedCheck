@@ -21,7 +21,7 @@ import SymptomChecker from './pages/SymptomChecker';
 import Results from './pages/Results';
 import PatientDashboard from './pages/PatientDashboard';
 
-import AboutUs from './pages/AboutUs';
+import Symptoms from './pages/Symptoms';
 import AISymptomAnalysis from './pages/AISymptomAnalysis';
 import HealthInsights from './pages/HealthInsights';
 import DoctorSuggestions from './pages/DoctorSuggestions';
@@ -118,8 +118,8 @@ function App() {
         />
 
         <Route
-          path="/about"
-          element={<AboutUs />}
+          path="/symptoms"
+          element={<Symptoms />}
         />
 
         <Route

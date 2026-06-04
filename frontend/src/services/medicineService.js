@@ -68,7 +68,43 @@ export const getMyMedications = async () => {
   }
 };
 
+/**
+ * Look up detailed info for a single medicine
+ * @param {string} medicineName - The name of the medicine to look up
+ * @param {string} [details] - Optional extra context (e.g., patient condition)
+ */
+export const lookupMedicineInfo = async (medicineName, details = '') => {
+  try {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    const response = await axios.post(
+      `${API_URL}/api/medicine/lookup`,
+      { medicineName, details },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        timeout: 12000
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error('Error looking up medicine:', error.message);
+    throw new Error(
+      error.response?.data?.message || 
+      'Failed to look up medicine information'
+    );
+  }
+};
+
 export default {
   checkMedicineInteractions,
-  getMyMedications
+  getMyMedications,
+  lookupMedicineInfo
 };

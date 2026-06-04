@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import MedCheckLogo from '../components/MedCheckLogo';
 
 import {
   Brain, User, Calendar, ShieldAlert, Pill, AlertTriangle,
@@ -277,8 +278,9 @@ function SymptomChecker() {
   }
 
   return (
-    <div style={{ background: '#f4f9ff', minHeight: '100vh', padding: '60px 24px 80px', fontFamily: "'DM Sans', sans-serif" }}>
-      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+    <div style={{ background: '#f4f9ff', minHeight: '100vh', padding: '60px 0 0', fontFamily: "'DM Sans', sans-serif", display: 'flex', flexDirection: 'column' }}>
+      <div style={{ padding: '0 24px 80px', width: '100%', boxSizing: 'border-box', flex: 1 }}>
+        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
 
       <style>{`
         .glass-container {
@@ -861,6 +863,61 @@ function SymptomChecker() {
           </div>
         )}
       </div>
+      </div>
+      <footer style={{ background: '#0c1f35', color: '#94a3b8', padding: '64px 24px 40px', width: '100%', boxSizing: 'border-box' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 40, marginBottom: 48 }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                <MedCheckLogo size="sm" showSubtitle={false} darkTheme={true} />
+              </div>
+              <p style={{ fontSize: 14, lineHeight: 1.7, maxWidth: 220 }}>Intelligent health insights connecting patients with verified medical professionals.</p>
+            </div>
+            <div>
+              <div style={{ fontWeight: 600, color: 'white', marginBottom: 16, fontSize: 14, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Product</div>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {[
+                  { name: 'AI Symptom Analysis', path: '/product/symptom-analysis' },
+                  { name: 'Health Insights', path: '/product/health-insights' },
+                  { name: 'Nearby Doctor Suggestions', path: '/product/doctor-suggestions' },
+                  { name: 'Personal Health History', path: '/product/health-history' }
+                ].map(l => (
+                  <li key={l.name}>
+                    <Link to={l.path} style={{ color: '#94a3b8', textDecoration: 'none', fontSize: 14, transition: 'color 0.2s' }} onMouseOver={e => e.target.style.color = '#38BDF8'} onMouseOut={e => e.target.style.color = '#94a3b8'}>
+                      {l.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <div style={{ fontWeight: 600, color: 'white', marginBottom: 16, fontSize: 14, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Legal</div>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {[
+                  { name: 'Symptoms Library', path: '/symptoms' },
+                  { name: 'Privacy Policy', path: '/privacy-policy' },
+                  { name: 'Terms of Service', path: '/terms-of-service' },
+                  { name: 'Medical Disclaimer', path: '/medical-disclaimer' },
+                  { name: 'Cookie Policy', path: '/cookie-policy' }
+                ].map(l => (
+                  <li key={l.name}>
+                    <Link to={l.path} style={{ color: '#94a3b8', textDecoration: 'none', fontSize: 14, transition: 'color 0.2s' }} onMouseOver={e => e.target.style.color = '#38BDF8'} onMouseOut={e => e.target.style.color = '#94a3b8'}>
+                      {l.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+            <p style={{ fontSize: 13 }}>© 2026 MedCheck. All rights reserved. This is a health informational tool — not a substitute for medical diagnosis.</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e' }} />
+              <span style={{ fontSize: 13, color: '#4ade80' }}>All systems operational</span>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

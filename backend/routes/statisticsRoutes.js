@@ -33,4 +33,10 @@ router.post('/clear-cache', statisticsController.clearStatisticsCache);
 router.get('/metrics', statisticsController.getHealthMetrics);
 router.post('/metrics', statisticsController.saveHealthMetric);
 
-module.exports = router;
+/**
+ * POST /api/statistics/ai-assessment
+ * Run a full Groq AI health assessment based on user analyses + profile
+ */
+router.post('/ai-assessment', statisticsController.getAIHealthAssessment);
+
+module.exports = router;
