@@ -1,18 +1,19 @@
 # MedCheck - Complete Project Documentation
 
 ## Project Overview
-**MedCheck** is a MERN-stack healthcare application that provides AI-powered symptom analysis, personalized doctor recommendations based on location, health profile management, and community feedback features.
+**MedCheck** is a MERN-stack healthcare application that provides real-time AI-powered symptom analysis via Server-Sent Events (SSE) streaming, personalized doctor recommendations based on location, local drug interaction checking, dynamic health metrics charts, daily health tips checklist, health profile management, and community feedback features.
 
 ---
 
 ## 🎯 CORE FUNCTIONALITIES
 
 ### 1. **USER AUTHENTICATION SYSTEM**
-**Module**: Authentication (Login, Register, Password Reset)
+**Module**: Authentication (Login, Register, Logout, Password Reset)
 
 **Functionalities:**
 - **User Registration** - Create new account with name, email, password
 - **User Login** - Authenticate with email/password, receive JWT token
+- **User Logout** - Invalidate token and clear user session state
 - **Email Verification via OTP** - 6-digit OTP sent to email for password reset
 - **Password Reset** - Change forgotten password through OTP verification
 - **Role-Based Access Control** - Different roles: Patient, Doctor, Admin (future)
@@ -20,15 +21,15 @@
 - **Protected Routes** - Unauthorized users redirected to login
 
 **Files Involved:**
-- Frontend: `Login.jsx`, `Register.jsx`, `ForgotPassword.jsx`, `VerifyOtp.jsx`, `ResetPassword.jsx`
+- Frontend: `Login.jsx`, `Register.jsx`, `ForgotPassword.jsx`, `VerifyOtp.jsx`, `ResetPassword.jsx` (under `pages/`), `context/AuthContext.jsx`
 - Backend: `authController.js`, `authRoutes.js`
 - Database: `User.js` model
 - Middleware: `authMiddleware.js` (JWT verification)
 
 ---
 
-### 2. **AI-POWERED SYMPTOM ANALYSIS**
-**Module**: Symptom Checker & Analysis
+### 2. **AI-POWERED SYMPTOM ANALYSIS (STREAMING)**
+**Module**: Symptom Checker & Streaming Analysis
 
 **Functionalities:**
 - **Multi-Step Form** - 2-step form to collect patient information
@@ -44,7 +45,10 @@
   - Affected body area
 - **GPS Location Integration** - Automatically captures user's coordinates
 - **Profile Auto-Fill** - Previously saved profile automatically fills in the form
-- **AI Analysis via Groq API** - Processes patient data through Llama 3.3 70B model
+- **AI Streaming via Groq API (SSE)** - Streams tokens of analysis from Groq Cloud in real-time.
+- **Client-Side Partial JSON Parser** - Parses incomplete JSON strings from the Event Stream using regex patterns, rendering details instantly.
+- **Model Fallback Logic** - Automatically switches to Llama 3.1 8B if the primary Llama 3.3 70B model encounters rate limits.
+- **Stream-Aware UX** - Displays pulsing skeleton loaders for clinical fields still being written, and locks action download buttons until generation completes.
 - **Analysis Results Include:**
   - Possible medical condition
   - Condition explanation
@@ -59,8 +63,8 @@
   - Emergency warnings (if applicable)
 
 **Files Involved:**
-- Frontend: `SymptomChecker.jsx`, `Results.jsx`
-- Backend: `analysisController.js`, `aiService.js`, `analysisRoutes.js`
+- Frontend: `pages/SymptomChecker.jsx`
+- Backend: `controllers/analysisController.js`, `services/aiService.js`, `routes/analysisRoutes.js`, `utils/groqHelper.js`, `utils/emergencyCheck.js`
 - Database: `Analysis.js` model
 - External API: Groq Cloud (AI inference)
 
@@ -79,15 +83,18 @@
   - Full Name
   - Age
   - Gender
-  - Height (cm)
-  - Weight (kg)
+  - Height
+  - Weight
   - Existing Diseases
   - Current Medications
   - Known Allergies
+  - Sleep Patterns
+  - Activity Level
+  - Health Goals
 
 **Files Involved:**
-- Frontend: `SymptomChecker.jsx`, `PatientDashboard.jsx`
-- Backend: `profileController.js`, `profileRoutes.js`
+- Frontend: `pages/SymptomChecker.jsx`, `pages/PatientDashboard.jsx`
+- Backend: `controllers/profileController.js`, `routes/profileRoutes.js`
 - Database: `UserProfile.js` model (one-to-one with User)
 
 ---
@@ -111,13 +118,13 @@
   - GPS coordinates (latitude, longitude)
 - **Distance Calculation** - Haversine formula to calculate accurate distances
 - **Sorted by Distance** - Facilities sorted from closest to farthest
-- **Maximum 5 Facilities** - Shows top 5 nearest facilities
-- **Fallback Mock Data** - Provides sample data if API unavailable
+- **Maximum 10 Facilities** - Shows top 10 nearest facilities
+- **Fallback Mock Data** - Provides sample data if API is unavailable
 - **Real-Time Search** - Uses OpenStreetMap data via Overpass API
 
 **Files Involved:**
-- Frontend: `Results.jsx`, `PatientDashboard.jsx`
-- Backend: `locationService.js`, `calculateDistance.js`
+- Frontend: `pages/SymptomChecker.jsx`, `pages/PatientDashboard.jsx`
+- Backend: `services/locationService.js`, `utils/calculateDistance.js`, `controllers/analysisController.js`
 - External API: Overpass API (OpenStreetMap data)
 
 ---
@@ -148,8 +155,8 @@
 - **Persistent Records** - All analyses stored permanently in MongoDB
 
 **Files Involved:**
-- Frontend: `PatientDashboard.jsx`
-- Backend: `analysisController.js` getHistory()
+- Frontend: `pages/PatientDashboard.jsx`, `pages/Results.jsx`
+- Backend: `controllers/analysisController.js` getHistory()
 - Database: `Analysis.js` model with userId reference
 
 ---
@@ -170,13 +177,57 @@
 - **Approval System** - Feedback auto-approved, admin can manage later
 
 **Files Involved:**
-- Frontend: `Home.jsx` (testimonials), `PatientDashboard.jsx` (manage feedback)
-- Backend: `feedbackController.js`, `feedbackRoutes.js`
+- Frontend: `pages/Home.jsx` (testimonials), `pages/PatientDashboard.jsx` (manage feedback), `services/feedbackAPI.js`
+- Backend: `controllers/feedbackController.js`, `routes/feedbackRoutes.js`
 - Database: `Feedback.js` model
 
 ---
 
-### 7. **PDF REPORT GENERATION**
+### 7. **DRUG INTERACTION CHECKER**
+**Module**: Local & Server Medicine Interaction Auditing
+
+**Functionalities:**
+- **Local Interaction Warning** - Compares user's profile medications against AI-suggested medicines to scan for hazardous combinations instantly.
+- **Drug Info Query** - Search details, usage warnings, side effects, and precautions of any medication.
+- **Safety Flags** - Instantly renders high-priority warning boxes if contraindicated medications are used together.
+
+**Files Involved:**
+- Frontend: `components/MedicineInteractionChecker.jsx`, `utils/medicineChecker.js`, `services/medicineService.js`
+- Backend: `controllers/medicineController.js`, `routes/medicineRoutes.js`, `utils/medicineChecker.js`
+
+---
+
+### 8. **DAILY HEALTH TIPS FEED & GOALS**
+**Module**: Daily Wellness Recommendations
+
+**Functionalities:**
+- **Personalized Daily Tips** - Renders AI-generated daily tips targeted to user chronic diseases and symptom checker history.
+- **Daily Goals Checklist** - Provides actionable goals (e.g. hydrate, take specific medications) and updates completion logs.
+- **Goal Toggling** - Saves task completion statuses to database.
+
+**Files Involved:**
+- Frontend: `components/HealthTipsFeed.jsx`, `services/tipsService.js`
+- Backend: `controllers/tipsController.js`, `routes/tipsRoutes.js`
+- Database: `HealthTip.js`, `PersonalizedRecommendation.js` models
+
+---
+
+### 9. **HEALTH METRICS & VISUAL ANALYTICS**
+**Module**: Visual Dashboard Charts
+
+**Functionalities:**
+- **Symptom frequency bar charts** - Compiles diagnostic history into dynamic charts.
+- **Mongoose TTL Dashboard Cache** - Caches statistics results for 24 hours via database indexes to prevent heavy resource computation, automatically clearing when a checkup finishes.
+- **Daily Metrics log** - Log steps, weight, heart rate, blood pressure, sleep, and calculates BMI.
+
+**Files Involved:**
+- Frontend: `components/HealthStatisticsDashboard.jsx`, `services/statisticsService.js`
+- Backend: `controllers/statisticsController.js`, `routes/statisticsRoutes.js`
+- Database: `HealthMetric.js`, `StatisticsCache.js` models
+
+---
+
+### 10. **PDF REPORT GENERATION**
 **Module**: Analysis Report Export
 
 **Functionalities:**
@@ -207,27 +258,26 @@
 
 ---
 
-### 8. **RESPONSIVE USER INTERFACE**
+### 11. **RESPONSIVE USER INTERFACE**
 **Module**: Frontend Pages & Components
 
 **Public Pages:**
 - **Home** - Landing page with feature highlights and testimonials
-- **About** - Company/product information
-- **Product Info Pages** - Details about AI analysis, doctor suggestions, health insights, health history
-- **Legal Pages** - Privacy policy, terms of service, medical disclaimer, cookie policy
-- **Authentication Pages** - Login, Register, Password reset flow
+- **Product Info Pages** - Details about AI analysis (`AISymptomAnalysis.jsx`), doctor suggestions (`DoctorSuggestions.jsx`), health insights (`HealthInsights.jsx`), and health history (`HealthHistory.jsx`)
+- **Symptoms** - Public landing page detailing symptoms index (`Symptoms.jsx`)
+- **Legal Pages** - Privacy policy (`PrivacyPolicy.jsx`), terms of service (`TermsOfService.jsx`), medical disclaimer (`MedicalDisclaimer.jsx`), cookie policy (`CookiePolicy.jsx`)
+- **Authentication Pages** - Login, Register, Forgot password flow
 
 **Protected Pages:**
-- **Symptom Checker** - Multi-step symptom analysis form
-- **Results** - Display analysis results with nearby doctors
-- **Patient Dashboard** - View history, manage profile, feedback system, health statistics
+- **Symptom Checker** - Multi-step symptom analysis form with Event Stream viewer (`SymptomChecker.jsx`)
+- **Results** - Detailed static reports view (`Results.jsx`)
+- **Patient Dashboard** - View history, manage profile, log feedback, monitor metrics, view visual charts and health tips (`PatientDashboard.jsx`)
 
 **Reusable Components:**
-- Navbar - Navigation with conditional rendering
-- Button, Input, Select, Checkbox - Form elements
-- Badge - Status indicators
-- Card, MedCheckLogo - UI containers
-- MedIcon - Icon library wrapper
+- Navbar - Navigation with conditional rendering (`Navbar.jsx`)
+- Button, Badge - UI visual helpers (`Button.jsx`, `Badge.jsx`)
+- Card, MedCheckLogo - UI containers (`Card.jsx`, `MedCheckLogo.jsx`)
+- MedIcon - Icon library wrapper (`MedIcon.jsx`)
 
 ---
 
@@ -242,6 +292,9 @@ User Input → Frontend Validation → POST /api/auth/register
 Login:
 Email + Password → POST /api/auth/login 
 → Verify Credentials → Generate JWT → Return Token → localStorage
+
+Logout:
+POST /api/auth/logout → Clear JWT Token & Session State on client-side
 
 Protected Routes:
 Request → Check Token in localStorage → Add to Authorization Header 
@@ -274,13 +327,16 @@ Forgot Password → POST /api/auth/forgot-password → Generate 6-digit OTP
 ```
 - user (Reference to User, Unique)
 - fullName (String)
-- age (Number or String)
+- age (String)
 - gender (String) - Male/Female/Other
-- height (Number) - in cm
-- weight (Number) - in kg
+- height (String) - in cm
+- weight (String) - in kg
 - diseases (String) - Existing conditions
 - medications (String) - Current medications
 - allergies (String) - Known allergies
+- sleepPatterns (String) - Sleep statistics
+- activityLevel (String) - Activity logs
+- healthGoals (String) - Goal description
 - createdAt, updatedAt (Timestamps)
 ```
 
@@ -323,6 +379,55 @@ Forgot Password → POST /api/auth/forgot-password → Generate 6-digit OTP
 - expiresAt (Date) - Expiry time (5 minutes)
 ```
 
+### **HealthMetric Model**
+```
+- user (Reference to User)
+- date (String) - YYYY-MM-DD
+- heartRate (Number)
+- bloodPressure (Object) - {systolic, diastolic}
+- weight (Number)
+- sleepDuration (Number)
+- activityLevel (Number)
+- healthScore (Number)
+- bmi (Number)
+- createdAt, updatedAt (Timestamps)
+```
+
+### **HealthTip Model**
+```
+- title (String)
+- content (String)
+- category (String)
+- conditions (Array of Strings)
+- upvotes (Array of References to User)
+- sharesCount (Number)
+- isAiGenerated (Boolean)
+- createdAt, updatedAt (Timestamps)
+```
+
+### **PersonalizedRecommendation Model**
+```
+- user (Reference to User)
+- date (String) - YYYY-MM-DD
+- recommendations (Array of Objects) - [{title, content, category, priority, actionable, completed}]
+- createdAt, updatedAt (Timestamps)
+```
+
+### **StatisticsCache Model**
+```
+- userId (Reference to User, Unique)
+- totalAnalyses (Number)
+- symptomFrequency (Array) - [{symptom, count, percentage}]
+- urgencyStats (Object) - {low, moderate, high, emergency}
+- mostCommonConditions (Array) - [{condition, count, percentage, lastDetected}]
+- monthlyData (Array) - [{month, analysisCount, averageUrgency, highUrgencyCount}]
+- insights (Object) - {totalAnalyses, averageUrgencyLevel, riskLevel, mostRecentAnalysis, topCondition, recommendedAction, trend, calculatedAt}
+- aiAssessment (Object) - Cached AI health analysis report
+- aiAssessmentCount (Number)
+- lastUpdated (Date)
+- expiresAt (Date) - TTL Cache index
+```
+
 ---
 
 ## 🔗 API ENDPOINTS SUMMARY
@@ -331,39 +436,53 @@ Forgot Password → POST /api/auth/forgot-password → Generate 6-digit OTP
 |--------|----------|-----------|---------|
 | POST | /api/auth/register | Public | User registration |
 | POST | /api/auth/login | Public | User login |
+| POST | /api/auth/logout | Public | User logout |
 | GET | /api/auth/me | Protected | Get current user |
 | POST | /api/auth/forgot-password | Public | Request password reset |
 | POST | /api/auth/verify-otp | Public | Verify OTP |
 | POST | /api/auth/reset-password | Public | Reset password |
-| POST | /api/analysis/analyze | Protected | Submit symptom analysis |
+| POST | /api/auth/change-password | Protected | Change password |
+| POST | /api/analysis/analyze | Protected | Submit symptom analysis (SSE Stream) |
 | GET | /api/analysis/history | Protected | Get user's analyses |
 | GET | /api/profile | Protected | Get user's profile |
 | GET | /api/profile/init | Protected | Initialize profile |
 | PUT | /api/profile | Protected | Update profile |
 | POST | /api/feedback/create | Protected | Submit feedback |
-| GET | /api/feedback/all | Public | View all feedbacks |
+| GET | /api/feedback/all | Public | Get all approved feedbacks |
 | GET | /api/feedback/my-feedbacks | Protected | View user's feedbacks |
 | PUT | /api/feedback/update/:id | Protected | Update feedback |
 | DELETE | /api/feedback/delete/:id | Protected | Delete feedback |
 | GET | /api/feedback/random/:limit | Public | Random feedbacks |
 | GET | /api/health | Public | Health check |
+| GET | /api/tips | Protected | Get daily health tips feed |
+| PATCH | /api/tips/recommendations/:id/toggle | Protected | Toggle recommendation completion |
+| GET | /api/statistics/dashboard | Protected | Fetch dashboard statistics |
+| GET | /api/statistics/summary | Protected | Fetch statistics summary |
+| POST | /api/statistics/clear-cache | Protected | Clear statistics cache |
+| GET | /api/statistics/metrics | Protected | Fetch health metrics history |
+| POST | /api/statistics/metrics | Protected | Save health metric entry |
+| POST | /api/statistics/ai-assessment | Protected | Run AI health assessment compilation |
+| POST | /api/medicine/check | Protected | Verify active drug-to-drug interactions |
+| GET | /api/medicine/my-medications | Protected | Resolve profile medication list |
+| POST | /api/medicine/lookup | Protected | Query drug profile metrics & instructions |
 
 ---
 
 ## 🛠️ EXTERNAL INTEGRATIONS
 
 ### **1. Groq AI API**
-- **Purpose**: AI-powered symptom analysis
-- **Model**: Llama 3.3 70B
+- **Purpose**: AI-powered symptom analysis (real-time Event-Stream)
+- **Model**: Llama 3.3 70B (primary), Llama 3.1 8B (fallback)
+- **Centralized Handler**: Managed via `callGroqWithFallback` helper to handle rate limits and service failures gracefully.
 - **Input**: Patient health data and symptoms
-- **Output**: Medical analysis (condition, recommendations, urgency)
-- **Response Time**: ~10-30 seconds
+- **Output**: Medical analysis JSON text streamed back token-by-token
+- **Response Time**: Real-time streaming initialization within 1s
 
 ### **2. Overpass API (OpenStreetMap)**
 - **Purpose**: Find nearby medical facilities
 - **Data Source**: OpenStreetMap community data
 - **Radius**: 5km from user location
-- **Returns**: Hospitals, clinics, doctors, pharmacies
+- **Returns**: Hospitals, clinics, doctors, pharmacies sorted by distance
 
 ### **3. Nodemailer (Email)**
 - **Purpose**: Send OTP for password reset
@@ -405,15 +524,16 @@ Forgot Password → POST /api/auth/forgot-password → Generate 6-digit OTP
 - **Color Scheme**: Blue (#0284c7 primary), Dark gray (#0f172a), Light backgrounds
 - **Typography**: DM Sans font family, Syne for headings
 - **Layout**: Responsive grid system, mobile-first approach
-- **Components**: Cards, badges, buttons, collapsible sections
+- **Components**: Cards, badges, buttons, collapsible sections, skeleton loaders
 - **Icons**: Lucide React for UI icons
 
 **Key UI Features:**
 - Navigation bar with conditional rendering
 - Multi-step forms with validation
 - Collapsible analysis cards with smooth animations
+- Real-time Event-Stream results renderer
 - Status indicators with color coding
-- Interactive health metrics (soon)
+- Interactive health metrics dynamic logging
 - PDF download buttons
 - Star rating system for feedback
 - Modal dialogs for forms
@@ -429,15 +549,15 @@ USER JOURNEY:
 2. Go to Symptom Checker → Load saved profile (if exists)
 3. Fill health info (Step 1) → Save to database
 4. Enter current symptoms (Step 2) → Validate
-5. Click Analyze → Send to backend with GPS location
-6. Backend calls Groq AI → Get medical analysis
-7. Backend calls Overpass API → Get nearby doctors
-8. Calculate distances → Sort by proximity
-9. Save analysis record → Return to frontend
-10. Display results → Show condition, recommendations, doctors
-11. User can download PDF → generateAnalysisPDF() called
-12. View Dashboard → See all past analyses
-13. Click analysis → Expand to see full details
+5. Click Analyze → Backend opens SSE event stream connection
+6. Backend streams AI diagnostic tokens from Groq API in real-time
+7. Frontend reads stream and parses partial JSON live via regex to render fields incrementally with skeleton screens
+8. Once the stream ends, the backend fetches nearby clinics from Overpass API
+9. Calculate clinic distances via Haversine formula → Sort by proximity
+10. Persist analysis report in MongoDB and clear statistics cache
+11. Send final 'done' SSE event payload to render clinics and unlock download/save actions
+12. User can download PDF report → generateAnalysisPDF() called
+13. View Dashboard → See all past analyses, visual analytics, charts, and cache-backed AI assessment
 14. Submit feedback → Save to database
 15. View community feedbacks → See random testimonials
 ```
@@ -448,7 +568,7 @@ USER JOURNEY:
 
 **Frontend:**
 - React 18.3 with React Router 7.15
-- Axios + Fetch API for HTTP requests
+- Fetch API for stream reading
 - jsPDF + html2canvas for PDF generation
 - Lucide React for icons
 - localStorage for client-side persistence
@@ -476,8 +596,12 @@ USER JOURNEY:
 |---------|--------|-----------|--------|
 | User Authentication | ✅ Complete | Basic | High |
 | Health Profile | ✅ Complete | Basic | High |
-| AI Symptom Analysis | ✅ Complete | Complex | High |
-| Nearby Doctors | ✅ Complete | Complex | High |
+| AI Symptom Analysis (SSE) | ✅ Complete | Complex | High |
+| Geolocation Clinics | ✅ Complete | Complex | High |
+| Drug Interaction Checker | ✅ Complete | Medium | High |
+| Health Metrics Log | ✅ Complete | Medium | Medium |
+| Visual Statistics Dashboard| ✅ Complete | Complex | High |
+| Personalized Daily Tips | ✅ Complete | Complex | High |
 | Analysis History | ✅ Complete | Basic | Medium |
 | Feedback System | ✅ Complete | Basic | Medium |
 | PDF Reports | ✅ Complete | Medium | Medium |
@@ -490,8 +614,11 @@ USER JOURNEY:
 
 MedCheck is a **fully functional AI-powered healthcare platform** with:
 - ✅ Secure user authentication system
-- ✅ AI-driven symptom analysis using Groq API
-- ✅ Real-time geolocation-based doctor recommendations
+- ✅ Real-time AI symptom analysis using Groq API via SSE Stream
+- ✅ Real-time geolocation-based clinic recommendations
+- ✅ Local drug interaction checking
+- ✅ Daily health tips and goal checklist
+- ✅ Statistics caching and health metrics logs
 - ✅ Persistent health profile management
 - ✅ Comprehensive analysis history tracking
 - ✅ Community feedback and testimonial system
@@ -503,7 +630,10 @@ MedCheck is a **fully functional AI-powered healthcare platform** with:
 **Current Users Can:**
 - Sign up and authenticate securely
 - Complete detailed health questionnaire
-- Receive AI-powered medical analysis
+- Receive live AI-powered medical analysis
+- Check drug interactions locally
+- Track daily checklists and wellness tips
+- Monitor health statistics and charts
 - Find nearby medical facilities
 - Download analysis reports
 - Track health history
@@ -512,6 +642,6 @@ MedCheck is a **fully functional AI-powered healthcare platform** with:
 
 ---
 
-**Created:** December 2024  
-**Version:** 1.0 Complete  
+**Created:** June 2026 
+**Version:** 1.0.0 Complete  
 **Status:** Production Ready (with Groq API key)
