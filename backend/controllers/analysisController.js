@@ -39,10 +39,18 @@ exports.analyzeSymptoms = async (
     }
 
     /* =====================================================
-       AI ANALYSIS
+       AI ANALYSIS (STREAMING)
     ===================================================== */
 
-    const aiResult = await analyzeAI(body);
+    // Establish Server-Sent Events stream headers
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    const aiResult = await analyzeAI(body, (chunk) => {
+      res.write(`data: ${JSON.stringify({ event: 'chunk', text: chunk })}\n\n`);
+    });
 
     console.log('✅ AI RESULT:', aiResult);
 
@@ -218,14 +226,11 @@ exports.analyzeSymptoms = async (
     }
 
     /* =====================================================
-       SEND RESPONSE TO FRONTEND
+       SEND RESPONSE TO FRONTEND (DONE STREAMING)
     ===================================================== */
 
-    return res.status(200).json({
-      success:  true,
-      analysis: finalAnalysis,
-      id:       savedId,
-    });
+    res.write(`data: ${JSON.stringify({ event: 'done', id: savedId, nearbyDoctors })}\n\n`);
+    return res.end();
 
   } catch (error) {
     console.error('❌ ANALYSIS CONTROLLER ERROR:', {
@@ -247,13 +252,18 @@ exports.analyzeSymptoms = async (
       statusCode   = 503;
     }
 
-    return res.status(statusCode).json({
-      success: false,
-      message: errorMessage,
-      error:   process.env.NODE_ENV === 'development'
-        ? error.message
-        : undefined,
-    });
+    if (res.headersSent) {
+      res.write(`data: ${JSON.stringify({ event: 'error', message: errorMessage })}\n\n`);
+      return res.end();
+    } else {
+      return res.status(statusCode).json({
+        success: false,
+        message: errorMessage,
+        error:   process.env.NODE_ENV === 'development'
+          ? error.message
+          : undefined,
+      });
+    }
   }
 };
 

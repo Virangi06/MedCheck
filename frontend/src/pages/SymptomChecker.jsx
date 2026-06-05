@@ -16,6 +16,88 @@ import { checkInteractionsLocally } from '../utils/medicineChecker';
 
 const API = 'http://localhost:5000/api';
 
+// A robust helper to parse partial JSON string returned by LLM stream in real-time.
+// It uses regex to match completed key-value pairs or streaming partial values.
+const parsePartialJSON = (accumulatedText) => {
+  const result = {};
+
+  const keys = [
+    "possibleCondition",
+    "conditionExplanation",
+    "urgencyLevel",
+    "recommendedDoctor",
+    "recommendedSpecialist",
+    "dietRecommendation",
+    "recoveryAdvice",
+    "emergencyWarning",
+    "whenToSeeDoctor"
+  ];
+
+  // Clean raw markdown wrappers if model starts outputting them (e.g. ```json or ```)
+  let text = accumulatedText.trim();
+  if (text.startsWith('```json')) {
+    text = text.substring(7);
+  } else if (text.startsWith('```')) {
+    text = text.substring(3);
+  }
+  text = text.trim();
+
+  keys.forEach(key => {
+    // 1. Look for closed quotes first: "key": "value"
+    const closedRegex = new RegExp(`"${key}"\\s*:\\s*"([^"]*)"`);
+    const closedMatch = text.match(closedRegex);
+    if (closedMatch) {
+      result[key] = closedMatch[1];
+    } else {
+      // 2. Look for open quotes (still streaming): "key": "value...
+      const openRegex = new RegExp(`"${key}"\\s*:\\s*"([^"]*)$`);
+      const openMatch = text.match(openRegex);
+      if (openMatch) {
+        result[key] = openMatch[1];
+      }
+    }
+  });
+
+  // Extract arrays (precautions, recommendedMedicines)
+  const arrayKeys = ["precautions", "recommendedMedicines"];
+  arrayKeys.forEach(key => {
+    const arrayRegex = new RegExp(`"${key}"\\s*:\\s*\\[([^\\]]*)\\]`);
+    const arrayMatch = text.match(arrayRegex);
+    if (arrayMatch) {
+      try {
+        const elementsStr = arrayMatch[1];
+        result[key] = elementsStr
+          .split(',')
+          .map(item => {
+            const m = item.match(/"([^"]*)"/);
+            return m ? m[1] : null;
+          })
+          .filter(Boolean);
+      } catch (e) {
+        result[key] = [];
+      }
+    } else {
+      // If array is still streaming: "key": [ "elem1", "elem2
+      const openArrayRegex = new RegExp(`"${key}"\\s*:\\s*\\[([^\\]]*)$`);
+      const openArrayMatch = text.match(openArrayRegex);
+      if (openArrayMatch) {
+        const elementsStr = openArrayMatch[1];
+        result[key] = elementsStr
+          .split(',')
+          .map(item => {
+            const m = item.match(/"([^"]*)"/);
+            return m ? m[1] : null;
+          })
+          .filter(Boolean);
+      } else {
+        result[key] = [];
+      }
+    }
+  });
+
+  return result;
+};
+
 function SymptomChecker() {
   const navigate = useNavigate();
   const { profile, token } = useAuth();
@@ -24,6 +106,7 @@ function SymptomChecker() {
   // ── State ──────────────────────────────────────────────────
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
   const [profileLoading, setProfileLoading] = useState(true);
   const [analysis, setAnalysis] = useState(null);
   const [errors, setErrors] = useState({});
@@ -155,9 +238,11 @@ function SymptomChecker() {
     setStep(2);
   };
 
-  // ── AI Analysis ────────────────────────────────────────────
+  // ── AI Analysis (SSE Streaming) ────────────────────────────
   const handleAnalyze = async () => {
     setLoading(true);
+    setAnalysis(null);
+    setIsStreaming(true);
     try {
       const finalData = {
         ...formData,
@@ -167,30 +252,89 @@ function SymptomChecker() {
         allergies:   formData.allergies   === 'Other' ? customAllergy     : formData.allergies,
       };
 
-      const response = await axios.post(`${API}/analysis/analyze`, finalData, {
-        headers: { Authorization: `Bearer ${token}` },
+      // Call raw fetch for streaming support
+      const response = await fetch(`${API}/analysis/analyze`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(finalData)
       });
 
-      const result = response.data.analysis;
-      setAnalysis(result);
-
-      // ✅ Cache to localStorage so dashboard reads it instantly without refetch
-      const historyEntry = {
-        _id:       response.data.id || Date.now().toString(),
-        createdAt: new Date().toISOString(),
-        inputData: finalData,
-        result,
-      };
-      const existing = JSON.parse(localStorage.getItem('analysisHistory') || '[]');
-      const updated  = [historyEntry, ...existing].slice(0, 20);
-      localStorage.setItem('analysisHistory', JSON.stringify(updated));
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Analysis failed');
+      }
 
       setStep(3);
+      setLoading(false);
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulatedText = '';
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop(); // Keep incomplete line in buffer
+
+        for (const line of lines) {
+          const cleanedLine = line.trim();
+          if (!cleanedLine) continue;
+          if (cleanedLine.startsWith('data: ')) {
+            try {
+              const dataPacket = JSON.parse(cleanedLine.substring(6));
+              
+              if (dataPacket.event === 'chunk') {
+                accumulatedText += dataPacket.text;
+                // Parse accumulated text stream and set state live
+                const parsed = parsePartialJSON(accumulatedText);
+                setAnalysis(prev => ({
+                  ...prev,
+                  ...parsed
+                }));
+              } else if (dataPacket.event === 'done') {
+                setIsStreaming(false);
+                // Done event: contains the saved DB id and the list of nearby doctors
+                setAnalysis(prev => ({
+                  ...prev,
+                  id: dataPacket.id,
+                  nearbyDoctors: dataPacket.nearbyDoctors
+                }));
+
+                // ✅ Cache to localStorage so dashboard reads it instantly without refetch
+                const historyEntry = {
+                  _id:       dataPacket.id || Date.now().toString(),
+                  createdAt: new Date().toISOString(),
+                  inputData: finalData,
+                  result: {
+                    ...parsePartialJSON(accumulatedText),
+                    nearbyDoctors: dataPacket.nearbyDoctors
+                  },
+                };
+                const existing = JSON.parse(localStorage.getItem('analysisHistory') || '[]');
+                const updated  = [historyEntry, ...existing].slice(0, 20);
+                localStorage.setItem('analysisHistory', JSON.stringify(updated));
+              } else if (dataPacket.event === 'error') {
+                setIsStreaming(false);
+                alert(`Error during analysis stream: ${dataPacket.message}`);
+              }
+            } catch (err) {
+              console.warn('Could not parse SSE packet line:', err.message);
+            }
+          }
+        }
+      }
     } catch (error) {
       console.error('AI ANALYSIS ERROR:', error);
-      alert(error?.response?.data?.message || 'Analysis failed. Please try again.');
-    } finally {
+      alert(error.message || 'Analysis failed. Please try again.');
       setLoading(false);
+      setIsStreaming(false);
     }
   };
 
@@ -656,12 +800,20 @@ function SymptomChecker() {
 
             {/* Diagnostics Header */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '18px', marginBottom: '36px', paddingBottom: '24px', borderBottom: '2px solid #f1f5f9' }}>
-              <div style={{ background: '#e0f2fe', padding: '14px', borderRadius: '18px' }}>
+              <div style={{ background: '#e0f2fe', padding: '14px', borderRadius: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Brain size={32} color="#0284c7" />
               </div>
-              <div>
-                <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: '32px',  color: '#0f172a', margin: '0 0 4px 0' }}>Diagnostic Summary</h2>
-                <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>AI recommendation profile matched with real-time clinics</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', flexWrap: 'wrap', gap: '12px' }}>
+                <div>
+                  <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: '32px',  color: '#0f172a', margin: '0 0 4px 0' }}>Diagnostic Summary</h2>
+                  <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>AI recommendation profile matched with real-time clinics</p>
+                </div>
+                {isStreaming && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#eff9ff', border: '1px solid #e0f2fe', borderRadius: '8px', padding: '6px 12px', color: '#0ea5e9', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <span className="pulse-dot" style={{ background: '#0ea5e9' }} />
+                    Streaming...
+                  </div>
+                )}
               </div>
             </div>
 
@@ -671,11 +823,21 @@ function SymptomChecker() {
                 Primary Match
               </div>
               <h3 style={{ fontFamily: 'Syne, sans-serif', fontSize: '24px', color: '#0c2340', fontWeight: '500', marginBottom: '12px' }}>
-                {analysis.possibleCondition || 'No major condition detected'}
+                {analysis.possibleCondition || (isStreaming ? 'Analyzing symptoms...' : 'No major condition detected')}
               </h3>
-              <p style={{ color: '#2d3748', lineHeight: '1.8', fontSize: '15px', margin: 0 }}>
-                {analysis.conditionExplanation}
-              </p>
+              {analysis.conditionExplanation ? (
+                <p style={{ color: '#2d3748', lineHeight: '1.8', fontSize: '15px', margin: 0 }}>
+                  {analysis.conditionExplanation}
+                </p>
+              ) : isStreaming ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
+                  <div style={{ height: '14px', background: '#bee3f8', borderRadius: '4px', width: '95%', opacity: 0.7, animation: 'pulse 1.5s infinite' }} />
+                  <div style={{ height: '14px', background: '#bee3f8', borderRadius: '4px', width: '85%', opacity: 0.7, animation: 'pulse 1.5s infinite' }} />
+                  <div style={{ height: '14px', background: '#bee3f8', borderRadius: '4px', width: '60%', opacity: 0.7, animation: 'pulse 1.5s infinite' }} />
+                </div>
+              ) : (
+                <p style={{ color: '#64748b', fontSize: '15px', margin: 0 }}>No explanation available</p>
+              )}
 
             </div>
 
@@ -687,18 +849,23 @@ function SymptomChecker() {
                 { label: 'Urgency Rating',     value: analysis.urgencyLevel, icon: '🚨', isUrgency: true },
               ].map((item, i) => {
                 const isHigh = (item.value || '').toLowerCase() === 'high';
+                const hasValue = !!item.value;
                 return (
                   <div key={i} style={{ padding: '24px', background: '#f8fafc', borderRadius: '18px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <div style={{ fontSize: '24px' }}>{item.icon}</div>
                     <p style={{ fontSize: '11px', color: '#64748b', margin: 0, fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{item.label}</p>
-                    <p style={{
-                      fontSize: '18px',
-                      fontWeight: '500',
-                      color: item.isUrgency && isHigh ? '#ef4444' : '#0f172a',
-                      margin: 0
-                    }}>
-                      {item.value || 'General Practitioner'}
-                    </p>
+                    {hasValue ? (
+                      <p style={{
+                        fontSize: '18px',
+                        fontWeight: '500',
+                        color: item.isUrgency && isHigh ? '#ef4444' : '#0f172a',
+                        margin: 0
+                      }}>
+                        {item.value}
+                      </p>
+                    ) : (
+                      <div style={{ height: '24px', background: '#e2e8f0', borderRadius: '6px', width: '70%', animation: 'pulse 1.5s infinite', marginTop: '4px' }} />
+                    )}
                   </div>
                 );
               })}
@@ -706,7 +873,7 @@ function SymptomChecker() {
 
             {/* Detailed clinical breakdown tabs */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '28px', marginBottom: '48px' }}>
-              {analysis.precautions?.length > 0 && (
+              {analysis.precautions?.length > 0 ? (
                 <div>
                   <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#0f172a', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #f1f5f9', paddingBottom: '8px' }}>
                     <ShieldAlert size={18} color="#0ea5e9" /> Home Care Precautions
@@ -715,7 +882,17 @@ function SymptomChecker() {
                     {analysis.precautions.map((item, i) => <li key={i} style={{ marginBottom: '8px' }}>{item}</li>)}
                   </ul>
                 </div>
-              )}
+              ) : isStreaming ? (
+                <div>
+                  <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#cbd5e1', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #f1f5f9', paddingBottom: '8px' }}>
+                    <ShieldAlert size={18} color="#cbd5e1" /> Precautions
+                  </h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
+                    <div style={{ height: '14px', background: '#f1f5f9', borderRadius: '4px', width: '90%', animation: 'pulse 1.5s infinite' }} />
+                    <div style={{ height: '14px', background: '#f1f5f9', borderRadius: '4px', width: '70%', animation: 'pulse 1.5s infinite' }} />
+                  </div>
+                </div>
+              ) : null}
 
               {(() => {
                 const recommendedMeds = analysis.recommendedMedicines || [];
@@ -747,26 +924,56 @@ function SymptomChecker() {
                       </div>
                     )}
                   </div>
+                ) : isStreaming ? (
+                  <div>
+                    <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#cbd5e1', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #f1f5f9', paddingBottom: '8px' }}>
+                      <Pill size={18} color="#cbd5e1" /> Relief Options
+                    </h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
+                      <div style={{ height: '14px', background: '#f1f5f9', borderRadius: '4px', width: '85%', animation: 'pulse 1.5s infinite' }} />
+                      <div style={{ height: '14px', background: '#f1f5f9', borderRadius: '4px', width: '65%', animation: 'pulse 1.5s infinite' }} />
+                    </div>
+                  </div>
                 ) : null;
               })()}
 
-              {analysis.dietRecommendation && (
+              {analysis.dietRecommendation ? (
                 <div>
                   <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#0f172a', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #f1f5f9', paddingBottom: '8px' }}>
                     <Activity size={18} color="#0ea5e9" /> Nutritional Guidance
                   </h3>
                   <p style={{ color: '#475569', fontSize: '14px', lineHeight: '1.8', margin: 0 }}>{analysis.dietRecommendation}</p>
                 </div>
-              )}
+              ) : isStreaming ? (
+                <div>
+                  <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#cbd5e1', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #f1f5f9', paddingBottom: '8px' }}>
+                    <Activity size={18} color="#cbd5e1" /> Nutrition Guidance
+                  </h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
+                    <div style={{ height: '14px', background: '#f1f5f9', borderRadius: '4px', width: '90%', animation: 'pulse 1.5s infinite' }} />
+                    <div style={{ height: '14px', background: '#f1f5f9', borderRadius: '4px', width: '75%', animation: 'pulse 1.5s infinite' }} />
+                  </div>
+                </div>
+              ) : null}
 
-              {analysis.recoveryAdvice && (
+              {analysis.recoveryAdvice ? (
                 <div>
                   <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#0f172a', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #f1f5f9', paddingBottom: '8px' }}>
                     <HeartPulse size={18} color="#dc2626" /> Recovery Support
                   </h3>
                   <p style={{ color: '#475569', fontSize: '14px', lineHeight: '1.8', margin: 0 }}>{analysis.recoveryAdvice}</p>
                 </div>
-              )}
+              ) : isStreaming ? (
+                <div>
+                  <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#cbd5e1', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #f1f5f9', paddingBottom: '8px' }}>
+                    <HeartPulse size={18} color="#cbd5e1" /> Recovery Support
+                  </h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
+                    <div style={{ height: '14px', background: '#f1f5f9', borderRadius: '4px', width: '95%', animation: 'pulse 1.5s infinite' }} />
+                    <div style={{ height: '14px', background: '#f1f5f9', borderRadius: '4px', width: '65%', animation: 'pulse 1.5s infinite' }} />
+                  </div>
+                </div>
+              ) : null}
             </div>
 
             {/* Severity Warning Alert Box */}
@@ -781,7 +988,7 @@ function SymptomChecker() {
             )}
 
             {/* Nearby facilities grid */}
-            {analysis.nearbyDoctors?.length > 0 && (
+            {analysis.nearbyDoctors?.length > 0 ? (
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px', paddingBottom: '16px', borderBottom: '2px solid #f1f5f9' }}>
                   <div style={{ background: '#f0f9ff', padding: '8px', borderRadius: '10px' }}>
@@ -833,29 +1040,47 @@ function SymptomChecker() {
                   ))}
                 </div>
               </div>
-            )}
+            ) : isStreaming ? (
+              <div style={{ textAlign: 'center', padding: '40px', background: '#f8fafc', borderRadius: '18px', border: '1px solid #e2e8f0', marginTop: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '24px', height: '24px', borderRadius: '50%',
+                  border: '3px solid #f1f5f9', borderTop: '3px solid #0ea5e9',
+                  animation: 'spin 1s linear infinite'
+                }} />
+                <style>{`
+                  @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                  }
+                `}</style>
+                <p style={{ margin: 0, color: '#64748b', fontSize: '14px', fontWeight: '600' }}>Waiting for stream to complete to fetch local clinics...</p>
+              </div>
+            ) : null}
 
             {/* Action Buttons */}
             <div style={{ marginTop: '40px', paddingTop: '24px', borderTop: '2px solid #f1f5f9', display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button
                 onClick={() => navigate('/patient/dashboard')}
+                disabled={isStreaming}
                 className="action-btn"
-                style={{ padding: '14px 28px', fontSize: '15px' }}
+                style={{ padding: '14px 28px', fontSize: '15px', opacity: isStreaming ? 0.6 : 1, cursor: isStreaming ? 'not-allowed' : 'pointer' }}
               >
                 Go to Dashboard →
               </button>
               <button
                 onClick={handleDownloadReport}
+                disabled={isStreaming}
                 className="action-btn"
-                style={{ padding: '14px 28px', fontSize: '15px', background: 'linear-gradient(135deg, #10b981, #059669)' }}
+                style={{ padding: '14px 28px', fontSize: '15px', background: 'linear-gradient(135deg, #10b981, #059669)', opacity: isStreaming ? 0.6 : 1, cursor: isStreaming ? 'not-allowed' : 'pointer' }}
               >
                 <Download size={18} /> Download Report
               </button>
               <button
                 onClick={() => { setStep(2); setAnalysis(null); setFormData(f => ({ ...f, symptoms: '', duration: '', severity: '', bodyArea: '' })); }}
-                style={{ background: 'white', color: '#0f172a', border: '1.5px solid #cbd5e1', borderRadius: '14px', padding: '14px 28px', fontWeight: '700', fontSize: '15px', cursor: 'pointer', transition: '0.2s' }}
-                onMouseOver={e => e.target.style.background = '#f8fafc'}
-                onMouseOut={e => e.target.style.background = 'white'}
+                disabled={isStreaming}
+                style={{ background: 'white', color: isStreaming ? '#94a3b8' : '#0f172a', border: '1.5px solid #cbd5e1', borderRadius: '14px', padding: '14px 28px', fontWeight: '700', fontSize: '15px', cursor: isStreaming ? 'not-allowed' : 'pointer', transition: '0.2s', opacity: isStreaming ? 0.6 : 1 }}
+                onMouseOver={e => { if(!isStreaming) e.target.style.background = '#f8fafc'; }}
+                onMouseOut={e => { if(!isStreaming) e.target.style.background = 'white'; }}
               >
                 Check New Symptoms
               </button>

@@ -1,9 +1,0 @@
-
-> server@1.0.0 start
-> node server.js
-
-◇ injected env (8) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
-🚀 MedCheck Server running on port 5000
-✅ MongoDB connected: ac-hf1cq9w-shard-00-00.ygdzail.mongodb.net
-(node:11952) [MONGOOSE] Warning: mongoose: Duplicate schema index on {"email":1} for model "User". This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
-(Use `node --trace-warnings ...` to show where the warning was created)

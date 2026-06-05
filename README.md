@@ -1,268 +1,140 @@
-# 🩺 MedCheck
+# 🩺 MedCheck — AI-Powered Patient Diagnostics & Health Ecosystem
 
-MedCheck is a full-stack AI-powered healthcare assistant built with the MERN stack. It helps users analyze symptoms, receive personalized health insights, maintain health records, track medical history, and share feedback about their healthcare experience.
+MedCheck is a full-stack, state-of-the-art medical diagnostics portal and health tracking dashboard. Leveraging high-performance LLMs (Llama 3.3/3.1 via Groq Cloud) and geographical location services, MedCheck enables patients to evaluate symptoms dynamically, check drug-to-drug interactions, locate nearby specialist clinics, and visualize historical health trends.
 
 ---
 
-## 🚀 Features
+## ⚡ Key Highlights & Current Features
 
-### 🔐 Authentication & Security
+### 🚀 1. Real-Time AI Symptom Checker (SSE Streaming)
+*   **Server-Sent Events (SSE)**: Replaces standard HTTP wait times with live, token-by-token streaming of clinical recommendations directly from Groq Cloud.
+*   **Adaptive Partial JSON Parsing**: Uses a custom, client-side regex-based parser to extract and render fields dynamically (possible conditions, recovery advice, precautions) as they arrive, displaying elegant skeleton loader states.
+*   **Clinical Fallback Protocols**: Automatic backend model fallbacks (Llama-3.3-70b-versatile with Llama-3.1-8b-instant backup) prevent rate limits (429) from disrupting users.
 
-* User Registration & Login
-* JWT-Based Authentication
-* Protected Routes
-* Secure Password Storage
-* Session Management
+### 📍 2. Geo-Location Facility Matcher
+*   **GPS Coordination**: Requests geolocation coordinates to resolve actual nearby clinics and specialized hospitals.
+*   **Distance Computation**: Evaluates haversine distance math on the backend to sort and return specialists within the user's immediate vicinity.
 
-### 🤖 AI Symptom Analysis
+### 💊 3. Cross-Medication Interaction Auditing
+*   **Safety Verification**: Scans combined medications (reported profile treatments + recommended symptom relief drugs) for dangerous, life-threatening contraindications.
+*   **Visual Alert Warnings**: Instantly flags local warning signs (such as Nitrate-Sildenafil warnings) on the screen to prevent medical emergencies.
 
-* AI-powered symptom assessment
-* Condition prediction and explanation
-* Urgency level detection
-* Personalized recovery guidance
-* Precaution recommendations
-* Diet and wellness suggestions
-* Medicine recommendations
-* Emergency warning alerts
+### 📈 4. Visual Analytics & Caching
+*   **Health Dashboard**: Renders interactive symptom frequency charts, monthly diagnosis trends, and health score gauges.
+*   **Redis-like TTL Cache**: Utilizes MongoDB Time-To-Live (TTL) indexes to cache heavy AI-synthesized statistics assessments for 24 hours, automatically clearing cache whenever a new symptom check is completed.
 
-### 👤 Patient Dashboard
-
-* Personalized dashboard
-* Analysis history tracking
-* Detailed analysis reports
-* Expandable medical insights
-* Condition timeline
-* Health statistics overview
-
-### ❤️ Health Profile Management
-
-* Create and update health profile
-* Store age, gender, height, and weight
-* Manage existing diseases
-* Manage medications
-* Record allergies
-* Profile editing functionality
-
-### 📍 Healthcare Recommendations
-
-* Nearby healthcare facility suggestions
-* Hospital and clinic recommendations
-* Distance-based facility listing
-* Healthcare provider information
-
-### ⭐ Feedback System
-
-* Submit ratings and reviews
-* Manage personal feedback history
-* Delete submitted feedback
-* Display community testimonials on homepage
-
-### 📊 Health Analytics
-
-* Analysis statistics
-* Condition tracking
-* Urgency monitoring
-* Historical health insights
-
-### 🎨 Modern User Experience
-
-* Responsive design
-* Mobile-friendly interface
-* Modern healthcare dashboard
-* Interactive UI components
-* Clean and intuitive navigation
+### 🔐 5. Secure Auth & OTP Dispatching
+*   **Stateless JWT Security**: Protected server operations verify JWT authorization headers.
+*   **OTP Verification Lifecycle**: Automated generation, 5-minute database expiration, and SMTP email dispatching (via Nodemailer) for secure password recovery.
 
 ---
 
 ## 🛠 Tech Stack
 
-### Frontend
-
-* React.js
-* React Router DOM
-* Axios
-* Lucide React
-* CSS3
-* Responsive Design
-
-### Backend
-
-* Node.js
-* Express.js
-* JWT Authentication
-* bcrypt.js
-* REST APIs
-
-### Database
-
-* MongoDB Atlas
-* Mongoose ODM
-
-### AI Integration
-
-* Groq API
-* AI-powered symptom analysis
+```
+   ┌─────────────────────────────────────────────────────────┐
+   │                       REACT CLIENT                      │
+   │      (React 18, React Router v7, Recharts, Axios)        │
+   └────────────────────────────┬────────────────────────────┘
+                                │ HTTP REST / SSE Stream
+   ┌────────────────────────────▼────────────────────────────┐
+   │                    EXPRESS API SERVER                   │
+   │     (Node.js, Express 5, JWT, Bcrypt, Nodemailer)       │
+   └──────────────┬─────────────────────────────┬────────────┘
+                  │                             │
+   ┌──────────────▼─────────────┐ ┌─────────────▼────────────┐
+   │        MONGODB DATA        │ │        EXTERNAL SERVICES │
+   │   (Mongoose Schemas, TTL)  │ │ (Groq AI, Google Places) │
+   └────────────────────────────┘ └──────────────────────────┘
+```
 
 ---
 
-## 📂 Project Structure
+## 📂 Codebase Structure
 
 ```bash
 MedCheck/
-│
-├── frontend/
-│   ├── public/
-│   ├── src/
-│   │   ├── pages/
-│   │   ├── components/
-│   │   ├── services/
-│   │   ├── context/
-│   │   └── assets/
-│   └── package.json
-│
 ├── backend/
-│   ├── config/
-│   ├── controllers/
-│   ├── middleware/
-│   ├── models/
-│   ├── routes/
-│   ├── services/
-│   ├── server.js
-│   └── package.json
+│   ├── config/              # MongoDB DB connection logic
+│   ├── controllers/         # Handles HTTP requests & business logic
+│   ├── middleware/          # JWT auth validation guards
+│   ├── models/              # Mongoose DB schema definitions
+│   ├── routes/              # Express API endpoints
+│   ├── services/            # Core integration layers (Groq AI, Google Places)
+│   ├── utils/               # Shared helpers (distance, email, drug checks)
+│   └── server.js            # Main backend entry point
 │
-├── .gitignore
-└── README.md
+└── frontend/
+    ├── public/              # Static public assets & template HTML
+    └── src/
+        ├── api/             # Axios connection configuration
+        ├── assets/          # Logo images and brand vectors
+        ├── components/      # Shared components (charts, tips feed, dashboards)
+        ├── context/         # Auth & cached user profile state providers
+        ├── pages/           # Route views (Symptom Checker, History, Policies)
+        ├── services/        # Frontend API call handlers
+        └── utils/           # Report PDF generators, medicine checkers
 ```
 
 ---
 
-## ⚙️ Installation
+## ⚙️ Installation & Running
 
-### 1️⃣ Clone Repository
+### 1️⃣ Environment Configurations
 
-```bash
-git clone https://github.com/YOUR_USERNAME/MedCheck.git
-cd MedCheck
-```
-
----
-
-## 🔧 Backend Setup
-
-```bash
-cd backend
-npm install
-```
-
-Create a `.env` file:
-
+#### Backend Environment (`backend/.env`)
 ```env
 PORT=5000
-
-MONGO_URI=your_mongodb_uri
-
-JWT_SECRET=your_secret_key
-
-GROQ_API_KEY=your_groq_api_key
-
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_signing_key
+GROQ_API_KEY=your_groq_developer_key
 CLIENT_URL=http://localhost:3000
 ```
 
-Run backend:
+#### Frontend Environment (`frontend/.env` - optional)
+```env
+REACT_APP_API_URL=http://localhost:5000/api
+```
 
+### 2️⃣ Start Backend Server
 ```bash
+cd backend
+npm install
 npm run dev
 ```
+*Backend active endpoint*: `http://localhost:5000`
 
-Backend Server:
-
-```bash
-http://localhost:5000
-```
-
----
-
-## 🎨 Frontend Setup
-
+### 3️⃣ Start Frontend Client
 ```bash
 cd frontend
 npm install
 npm start
 ```
-
-Frontend Application:
-
-```bash
-http://localhost:3000
-```
+*Frontend interface*: `http://localhost:3000`
 
 ---
 
-## 🔗 API Endpoints
+## 🔗 REST & Streaming API Reference
 
-### Authentication
-
-```http
-POST /api/auth/register
-POST /api/auth/login
-GET  /api/auth/me
-```
-
-### Profile
-
-```http
-GET    /api/profile
-PUT    /api/profile
-```
-
-### Symptom Analysis
-
-```http
-POST /api/analysis/analyze
-GET  /api/analysis/history
-```
-
-### Feedback
-
-```http
-POST   /api/feedback/create
-GET    /api/feedback/my-feedbacks
-GET    /api/feedback/random/:limit
-DELETE /api/feedback/delete/:id
-```
-
----
-
-## 📸 Core Modules
-
-* Authentication System
-* AI Symptom Checker
-* Patient Dashboard
-* Health Profile Management
-* Analysis History
-* Feedback & Ratings
-* Nearby Healthcare Recommendations
-* Emergency Detection System
-
----
-
-## 🔮 Future Enhancements
-
-* Appointment Booking System
-* Doctor Dashboard
-* Multi-language Support
-* Health Trends & Analytics
+| Endpoint | HTTP Method | Protected | Description |
+| :--- | :--- | :--- | :--- |
+| `/api/auth/register` | `POST` | No | Creates user account & returns login JWT. |
+| `/api/auth/login` | `POST` | No | Validates credentials & returns JWT. |
+| `/api/auth/forgot-password`| `POST` | No | Generates OTP and sends validation email. |
+| `/api/auth/verify-otp` | `POST` | No | Verifies verification OTP code validity. |
+| `/api/auth/reset-password` | `POST` | No | Updates password with secure token. |
+| `/api/auth/me` | `GET` | **Yes** | Returns details of logged-in user. |
+| `/api/profile` | `GET` | **Yes** | Resolves patient's personal health profile. |
+| `/api/profile` | `PUT` | **Yes** | Updates patient's permanent health details. |
+| `/api/analysis/analyze` | `POST` | **Yes** | **Server-Sent Events Stream** of AI analysis. |
+| `/api/analysis/history` | `GET` | **Yes** | Retrieves 20 most recent checkup results. |
+| `/api/feedback/create` | `POST` | **Yes** | Submits ratings and platform reviews. |
+| `/api/statistics/dashboard`| `GET` | **Yes** | Visual statistics & AI health assessments. |
 
 ---
 
 ## 👨‍💻 Author
 
 **Virangi**
-
-GitHub: https://github.com/Virangi06
-
----
-
-## ⭐ Support
-
-If you found this project useful, consider giving it a star on GitHub.
+*   GitHub: [https://github.com/Virangi06](https://github.com/Virangi06)
+*   Repository: [https://github.com/Virangi06/MedCheck](https://github.com/Virangi06/MedCheck)

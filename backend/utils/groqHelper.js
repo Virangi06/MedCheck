@@ -17,7 +17,8 @@ const callGroqWithFallback = async (options) => {
     temperature = 0.2,
     max_tokens = 1500,
     primaryModel = 'llama-3.3-70b-versatile',
-    fallbackModel = 'llama-3.1-8b-instant'
+    fallbackModel = 'llama-3.1-8b-instant',
+    onChunk
   } = options;
 
   if (!process.env.GROQ_API_KEY) {
@@ -25,7 +26,7 @@ const callGroqWithFallback = async (options) => {
   }
 
   const makeRequest = async (model) => {
-    console.log(`🤖 [Groq API] Attempting request using model: ${model}`);
+    console.log(`🤖 [Groq API] Attempting request using model: ${model}${onChunk ? ' (Streaming)' : ''}`);
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -37,6 +38,7 @@ const callGroqWithFallback = async (options) => {
         messages,
         temperature,
         max_tokens,
+        stream: !!onChunk,
       }),
     });
 
@@ -45,12 +47,47 @@ const callGroqWithFallback = async (options) => {
       throw new Error(`Groq API Error ${response.status}: ${errBody}`);
     }
 
-    const data = await response.json();
-    const text = data?.choices?.[0]?.message?.content;
-    if (!text) {
-      throw new Error('Empty response from Groq API');
+    if (onChunk) {
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulatedText = '';
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop(); // Keep the last incomplete line in buffer
+
+        for (const line of lines) {
+          const cleanedLine = line.trim();
+          if (!cleanedLine) continue;
+          if (cleanedLine === 'data: [DONE]') continue;
+          if (cleanedLine.startsWith('data: ')) {
+            try {
+              const parsed = JSON.parse(cleanedLine.substring(6));
+              const content = parsed.choices?.[0]?.delta?.content || '';
+              if (content) {
+                accumulatedText += content;
+                onChunk(content);
+              }
+            } catch (e) {
+              // Ignore JSON parse errors for incomplete event chunks
+            }
+          }
+        }
+      }
+      return accumulatedText;
+    } else {
+      const data = await response.json();
+      const text = data?.choices?.[0]?.message?.content;
+      if (!text) {
+        throw new Error('Empty response from Groq API');
+      }
+      return text;
     }
-    return text;
   };
 
   try {

@@ -5,7 +5,7 @@
 const { checkEmergency } = require('../utils/emergencyCheck');
 const { callGroqWithFallback } = require('../utils/groqHelper');
 
-const analyzeAI = async (data) => {
+const analyzeAI = async (data, onChunk) => {
   try {
     /* =====================================================
        ENV VALIDATION
@@ -86,6 +86,7 @@ RETURN THIS EXACT JSON STRUCTURE:
       ],
       temperature: 0.2,
       max_tokens: 1200,
+      onChunk
     });
 
     console.log(
