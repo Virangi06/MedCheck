@@ -16,7 +16,7 @@
 - **User Logout** - Invalidate token and clear user session state
 - **Email Verification via OTP** - 6-digit OTP sent to email for password reset
 - **Password Reset** - Change forgotten password through OTP verification
-- **Role-Based Access Control** - Different roles: Patient, Doctor, Admin (future)
+- **Role-Based Access Control** - Single user role implementation (Patient). Doctor and Admin roles are reserved for future releases.
 - **Token Management** - JWT tokens stored in localStorage, 7-day expiry
 - **Protected Routes** - Unauthorized users redirected to login
 
@@ -165,7 +165,7 @@
 **Module**: Community Reviews & Ratings
 
 **Functionalities:**
-- **Submit Feedback** - Patients/doctors can leave feedback with rating
+- **Submit Feedback** - Patients can leave feedback with rating
 - **Star Rating** - 1-5 star rating system
 - **Feedback Text** - Write feedback (10-500 characters)
 - **View Own Feedbacks** - See all feedback submitted by current user
@@ -173,7 +173,7 @@
 - **Delete Feedback** - Remove feedback from system
 - **View All Feedbacks** - See all approved feedbacks from community
 - **Random Feedbacks** - Display random testimonials on homepage
-- **Verification Badge** - Doctor feedback shows verification status
+- **Verification Badge** - Verification indicators for medical reviews (future enhancement)
 - **Approval System** - Feedback auto-approved, admin can manage later
 
 **Files Involved:**
@@ -315,9 +315,9 @@ Forgot Password → POST /api/auth/forgot-password → Generate 6-digit OTP
 - name (String) - User's full name
 - email (String, Unique) - User's email address
 - password (String, Hashed) - Bcrypt hashed password
-- role (Enum) - Patient/Doctor/Admin
-- specialty (String) - For doctors only
-- licenseNumber (String) - For verified doctors
+- role (Enum) - Patient (Current active role). Doctor and Admin are placeholders for future enhancements.
+- specialty (String) - For doctors (future use)
+- licenseNumber (String) - For verified doctors (future use)
 - isEmailVerified (Boolean) - Email verification status
 - isActive (Boolean) - Account active/inactive
 - createdAt, updatedAt (Timestamps)
@@ -364,10 +364,10 @@ Forgot Password → POST /api/auth/forgot-password → Generate 6-digit OTP
 ```
 - userId (Reference to User)
 - userName (String) - User's name
-- role (Enum) - Patient/Doctor/Other
+- role (Enum) - Patient/Doctor/Other (Doctor role is for future use)
 - rating (Number) - 1-5 stars
 - feedbackText (String) - Feedback content (10-500 chars)
-- isVerified (Boolean) - Doctor verification status
+- isVerified (Boolean) - Doctor verification status (future use)
 - isApproved (Boolean) - Admin approval status
 - createdAt, updatedAt (Timestamps)
 ```
@@ -494,7 +494,8 @@ Forgot Password → POST /api/auth/forgot-password → Generate 6-digit OTP
 
 ## 📱 USER ROLES & PERMISSIONS
 
-### **Patient (Current Implementation)**
+### **Patient (Active Implementation)**
+The only fully active user role inside the current version of the application.
 - View own profile
 - Submit symptom analyses
 - View analysis history
@@ -504,13 +505,15 @@ Forgot Password → POST /api/auth/forgot-password → Generate 6-digit OTP
 - Edit own feedback
 - View community feedbacks
 
-### **Doctor (Backend Ready, Frontend Future)**
+### **Doctor (Future Enhancement)**
+Reserved for the future release of doctor appointment booking and physician interfaces.
 - View own profile
 - View patient analyses (with permission)
 - Submit verified feedback
 - Special badge on testimonials
 
-### **Admin (Future)**
+### **Admin (Future Enhancement)**
+Reserved for administrative control features.
 - Manage users
 - Approve/reject feedbacks
 - View analytics
@@ -625,7 +628,7 @@ MedCheck is a **fully functional AI-powered healthcare platform** with:
 - ✅ Professional PDF report generation
 - ✅ Responsive and user-friendly interface
 - ✅ Protected routes with JWT authentication
-- ✅ Role-based access control (extensible)
+- ✅ Single patient role system (Doctor & Admin are placeholders for future enhancements)
 
 **Current Users Can:**
 - Sign up and authenticate securely
@@ -642,6 +645,6 @@ MedCheck is a **fully functional AI-powered healthcare platform** with:
 
 ---
 
-**Created:** June 2026 
+**Created:** June 2026  
 **Version:** 1.0.0 Complete  
 **Status:** Production Ready (with Groq API key)
