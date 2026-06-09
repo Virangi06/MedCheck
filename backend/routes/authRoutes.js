@@ -12,6 +12,7 @@ const {
   verifyOtp,
   resetPassword,
   changePassword,
+  googleLogin,
 
 } = require('../controllers/authController');
 
@@ -33,6 +34,12 @@ router.post(
 router.post(
   '/login',
   login
+);
+
+// Google Login
+router.post(
+  '/google-login',
+  googleLogin
 );
 
 // Logout User
