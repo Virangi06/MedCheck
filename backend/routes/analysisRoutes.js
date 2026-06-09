@@ -11,6 +11,10 @@ const {
   protect,
 } = require('../middleware/authMiddleware');
 
+const {
+  aiLimiter,
+} = require('../middleware/rateLimiterMiddleware');
+
 /*
 |--------------------------------------------------------------------------
 | AI Symptom Analysis Route
@@ -23,6 +27,7 @@ const {
 router.post(
   '/analyze',
   protect,
+  aiLimiter,
   analyzeSymptoms
 );
 

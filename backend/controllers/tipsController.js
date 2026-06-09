@@ -153,10 +153,13 @@ exports.getHealthTips = async (req, res) => {
       );
     }
 
+    const disclaimer = "MedCheck provides informational AI analysis for educational purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment.";
+
     res.status(200).json({
       success: true,
       date: todayStr,
-      recommendations: dailyRec.recommendations
+      recommendations: dailyRec.recommendations,
+      disclaimer
     });
 
   } catch (error) {

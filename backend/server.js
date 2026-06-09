@@ -3,6 +3,8 @@ require('dotenv/config');
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
 
 const connectDB = require('./config/db');
 
@@ -21,6 +23,7 @@ const app = express();
    MIDDLEWARE
 ========================================================= */
 
+app.use(helmet());
 app.use(
   cors({
     origin: process.env.CLIENT_URL || 'http://localhost:3000',
@@ -29,6 +32,14 @@ app.use(
 );
 
 app.use(express.json());
+app.use((req, res, next) => {
+  if (req.body) req.body = mongoSanitize.sanitize(req.body);
+  if (req.params) req.params = mongoSanitize.sanitize(req.params);
+  if (req.query) {
+    mongoSanitize.sanitize(req.query);
+  }
+  next();
+});
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 

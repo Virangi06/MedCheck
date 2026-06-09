@@ -90,13 +90,16 @@ exports.checkMedicineInteractions = async (req, res) => {
       });
     }
 
+    const disclaimer = "MedCheck provides informational AI analysis for educational purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment.";
+
     try {
       // 1. Attempt AI analysis via Groq
       const aiResult = await checkInteractionsWithAi(uniqueMeds);
       return res.status(200).json({
         success: true,
         medicinesChecked: uniqueMeds,
-        ...aiResult
+        ...aiResult,
+        disclaimer
       });
     } catch (aiErr) {
       console.warn('AI Interaction check failed, falling back to database local check:', aiErr.message);
@@ -128,7 +131,8 @@ exports.checkMedicineInteractions = async (req, res) => {
         confidenceScore: 75, // Static DB confidence
         overallSeverity,
         interactions: formattedInteractions,
-        generalAdvice: 'Analysis resolved using MedCheck local interaction database. Please consult a doctor.'
+        generalAdvice: 'Analysis resolved using MedCheck local interaction database. Please consult a doctor.',
+        disclaimer
       });
     }
 
@@ -228,8 +232,9 @@ All array fields must have at least 3 items. All string fields must be non-empty
     });
 
     const data = JSON.parse(cleaned);
+    const disclaimer = "MedCheck provides informational AI analysis for educational purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment.";
 
-    return res.status(200).json({ success: true, medicine: data });
+    return res.status(200).json({ success: true, medicine: data, disclaimer });
   } catch (error) {
     console.error('Medicine lookup error:', error.message);
     res.status(500).json({ success: false, message: 'Failed to look up medicine information', error: error.message });

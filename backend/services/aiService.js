@@ -121,9 +121,8 @@ RETURN THIS EXACT JSON STRUCTURE:
       parsed.possibleCondition ||
       'Unknown Condition';
 
-    parsed.conditionExplanation =
-      parsed.conditionExplanation ||
-      'No explanation available';
+    const disclaimerText = "\n\n*Disclaimer: MedCheck provides informational AI analysis for educational purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment.*";
+    parsed.conditionExplanation = (parsed.conditionExplanation || 'No explanation available') + disclaimerText;
 
     parsed.urgencyLevel =
       parsed.urgencyLevel || 'Moderate';
