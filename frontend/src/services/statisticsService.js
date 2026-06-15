@@ -178,7 +178,7 @@ export const getAIHealthAssessment = async () => {
   }
 };
 
-export default {
+const statisticsService = {
   getDashboardStatistics,
   getStatisticsSummary,
   clearStatisticsCache,
@@ -187,4 +187,6 @@ export default {
   getHealthMetrics,
   saveHealthMetric,
   getAIHealthAssessment,
-};
+};
+
+export default statisticsService;

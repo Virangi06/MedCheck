@@ -142,7 +142,7 @@ export const checkInteractionsLocally = (medicines) => {
 
       if (interaction) {
         const originalA = medicines.find(m => m.toLowerCase().includes(interaction.drugs[0]) || m.toLowerCase().includes(interaction.drugs[1]));
-        const originalB = medicines.find(m => m.toLowerCase().includes(interaction.drugs[0]) || m.toLowerCase().includes(interaction.drugs[1]) && m !== originalA);
+        const originalB = medicines.find(m => (m.toLowerCase().includes(interaction.drugs[0]) || m.toLowerCase().includes(interaction.drugs[1])) && m !== originalA);
         
         foundInteractions.push({
           medicationA: originalA || interaction.drugs[0],

@@ -68,7 +68,9 @@ export const toggleRecommendationCompletion = async (recId, completed) => {
   }
 };
 
-export default {
+const tipsService = {
   getHealthTips,
   toggleRecommendationCompletion
 };
+
+export default tipsService;

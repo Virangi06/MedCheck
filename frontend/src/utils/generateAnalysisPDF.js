@@ -26,14 +26,7 @@ const generateAnalysisPDF = (analysis, inputData, healthProfile, userName, creat
       }
     };
 
-    const addTitle = (text) => {
-      checkPageSpace(15);
-      doc.setFontSize(18);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(2, 132, 199);
-      doc.text(text, margin, yPosition);
-      yPosition += 12;
-    };
+
 
     const addSubtitle = (text) => {
       checkPageSpace(12);
