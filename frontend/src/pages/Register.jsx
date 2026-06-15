@@ -76,7 +76,7 @@ function Register() {
       }
 
       login(data.user, data.token);
-      navigate('/symptom-checker');
+      navigate('/patient/dashboard');
     } catch (err) {
       setServerError('Unable to connect to server');
     } finally {
@@ -105,7 +105,7 @@ function Register() {
       }
 
       login(data.user, data.token);
-      navigate('/symptom-checker');
+      navigate('/patient/dashboard');
     } catch (err) {
       setServerError('Unable to connect to server');
     } finally {
@@ -216,7 +216,7 @@ function Register() {
 
       login(data.user, data.token);
 
-      navigate('/symptom-checker');
+      navigate('/patient/dashboard');
     } catch (err) {
       setServerError(
         'Unable to connect to server'

@@ -547,6 +547,51 @@ const dashboardStyles = `
       display: none !important;
     }
   }
+
+  .dashboard-tab-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 24px;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .dashboard-side-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 32px;
+  }
+
+  .analysis-card-body {
+    border-top: 1px solid #f1f5f9;
+    padding: 24px;
+    background: #fafcff;
+    animation: fadeInUp 0.3s ease;
+  }
+
+  @media (max-width: 768px) {
+    .dashboard-tab-container {
+      padding: 24px 16px !important;
+      gap: 16px !important;
+    }
+    .dashboard-side-cards-grid {
+      grid-template-columns: 1fr !important;
+      gap: 20px !important;
+    }
+    .profile-card {
+      padding: 20px 16px !important;
+      border-radius: 16px !important;
+    }
+    .medical-detail-card {
+      padding: 16px !important;
+    }
+    .analysis-card-body {
+      padding: 16px 12px !important;
+    }
+  }
 `;
 
 function PatientDashboard() {
@@ -1092,7 +1137,7 @@ function PatientDashboard() {
 
             {/* Sections 3 & 4: Assessments & Profile (Side-by-Side Grid) */}
             <div style={{ width: '100%', background: '#f4f9ff', padding: '80px 0', borderBottom: '1px solid #e2e8f0' }}>
-              <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: '32px' }}>
+              <div className="dashboard-side-cards-grid" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px', boxSizing: 'border-box' }}>
                 
                 {/* Column A: Recent Assessments */}
                 <div className="horizontal-card" style={{ background: '#ffffff', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'flex-start', padding: '36px', height: '100%', boxSizing: 'border-box' }}>
@@ -1310,7 +1355,7 @@ function PatientDashboard() {
 
         {/* ── HISTORY TAB ── */}
         {activeTab === 'history' && (
-          <div className="animate-fade-in" style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 24px', width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div className="animate-fade-in dashboard-tab-container">
             <div>
               <h1 style={{ margin: 0, fontSize: '32px', fontFamily: "'Syne', sans-serif", fontWeight: '700', color: '#0f172a' }}>Analysis History</h1>
               <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '15px' }}>Access your past symptom checks, AI predictions, and clinic suggestions.</p>
@@ -1348,7 +1393,7 @@ function PatientDashboard() {
                             <span style={{ background: uc.bg, color: uc.text, fontSize: '11px', fontWeight: '600', padding: '4px 10px', borderRadius: '999px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{r.urgencyLevel || 'N/A'}</span>
                           </div>
                           <p style={{ margin: '0', fontSize: '13px', color: '#64748b' }}>
-                            🩺 {inp.symptoms || '—'} &nbsp;·&nbsp; ⏱ {inp.duration || '—'} &nbsp;·&nbsp; 📅 {item.createdAt ? new Date(item.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Recent'}
+                            🩺 {inp.symptoms || '—'} · ⏱ {inp.duration || '—'} · 📅 {item.createdAt ? new Date(item.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Recent'}
                           </p>
                         </div>
                         <button
@@ -1376,7 +1421,7 @@ function PatientDashboard() {
                       </div>
 
                       {isExpanded && (
-                        <div style={{ borderTop: '1px solid #f1f5f9', padding: '24px', background: '#fafcff', animation: 'fadeInUp 0.3s ease' }}>
+                        <div className="analysis-card-body">
                           {r.conditionExplanation && (
                             <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '12px', padding: '16px', marginBottom: '20px' }}>
                               <p style={{ margin: 0, color: '#1e40af', fontSize: '14px', lineHeight: '1.7' }}>{r.conditionExplanation}</p>
@@ -1494,7 +1539,7 @@ function PatientDashboard() {
 
         {/* ── HEALTH PROFILE TAB ── */}
         {activeTab === 'health' && (
-          <div className="animate-fade-in" style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 24px', width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div className="animate-fade-in dashboard-tab-container">
             <div>
               <h1 style={{ margin: 0, fontSize: '32px', fontFamily: "'Syne', sans-serif", fontWeight: '700', color: '#0f172a' }}>Health Profile</h1>
               <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '15px' }}>Manage your general health metrics, existing conditions, medications, and allergies.</p>
@@ -1524,7 +1569,7 @@ function PatientDashboard() {
                       ✏️ Edit Profile
                     </button>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '16px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '16px' }}>
                     {[
                       { label: 'Age', value: healthProfile.age ? `${healthProfile.age} yrs` : '—', icon: <Activity size={22} color="#0284c7" /> },
                       { label: 'Gender', value: healthProfile.gender || '—', icon: <User size={22} color="#0ea5e9" /> },
@@ -1579,7 +1624,7 @@ function PatientDashboard() {
 
         {/* ── HEALTH STATISTICS TAB ── */}
         {activeTab === 'statistics' && (
-          <div className="animate-fade-in" style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 24px', width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div className="animate-fade-in dashboard-tab-container">
             <div>
               <h1 style={{ margin: 0, fontSize: '32px', fontFamily: "'Syne', sans-serif", fontWeight: '700', color: '#0f172a' }}>Health Statistics</h1>
               <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '15px' }}>Comprehensive metrics, trends, and analytical insights about your symptoms.</p>
@@ -1590,7 +1635,7 @@ function PatientDashboard() {
 
         {/* ── MEDICINE INTERACTION CHECKER TAB ── */}
         {activeTab === 'medicine' && (
-          <div className="animate-fade-in" style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 24px', width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div className="animate-fade-in dashboard-tab-container">
             <div>
               <h1 style={{ margin: 0, fontSize: '32px', fontFamily: "'Syne', sans-serif", fontWeight: '700', color: '#0f172a' }}>Medicine Interaction Checker</h1>
               <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '15px' }}>Input medications to screen for dangerous warnings or negative combinations instantly.</p>
@@ -1643,7 +1688,7 @@ function PatientDashboard() {
 
         {/* ── DAILY HEALTH TIPS TAB ── */}
         {activeTab === 'tips' && (
-          <div className="animate-fade-in" style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 24px', width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div className="animate-fade-in dashboard-tab-container">
             <div>
               <h1 style={{ margin: 0, fontSize: '32px', fontFamily: "'Syne', sans-serif", fontWeight: '700', color: '#0f172a' }}>AI Tips</h1>
               <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '15px' }}>Personalized health tips generated by AI based on your symptoms and health profile.</p>
