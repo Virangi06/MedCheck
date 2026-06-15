@@ -8,6 +8,7 @@ import {
 import { useAuth } from './context/AuthContext';
 
 import Navbar from './components/Navbar';
+import ScrollToTop from './components/ScrollToTop';
 
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -101,6 +102,7 @@ function App() {
 
   return (
     <>
+      <ScrollToTop />
       {/* Navbar */}
       {!hideNavbar && (
         <Navbar
