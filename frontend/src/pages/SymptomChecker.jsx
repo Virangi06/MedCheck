@@ -13,7 +13,8 @@ import { profileAPI } from '../services/api';
 import generateAnalysisPDF from '../utils/generateAnalysisPDF';
 import { checkInteractionsLocally } from '../utils/medicineChecker';
 
-const API = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const envUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API = envUrl.endsWith('/api') ? envUrl : `${envUrl}/api`;
 
 // A robust helper to parse partial JSON string returned by LLM stream in real-time.
 // It uses regex to match completed key-value pairs or streaming partial values.

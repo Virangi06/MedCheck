@@ -1,6 +1,7 @@
 // Central API service — all backend calls go through here.
 
-const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const envUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const BASE_URL = envUrl.endsWith('/api') ? envUrl : `${envUrl}/api`;
 
 function getToken() {
   return localStorage.getItem('token');
