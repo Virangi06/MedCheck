@@ -45,11 +45,6 @@ function ResetPassword() {
     setSuccessMessage,
   ] = useState('');
 
-  // Get stored email
-  const email =
-    localStorage.getItem(
-      'resetEmail'
-    );
 
   // ─────────────────────────────
   // Validation

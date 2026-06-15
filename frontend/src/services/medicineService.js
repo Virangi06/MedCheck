@@ -103,8 +103,10 @@ export const lookupMedicineInfo = async (medicineName, details = '') => {
   }
 };
 
-export default {
+const medicineService = {
   checkMedicineInteractions,
   getMyMedications,
   lookupMedicineInfo
 };
+
+export default medicineService;

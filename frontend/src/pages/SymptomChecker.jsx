@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import MedCheckLogo from '../components/MedCheckLogo';
@@ -7,7 +6,7 @@ import MedCheckLogo from '../components/MedCheckLogo';
 import {
   Brain, User, Calendar, ShieldAlert, Pill, AlertTriangle,
   Activity, HeartPulse, VenusAndMars, ChevronRight, ChevronLeft,
-  Thermometer, Loader2, Sparkles, Stethoscope, MapPin, Siren, Download,
+  Thermometer, Sparkles, Stethoscope, MapPin, Siren, Download,
 } from '../components/MedIcon';
 
 import { profileAPI } from '../services/api';
