@@ -612,6 +612,11 @@ function PatientDashboard() {
       setActiveTab(tabParam);
     }
   }, [location.search]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [activeTab]);
+
   const [analyses, setAnalyses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
@@ -1012,18 +1017,18 @@ function PatientDashboard() {
                 
                 {/* Left Column: Text, Welcome & Actions */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-                    <div className="premium-icon-box" style={{ background: 'rgba(255, 255, 255, 0.1)', color: '#38bdf8', width: '52px', height: '52px', borderRadius: '14px' }}>
-                      <Activity size={28} />
-                    </div>
-                    <div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div className="premium-icon-box" style={{ background: 'rgba(255, 255, 255, 0.1)', color: '#38bdf8', width: '52px', height: '52px', borderRadius: '14px' }}>
+                        <Activity size={28} />
+                      </div>
                       <h1 style={{ margin: 0, fontSize: '28px', fontFamily: "'Syne', sans-serif", fontWeight: '500', color: 'white', lineHeight: 1.2 }}>
                         Welcome back, <span style={{ color: '#38bdf8' }}>{user.name}</span>
                       </h1>
-                      <p style={{ margin: '6px 0 0', color: '#93c5fd', fontSize: '16px', lineHeight: 1.5 }}>
-                        Your personal clinical intelligence hub. Screen symptoms with AI, check drug interactions, and track your clinical analytics in real-time.
-                      </p>
                     </div>
+                    <p style={{ margin: 0, color: '#93c5fd', fontSize: '16px', lineHeight: 1.5 }}>
+                      Your personal clinical intelligence hub. Screen symptoms with AI, check drug interactions, and track your clinical analytics in real-time.
+                    </p>
                   </div>
 
                   {/* Bullet features */}
@@ -1277,16 +1282,16 @@ function PatientDashboard() {
                 </div>
 
                 <div className="horizontal-card" style={{ background: 'linear-gradient(135deg, #ffffff 0%, #f9fafb 100%)', borderColor: '#e2e8f0' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flex: 1, flexWrap: 'wrap' }}>
-                    <div className="premium-icon-box" style={{ background: 'rgba(14, 165, 233, 0.08)', color: '#0ea5e9', width: '52px', height: '52px', borderRadius: '14px' }}>
-                      <Brain size={28} />
-                    </div>
-                    <div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div className="premium-icon-box" style={{ background: 'rgba(14, 165, 233, 0.08)', color: '#0ea5e9', width: '52px', height: '52px', borderRadius: '14px' }}>
+                        <Brain size={28} />
+                      </div>
                       <h3 style={{ margin: 0, fontSize: '18px', fontFamily: "'Syne', sans-serif", fontWeight: '700', color: '#0f172a' }}>AI Health Dashboard</h3>
-                      <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '14px', lineHeight: 1.5 }}>
-                        Check your personalized health score, historical trends, visual screening analytics, and urgent clinical guidelines.
-                      </p>
                     </div>
+                    <p style={{ margin: 0, color: '#64748b', fontSize: '14px', lineHeight: 1.5 }}>
+                      Check your personalized health score, historical trends, visual screening analytics, and urgent clinical guidelines.
+                    </p>
                   </div>
                   <div style={{ flexShrink: 0 }}>
                     <button
@@ -1319,16 +1324,18 @@ function PatientDashboard() {
                 </div>
 
                 <div className="horizontal-card" style={{ background: 'linear-gradient(135deg, #ffffff 0%, #f9fafb 100%)', borderColor: '#e2e8f0' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flex: 1, flexWrap: 'wrap' }}>
-                    <div className="premium-icon-box" style={{ background: 'rgba(14, 165, 233, 0.08)', color: '#0ea5e9', width: '52px', height: '52px', borderRadius: '14px' }}>
-                      <Sparkles size={28} />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div className="premium-icon-box" style={{ background: 'rgba(14, 165, 233, 0.08)', color: '#0ea5e9', width: '52px', height: '52px', borderRadius: '14px' }}>
+                        <Sparkles size={28} />
+                      </div>
+                      <h3 style={{ margin: 0, fontSize: '18px', fontFamily: "'Syne', sans-serif", fontWeight: '700', color: '#0f172a' }}>Community Feedback</h3>
                     </div>
                     <div>
-                      <h3 style={{ margin: 0, fontSize: '18px', fontFamily: "'Syne', sans-serif", fontWeight: '700', color: '#0f172a' }}>Community Feedback</h3>
-                      <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '14px', lineHeight: 1.5 }}>
+                      <p style={{ margin: 0, color: '#64748b', fontSize: '14px', lineHeight: 1.5 }}>
                         Help us improve our clinical screening platform. Submit reviews or track your previous feedback submissions.
                       </p>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px', flexWrap: 'wrap' }}>
                         <div style={{ display: 'flex', gap: '2px', fontSize: '14px', color: '#f59e0b' }}>
                           ★ ★ ★ ★ ★
                         </div>
