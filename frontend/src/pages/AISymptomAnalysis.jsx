@@ -75,6 +75,19 @@ function AISymptomAnalysis() {
           background: #0284c7;
           transform: translateY(-2px);
         }
+        @media (max-width: 768px) {
+          .glass-card {
+            padding: 24px 16px !important;
+            border-radius: 16px !important;
+          }
+          .hero-bg {
+            padding: 60px 16px 80px !important;
+          }
+          .glass-grid {
+            grid-template-columns: 1fr !important;
+            gap: 20px !important;
+          }
+        }
       `}</style>
 
       {/* HERO */}
@@ -84,7 +97,7 @@ function AISymptomAnalysis() {
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 30 }}>
             <MedCheckLogo size="lg" darkTheme={true} />
           </div>
-          <div className="section-tag">✦ Core Feature</div>
+          <div className="section-tag">Core Feature</div>
           <h1
             style={{
               fontFamily: 'Syne, sans-serif',
@@ -118,10 +131,10 @@ function AISymptomAnalysis() {
       <section style={{ padding: '100px 24px' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 60 }}>
-            <div className="section-tag">✦ Technology</div>
+            <div className="section-tag">Technology</div>
             <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: 36, color: '#0f172a', fontWeight: 700 }}>How the Analysis Works</h2>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 28 }}>
+          <div className="glass-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 28 }}>
             <div className="glass-card">
               <div style={{ fontSize: 46, marginBottom: 18 }}>✍️</div>
               <h3 style={{ fontFamily: 'Syne, sans-serif', fontSize: 22, marginBottom: 14, color: '#0f172a' }}>1. Natural Language Input</h3>

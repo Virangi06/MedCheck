@@ -207,6 +207,26 @@ function Home() {
           transform: translateY(-4px);
           box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
+        @media (max-width: 768px) {
+          section {
+            padding: 48px 16px !important;
+          }
+          .hero-bg {
+            padding: 80px 16px 80px !important;
+          }
+          .features-grid, .mission-grid, .testimonials-grid, .disclaimer-grid {
+            grid-template-columns: 1fr !important;
+            gap: 20px !important;
+          }
+          .step-time-badge {
+            font-size: 10px !important;
+            padding: 2px 8px !important;
+          }
+          .step-title-row {
+            flex-wrap: wrap !important;
+            gap: 8px !important;
+          }
+        }
       `}</style>
 
       {/* ─── HERO ─── */}
@@ -248,7 +268,7 @@ function Home() {
       <section style={{ padding: '96px 24px', background: '#f8fafc' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 64 }}>
-            <div className="section-tag">✦ Why MedCheck</div>
+            <div className="section-tag">Why MedCheck</div>
             <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: 'clamp(28px,4vw,42px)', color: '#0f172a', letterSpacing: '-0.8px', marginBottom: 16 }}>
               Healthcare, Reimagined
             </h2>
@@ -257,7 +277,7 @@ function Home() {
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24 }}>
+          <div className="features-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24 }}>
             {[
               {
                 icon: <Brain size={26} color="white" strokeWidth={1.8} />,
@@ -303,7 +323,7 @@ function Home() {
       <section style={{ padding: '96px 24px', background: 'white' }}>
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 64 }}>
-            <div className="section-tag">✦ Simple Process</div>
+            <div className="section-tag">Simple Process</div>
             <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: 'clamp(28px,4vw,42px)', color: '#0f172a', letterSpacing: '-0.8px' }}>
               How MedCheck Works
             </h2>
@@ -319,9 +339,9 @@ function Home() {
               <div key={i} style={{ display: 'flex', gap: 24, alignItems: 'flex-start', padding: '28px 0', borderBottom: i < 3 ? '1px solid #f1f5f9' : 'none' }}>
                 <div className="step-num">{item.step}</div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-                    <h3 style={{ fontFamily: 'Syne, sans-serif', fontSize: 19, color: '#0f172a' }}>{item.title}</h3>
-                    <span style={{ background: '#EFF9FF', color: '#0284c7', fontSize: 12, fontWeight: 600, padding: '3px 10px', borderRadius: 50, border: '1px solid #BAE6FD' }}>{item.time}</span>
+                  <div className="step-title-row" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                    <h3 style={{ fontFamily: 'Syne, sans-serif', fontSize: 19, color: '#0f172a', margin: 0 }}>{item.title}</h3>
+                    <span className="step-time-badge" style={{ background: '#EFF9FF', color: '#0284c7', fontSize: 12, fontWeight: 600, padding: '3px 10px', borderRadius: 50, border: '1px solid #BAE6FD', whiteSpace: 'nowrap', flexShrink: 0 }}>{item.time}</span>
                   </div>
                   <p style={{ color: '#64748b', lineHeight: 1.7, fontSize: 15 }}>{item.desc}</p>
                 </div>
@@ -334,9 +354,9 @@ function Home() {
       {/* ─── OUR MISSION ─── */}
       <section style={{ padding: '96px 24px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '48px', alignItems: 'center' }}>
+          <div className="mission-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '48px', alignItems: 'center' }}>
             <div>
-              <div className="section-tag">✦ Our Mission</div>
+              <div className="section-tag">Our Mission</div>
               <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: 'clamp(28px,4vw,42px)', color: '#0f172a', letterSpacing: '-0.8px', marginBottom: 20 }}>
                 Empowering Every Patient With Clarity & Confidence
               </h2>
@@ -400,12 +420,12 @@ function Home() {
       <section style={{ padding: '96px 24px', background: '#ffffff' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 64 }}>
-            <div className="section-tag">✦ Patient Stories</div>
+            <div className="section-tag">Patient Stories</div>
             <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: 'clamp(28px,4vw,42px)', color: '#0f172a', letterSpacing: '-0.8px' }}>
               What People Are Saying
             </h2>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
+          <div className="testimonials-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
             {loadingTestimonials ? (
               <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 40 }}>
                 <p style={{ color: '#94a3b8' }}>Loading testimonials...</p>
@@ -472,7 +492,7 @@ function Home() {
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
             }}>
-              ✦ Medical Disclaimer
+              Medical Disclaimer
             </div>
 
             <h2 style={{
@@ -499,7 +519,7 @@ function Home() {
           </div>
 
           {/* ── Three standalone disclaimer cards (no outer wrapper) ── */}
-          <div style={{
+          <div className="disclaimer-grid" style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
             gap: 24,
@@ -628,10 +648,6 @@ function Home() {
           </div>
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
             <p style={{ fontSize: 13 }}>© 2026 MedCheck. All rights reserved. This is a health informational tool — not a substitute for medical diagnosis.</p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e' }} />
-              <span style={{ fontSize: 13, color: '#4ade80' }}>All systems operational</span>
-            </div>
           </div>
         </div>
       </footer>

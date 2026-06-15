@@ -75,6 +75,19 @@ function HealthHistory() {
           background: #0284c7;
           transform: translateY(-2px);
         }
+        @media (max-width: 768px) {
+          .glass-card {
+            padding: 24px 16px !important;
+            border-radius: 16px !important;
+          }
+          .hero-bg {
+            padding: 60px 16px 80px !important;
+          }
+          .glass-grid {
+            grid-template-columns: 1fr !important;
+            gap: 20px !important;
+          }
+        }
       `}</style>
 
       {/* HERO */}
@@ -84,7 +97,7 @@ function HealthHistory() {
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 30 }}>
             <MedCheckLogo size="lg" darkTheme={true} />
           </div>
-          <div className="section-tag">✦ Health Record</div>
+          <div className="section-tag">Health Record</div>
           <h1
             style={{
               fontFamily: 'Syne, sans-serif',
@@ -117,7 +130,7 @@ function HealthHistory() {
       {/* BENIFITS */}
       <section style={{ padding: '100px 24px' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 28 }}>
+          <div className="glass-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 28 }}>
             <div className="glass-card">
               <div style={{ fontSize: 46, marginBottom: 18 }}>📅</div>
               <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: 24, marginBottom: 16, color: '#0f172a' }}>Historical Tracking</h2>

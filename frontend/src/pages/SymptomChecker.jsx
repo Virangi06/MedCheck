@@ -508,6 +508,29 @@ function SymptomChecker() {
           50% { transform: scale(1.4); opacity: 1; }
           100% { transform: scale(0.9); opacity: 0.6; }
         }
+        @media (max-width: 768px) {
+          .glass-container {
+            padding: 24px 16px !important;
+            border-radius: 20px !important;
+          }
+          .responsive-grid-3 {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+          }
+          .responsive-grid-280, .responsive-grid-220 {
+            grid-template-columns: 1fr !important;
+            gap: 16px !important;
+          }
+          .responsive-grid-130, .responsive-grid-160 {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 10px !important;
+          }
+        }
+        @media (max-width: 480px) {
+          .responsive-grid-130, .responsive-grid-160 {
+            grid-template-columns: 1fr !important;
+          }
+        }
       `}</style>
 
       <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
@@ -579,7 +602,7 @@ function SymptomChecker() {
               We customize analysis parameters based on your age, biological gender, and general health metrics.
             </p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginBottom: '32px' }}>
+            <div className="responsive-grid-280" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginBottom: '32px' }}>
               <InputBox icon={<User size={18} color="#64748b" />} label="Full Name" value={formData.fullName} disabled />
 
               <InputBox icon={<Calendar size={18} color="#64748b" />} label="Age *" name="age" value={formData.age} onChange={handleChange} error={errors.age} type="number" placeholder="e.g. 28" />
@@ -594,7 +617,7 @@ function SymptomChecker() {
               <label style={{ fontWeight: '700', color: '#0f172a', display: 'block', marginBottom: '12px', fontSize: '15px' }}>
                 Gender Selection *
               </label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+              <div className="responsive-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
                 {['Male', 'Female', 'Other'].map(g => (
                   <div
                     key={g}
@@ -616,7 +639,7 @@ function SymptomChecker() {
               <label style={{ fontWeight: '700', color: '#0f172a', display: 'block', marginBottom: '12px', fontSize: '15px' }}>
                 Do you have any existing chronic conditions? *
               </label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
+              <div className="responsive-grid-130" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
                 {['None', 'Diabetes', 'Asthma', 'Blood Pressure', 'Heart Disease', 'Other'].map(item => (
                   <div
                     key={item}
@@ -641,7 +664,7 @@ function SymptomChecker() {
               <label style={{ fontWeight: '700', color: '#0f172a', display: 'block', marginBottom: '12px', fontSize: '15px' }}>
                 Are you taking any routine medications? *
               </label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
+              <div className="responsive-grid-130" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
                 {['None', 'Paracetamol', 'Insulin', 'BP Medication', 'Asthma Inhaler', 'Other'].map(item => (
                   <div
                     key={item}
@@ -666,7 +689,7 @@ function SymptomChecker() {
               <label style={{ fontWeight: '700', color: '#0f172a', display: 'block', marginBottom: '12px', fontSize: '15px' }}>
                 Do you have any known medical or environmental allergies? *
               </label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
+              <div className="responsive-grid-130" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
                 {['None', 'Dust', 'Pollen', 'Food Allergy', 'Medicine Allergy', 'Other'].map(item => (
                   <div
                     key={item}
@@ -718,7 +741,7 @@ function SymptomChecker() {
               </div>
             )}
 
-            <div style={{ display: 'grid', gap: '28px', marginBottom: '36px' }}>
+            <div className="responsive-grid-280" style={{ display: 'grid', gap: '28px', marginBottom: '36px' }}>
               {/* Symptom Input */}
               <InputBox icon={<Thermometer size={18} color="#64748b" />} label="What symptoms are you experiencing? *" name="symptoms" value={formData.symptoms} onChange={handleChange} error={errors.symptoms} placeholder="e.g. throbbing headache, mild fever, nausea" />
 
@@ -731,7 +754,7 @@ function SymptomChecker() {
               <label style={{ fontWeight: '700', color: '#0f172a', display: 'block', marginBottom: '12px', fontSize: '15px' }}>
                 How long have these symptoms persisted? *
               </label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px' }}>
+              <div className="responsive-grid-160" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px' }}>
                 {['1-2 Days', '3-7 Days', '1-2 Weeks', 'More than 2 Weeks'].map(d => (
                   <div
                     key={d}
@@ -751,7 +774,7 @@ function SymptomChecker() {
               <label style={{ fontWeight: '700', color: '#0f172a', display: 'block', marginBottom: '12px', fontSize: '15px' }}>
                 How severe is the discomfort? *
               </label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+              <div className="responsive-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
                 {[
                   { name: 'Mild', color: '#22c55e', bg: '#f0fdf4', border: '#bbf7d0', desc: 'Easily tolerated symptoms' },
                   { name: 'Moderate', color: '#eab308', bg: '#fefce8', border: '#fef08a', desc: 'Interferes with activities' },
@@ -842,7 +865,7 @@ function SymptomChecker() {
             </div>
 
             {/* Metrics cards grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '40px' }}>
+            <div className="responsive-grid-280" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '40px' }}>
               {[
                 { label: 'Recommended Doctor', value: analysis.recommendedDoctor, icon: '🩺' },
                 { label: 'Target Specialist',  value: analysis.recommendedSpecialist, icon: '👨‍⚕️' },
@@ -872,7 +895,7 @@ function SymptomChecker() {
             </div>
 
             {/* Detailed clinical breakdown tabs */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '28px', marginBottom: '48px' }}>
+            <div className="responsive-grid-280" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '28px', marginBottom: '48px' }}>
               {analysis.precautions?.length > 0 ? (
                 <div>
                   <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#0f172a', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #f1f5f9', paddingBottom: '8px' }}>
@@ -1134,12 +1157,8 @@ function SymptomChecker() {
               </ul>
             </div>
           </div>
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
-            <p style={{ fontSize: 13 }}>© 2026 MedCheck. All rights reserved. This is a health informational tool — not a substitute for medical diagnosis.</p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e' }} />
-              <span style={{ fontSize: 13, color: '#4ade80' }}>All systems operational</span>
-            </div>
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 32, display: 'flex', justifyContent: 'center', alignItems: 'center', textAlign: 'center', fontSize: 13 }}>
+            <p style={{ margin: 0 }}>© 2026 MedCheck. All rights reserved. This is a health informational tool — not a substitute for medical diagnosis.</p>
           </div>
         </div>
       </footer>

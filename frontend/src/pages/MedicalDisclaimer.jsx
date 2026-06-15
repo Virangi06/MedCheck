@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import MedCheckLogo from '../components/MedCheckLogo';
 
 function MedicalDisclaimer() {
@@ -76,6 +75,15 @@ function MedicalDisclaimer() {
           margin-bottom: 20px;
           font-size: 15px;
         }
+        @media (max-width: 768px) {
+          .document-card {
+            padding: 24px 16px !important;
+            border-radius: 16px !important;
+          }
+          .hero-bg {
+            padding: 50px 16px !important;
+          }
+        }
       `}</style>
 
       {/* HERO */}
@@ -85,7 +93,7 @@ function MedicalDisclaimer() {
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
             <MedCheckLogo size="md" darkTheme={true} />
           </div>
-          <div className="section-tag">✦ Health Information Notice</div>
+          <div className="section-tag">Health Information Notice</div>
           <h1
             style={{
               fontFamily: 'Syne, sans-serif',

@@ -1222,7 +1222,7 @@ function PatientDashboard() {
             <div style={{ width: '100%', background: '#ffffff', padding: '80px 0', borderBottom: '1px solid #f1f5f9' }}>
               <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
                 <div style={{ marginBottom: '32px' }}>
-                  <div className="section-tag">✦ CLINICAL ANALYTICS</div>
+                  <div className="section-tag">CLINICAL ANALYTICS</div>
                   <h2 style={{ fontSize: '28px', fontFamily: "'Syne', sans-serif", fontWeight: '500', color: '#0f172a', letterSpacing: '-0.8px', margin: '12px 0 16px' }}>
                     AI Health Assistance
                   </h2>
@@ -1264,7 +1264,7 @@ function PatientDashboard() {
             <div style={{ width: '100%', background: '#ffffff', padding: '80px 0' }}>
               <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
                 <div style={{ marginBottom: '32px' }}>
-                  <div className="section-tag">✦ COMMUNITY SATISFACTION</div>
+                  <div className="section-tag">COMMUNITY SATISFACTION</div>
                   <h2 style={{ fontSize: '28px', fontFamily: "'Syne', sans-serif", fontWeight: '500', color: '#0f172a', letterSpacing: '-0.8px', margin: '12px 0 16px' }}>
                     Share Your Experience
                   </h2>
@@ -1720,12 +1720,8 @@ function PatientDashboard() {
 
             {/* Bottom Emergency Disclaimer */}
             <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16, fontSize: 13 }}>
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', textAlign: 'center', fontSize: 13 }}>
                 <p style={{ margin: 0 }}>MedCheck is an informational screening tool — not a substitute for clinical diagnosis or treatment.</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e' }} />
-                  <span style={{ fontSize: 13, color: '#4ade80' }}>All systems operational</span>
-                </div>
               </div>
             </div>
           </div>

@@ -488,7 +488,7 @@ function Symptoms() {
       {/* ─── HEADER ─── */}
       <section style={{ padding: '80px 24px 20px', textAlign: 'center' }}>
         <div style={{ maxWidth: 800, margin: '0 auto' }}>
-          <div className="section-tag-symptoms">✦ Symptoms Library</div>
+          <div className="section-tag-symptoms">Symptoms Library</div>
           <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: 'clamp(36px, 6vw, 54px)', fontWeight: 700, color: '#0f172a', letterSpacing: '-1.5px', marginBottom: 24 }}>
             Understand your symptoms
           </h1>
@@ -569,7 +569,7 @@ function Symptoms() {
               <X size={18} />
             </button>
 
-            <div className="section-tag-symptoms">✦ Clinical Guide</div>
+            <div className="section-tag-symptoms">Clinical Guide</div>
             <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: 'clamp(28px, 4vw, 36px)', color: '#0f172a', margin: '0 0 16px', letterSpacing: '-1px' }}>
               {selectedSymptom.title}
             </h2>
