@@ -20,3 +20,8 @@ Thumbs.db
 
 # compressed files
 *.zip
+
+#docs and pdf
+*.pdf
+*.docx
+*.docs

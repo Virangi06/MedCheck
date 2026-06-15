@@ -74,7 +74,7 @@ function ForgotPassword() {
 
     try {
       const res = await fetch(
-        'http://localhost:5000/api/auth/forgot-password',
+        `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/forgot-password`,
         {
           method: 'POST',
 

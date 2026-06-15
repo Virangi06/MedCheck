@@ -276,21 +276,23 @@ function Home() {
               },
             ].map((f, i) => (
               <div key={i} className="feature-card">
-                <div style={{
-                  width: 56,
-                  height: 56,
-                  background: 'linear-gradient(135deg, #0c1f35 0%, #0a3a6e 100%)',
-                  borderRadius: 16,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginBottom: 20,
-                  boxShadow: '0 4px 16px rgba(14,165,233,0.25)',
-                }}>
-                  {f.icon}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
+                  <div style={{
+                    width: 56,
+                    height: 56,
+                    background: 'linear-gradient(135deg, #0c1f35 0%, #0a3a6e 100%)',
+                    borderRadius: 16,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 4px 16px rgba(14,165,233,0.25)',
+                    flexShrink: 0,
+                  }}>
+                    {f.icon}
+                  </div>
+                  <h3 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: '#0f172a' }}>{f.title}</h3>
                 </div>
-                <h3 style={{ fontSize: 22, fontWeight: 700, marginBottom: 14, color: '#0f172a' }}>{f.title}</h3>
-                <p style={{ color: '#475569', lineHeight: 1.8, fontSize: 15 }}>{f.desc}</p>
+                <p style={{ color: '#475569', lineHeight: 1.8, fontSize: 15, margin: 0 }}>{f.desc}</p>
               </div>
             ))}
           </div>
@@ -520,26 +522,28 @@ function Home() {
               },
             ].map((item, index) => (
               <div key={index} className="disclaimer-card">
-                <div style={{
-                  width: 58,
-                  height: 58,
-                  borderRadius: 18,
-                  background: 'linear-gradient(135deg, #0c2a4a 0%, #0a3a6e 100%)',
-                  border: '1px solid rgba(14,165,233,0.3)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginBottom: 20,
-                  boxShadow: '0 4px 16px rgba(14,165,233,0.2)',
-                }}>
-                  {item.icon}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
+                  <div style={{
+                    width: 58,
+                    height: 58,
+                    borderRadius: 18,
+                    background: 'linear-gradient(135deg, #0c2a4a 0%, #0a3a6e 100%)',
+                    border: '1px solid rgba(14,165,233,0.3)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 4px 16px rgba(14,165,233,0.2)',
+                    flexShrink: 0,
+                  }}>
+                    {item.icon}
+                  </div>
+
+                  <h3 style={{ color: 'white', fontSize: 20, fontWeight: 700, margin: 0 }}>
+                    {item.title}
+                  </h3>
                 </div>
 
-                <h3 style={{ color: 'white', fontSize: 20, fontWeight: 700, marginBottom: 12 }}>
-                  {item.title}
-                </h3>
-
-                <p style={{ color: 'rgba(186,230,253,0.72)', lineHeight: 1.8, fontSize: 14 }}>
+                <p style={{ color: 'rgba(186,230,253,0.72)', lineHeight: 1.8, fontSize: 14, margin: 0 }}>
                   {item.desc}
                 </p>
               </div>

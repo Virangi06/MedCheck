@@ -60,7 +60,7 @@ function Register() {
   const handleGoogleCallback = async (response) => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/auth/google-login', {
+      const res = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/google-login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -89,7 +89,7 @@ function Register() {
     setLoading(true);
     try {
       const mockToken = `mock_${email}_${name}`;
-      const res = await fetch('http://localhost:5000/api/auth/google-login', {
+      const res = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/google-login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -188,7 +188,7 @@ function Register() {
 
     try {
       const response = await fetch(
-        'http://localhost:5000/api/auth/register',
+        `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/register`,
         {
           method: 'POST',
           headers: {
