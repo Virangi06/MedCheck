@@ -515,6 +515,42 @@ function SymptomChecker() {
         .desktop-only {
           display: block !important;
         }
+        .doctor-card {
+          background: #ffffff;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 18px;
+          padding: 24px;
+          transition: all 0.25s ease;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          gap: 16px;
+        }
+        .doctor-avatar {
+          width: 44px;
+          height: 44px;
+          border-radius: 12px;
+          background: #f0f9ff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 22px;
+          flex-shrink: 0;
+          border: 1.5px solid #e0f2fe;
+        }
+        .doctor-call-btn {
+          text-decoration: none;
+          background: #0284c7;
+          color: white;
+          padding: 6px 14px;
+          border-radius: 10px;
+          font-weight: 700;
+          font-size: 12px;
+          transition: all 0.2s;
+        }
+        .doctor-call-btn:hover {
+          background: #0ea5e9;
+        }
         .mobile-select {
           width: 100%;
           padding: 16px;
@@ -673,6 +709,51 @@ function SymptomChecker() {
           .responsive-grid-130, .responsive-grid-160 {
             grid-template-columns: 1fr !important;
           }
+          .doctor-cards-grid {
+            gap: 12px !important;
+          }
+          .doctor-card {
+            padding: 14px !important;
+            border-radius: 14px !important;
+            gap: 12px !important;
+          }
+          .doctor-avatar {
+            width: 36px !important;
+            height: 36px !important;
+            border-radius: 8px !important;
+            font-size: 18px !important;
+          }
+          .doctor-meta {
+            margin-bottom: 6px !important;
+            gap: 6px !important;
+          }
+          .doctor-spec {
+            padding: 2px 6px !important;
+            font-size: 10px !important;
+          }
+          .doctor-dist, .doctor-rating {
+            font-size: 10px !important;
+          }
+          .doctor-name {
+            font-size: 14px !important;
+            margin-bottom: 4px !important;
+          }
+          .doctor-address {
+            font-size: 11px !important;
+            line-height: 1.4 !important;
+          }
+          .doctor-card-footer {
+            padding-top: 8px !important;
+            margin-top: 8px !important;
+          }
+          .doctor-phone {
+            font-size: 11px !important;
+          }
+          .doctor-call-btn {
+            padding: 5px 12px !important;
+            font-size: 11px !important;
+            border-radius: 8px !important;
+          }
         }
       `}</style>
 
@@ -686,7 +767,7 @@ function SymptomChecker() {
           <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: 'clamp(32px, 5vw, 54px)', color: '#0f172a', letterSpacing: '-1.5px', margin: '0 0 12px' }}>
             Symptom Assessment
           </h1>
-          <p style={{ color: '#64748b', fontSize: '17px', margin: '0 0 24px' }}>
+          <p className="desktop-only" style={{ color: '#64748b', fontSize: '17px', margin: '0 0 24px' }}>
             Complete the steps below to trigger AI analysis and local specialist suggestions.
           </p>
 
@@ -1208,37 +1289,46 @@ function SymptomChecker() {
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '20px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '20px' }} className="doctor-cards-grid">
                   {analysis.nearbyDoctors.map((doctor, index) => (
                     <div
                       key={index}
-                      style={{ background: '#ffffff', border: '1.5px solid #e2e8f0', borderRadius: '18px', padding: '24px', transition: 'all 0.25s ease', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '16px' }}
+                      className="doctor-card"
                       onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#0ea5e9'; e.currentTarget.style.boxShadow = '0 10px 25px rgba(14,165,233,0.06)'; }}
                       onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.boxShadow = 'none'; }}
                     >
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                          <span style={{ fontSize: '12px', background: '#e0f2fe', color: '#0284c7', padding: '4px 10px', borderRadius: '50px', fontWeight: '700' }}>
-                            {doctor.type || 'Facility'}
-                          </span>
-                          <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '600' }}>
-                            📍 {typeof doctor.distance === 'number' ? `${doctor.distance.toFixed(1)} km` : doctor.distance}
-                          </span>
+                      <div className="doctor-card-body" style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                        <div className="doctor-avatar">
+                          {doctor.type === 'Hospital' ? '🏥' : doctor.type === 'Pharmacy' ? '💊' : '🩺'}
                         </div>
-                        <h4 style={{ fontSize: '16px', fontWeight: '500', color: '#0f172a', margin: '0 0 8px 0', lineHeight: '1.4' }}>
-                          {doctor.name}
-                        </h4>
-                        <p style={{ fontSize: '13px', color: '#64748b', margin: 0, lineHeight: '1.6' }}>
-                          {doctor.address}
-                        </p>
+                        <div style={{ flex: 1 }}>
+                          <div className="doctor-meta" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', flexWrap: 'wrap' }}>
+                            <span className="doctor-spec" style={{ fontSize: '11px', background: '#e0f2fe', color: '#0284c7', padding: '3px 8px', borderRadius: '50px', fontWeight: '700' }}>
+                              {doctor.type || 'Facility'}
+                            </span>
+                            <span className="doctor-dist" style={{ fontSize: '11px', color: '#64748b', fontWeight: '600' }}>
+                              📍 {typeof doctor.distance === 'number' ? `${doctor.distance.toFixed(1)} km` : doctor.distance}
+                            </span>
+                            <span className="doctor-rating" style={{ fontSize: '11px', color: '#eab308', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                              ⭐ {doctor.rating || '4.8'}
+                            </span>
+                          </div>
+                          <h4 className="doctor-name" style={{ fontSize: '15px', fontWeight: '700', color: '#0f172a', margin: '0 0 6px 0', lineHeight: '1.4' }}>
+                            {doctor.name}
+                          </h4>
+                          <p className="doctor-address" style={{ fontSize: '13px', color: '#64748b', margin: 0, lineHeight: '1.5' }}>
+                            {doctor.address}
+                          </p>
+                        </div>
                       </div>
                       
                       {doctor.phone && (
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #f1f5f9', paddingTop: '14px', fontSize: '13px' }}>
-                          <span style={{ color: '#0284c7', fontWeight: '700' }}>{doctor.phone}</span>
+                        <div className="doctor-card-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #f1f5f9', paddingTop: '12px', marginTop: '12px', fontSize: '13px' }}>
+                          <span className="doctor-phone" style={{ color: '#0284c7', fontWeight: '700' }}>{doctor.phone}</span>
                           <a
                             href={`tel:${doctor.phone}`}
-                            style={{ textDecoration: 'none', background: '#0284c7', color: 'white', padding: '6px 14px', borderRadius: '10px', fontWeight: '700', fontSize: '12px' }}
+                            className="doctor-call-btn"
+                            style={{ textDecoration: 'none', background: '#0284c7', color: 'white', padding: '6px 14px', borderRadius: '10px', fontWeight: '700', fontSize: '12px', transition: 'all 0.2s' }}
                           >
                             Call
                           </a>

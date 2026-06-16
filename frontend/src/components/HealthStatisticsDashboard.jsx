@@ -650,28 +650,6 @@ const HealthStatisticsDashboard = ({ healthProfile, analyses }) => {
               sub="Most detected" accent="#0369a1" icon={<Stethoscope size={18} />} />
           </div>
 
-          {/* ── RECOMMENDATION BANNER ── */}
-          <div className="recommendation-banner" style={{
-            display: 'flex', alignItems: 'flex-start', gap: '16px',
-            background: 'linear-gradient(135deg,#0c4a6e,#0369a1)',
-            borderRadius: '20px', padding: '24px 28px', color: 'white',
-          }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '13px',
-              background: 'rgba(255, 255, 255, 0.12)', border: '1px solid rgba(255, 255, 255, 0.2)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Zap size={20} color="white" />
-            </div>
-            <div>
-              <p style={{ margin: '0 0 4px', fontSize: '11px', fontWeight: '700',
-                textTransform: 'uppercase', letterSpacing: '0.07em', color: 'rgba(255,255,255,0.65)' }}>
-                AI Clinical Recommendation
-              </p>
-              <p style={{ margin: 0, fontSize: '14.5px', color: 'rgba(255,255,255,0.93)', lineHeight: 1.7 }}>
-                {statistics.insights.recommendedAction}
-              </p>
-            </div>
-          </div>
-
           {/* ── PROFILE CORRELATION ── */}
           {healthProfile?.diseases &&
             healthProfile.diseases.toLowerCase() !== 'none' &&
