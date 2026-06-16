@@ -328,7 +328,7 @@ const MedicineInteractionChecker = () => {
       );
 
       case 'pros': return (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+        <div className="lookup-grid-split">
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
               <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -360,7 +360,7 @@ const MedicineInteractionChecker = () => {
                 Side Effects Breakdown
               </span>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="lookup-grid-split-small">
               <div>
                 <p style={{ margin: '0 0 10px', fontSize: '11.5px', fontWeight: '700', color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   Common
@@ -440,6 +440,148 @@ const MedicineInteractionChecker = () => {
         .med-tab:hover { background: #f1f5f9 !important; }
         .tag-remove:hover { color: #ef4444 !important; background: #fee2e2 !important; }
         .mode-btn:hover { background: #f8fafc; }
+
+        .form-card-padding {
+          padding: 32px;
+        }
+
+        .profile-meds-box {
+          background: #f8fafc;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 14px;
+          padding: 16px 20px;
+          margin-bottom: 24px;
+        }
+
+        .interaction-header-banner {
+          border-radius: 20px 20px 0 0;
+          background: white;
+          padding: 24px 30px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 16px;
+        }
+
+        .interaction-results-body {
+          background: white;
+          border-radius: 0 0 20px 20px;
+          border: 1.5px solid #cbd5e1;
+          padding: 28px 30px;
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+        }
+
+        .warning-card-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px 18px;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+
+        .warning-card-body {
+          padding: 18px;
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
+
+        .lookup-header {
+          border-radius: 20px 20px 0 0;
+          background: white;
+          padding: 32px 36px 24px;
+          border-bottom: 1.5px solid #e2e8f0;
+        }
+
+        .lookup-overview-box {
+          margin: 20px 0 0;
+          font-size: 14px;
+          line-height: 1.8;
+          color: #475569;
+          background: #f8fafc;
+          padding: 16px 20px;
+          border-radius: 14px;
+          border: 1.5px solid #f1f5f9;
+        }
+
+        .lookup-content-body {
+          background: white;
+          border-radius: 0 0 20px 20px;
+          border: 1px solid #e2e8f0;
+          border-top: none;
+          padding: 28px 30px;
+        }
+
+        .lookup-grid-split {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 24px;
+        }
+
+        .lookup-grid-split-small {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+        }
+
+        @media (max-width: 480px) {
+          .mode-btn {
+            padding: 8px 6px !important;
+            font-size: 11px !important;
+            gap: 4px !important;
+          }
+          .form-card-padding {
+            padding: 16px !important;
+          }
+          .profile-meds-box {
+            padding: 10px 12px !important;
+            border-radius: 10px !important;
+          }
+          .interaction-header-banner {
+            padding: 14px 16px !important;
+            border-radius: 12px 12px 0 0 !important;
+          }
+          .interaction-results-body {
+            padding: 16px !important;
+            border-radius: 0 0 12px 12px !important;
+            gap: 16px !important;
+          }
+          .warning-card-header {
+            padding: 8px 12px !important;
+          }
+          .warning-card-body {
+            padding: 12px !important;
+            gap: 10px !important;
+          }
+          .lookup-header {
+            padding: 16px 18px !important;
+            border-radius: 12px 12px 0 0 !important;
+          }
+          .lookup-overview-box {
+            padding: 12px 14px !important;
+            margin-top: 14px !important;
+          }
+          .med-tab {
+            padding: 8px 10px !important;
+            font-size: 12px !important;
+          }
+          .lookup-content-body {
+            padding: 16px !important;
+            border-radius: 0 0 12px 12px !important;
+          }
+          .lookup-grid-split {
+            grid-template-columns: 1fr !important;
+            gap: 16px !important;
+          }
+          .lookup-grid-split-small {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+          }
+        }
       `}</style>
 
       {/* ─── TOPO TAB SELECTOR MODE ─── */}
@@ -508,7 +650,7 @@ const MedicineInteractionChecker = () => {
       ──────────────────────────────────────────────────────────────── */}
       {activeMode === 'interaction' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-          <div className="profile-card" style={{ padding: '32px' }}>
+          <div className="profile-card form-card-padding">
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '26px' }}>
               <div style={{
                 width: '48px', height: '48px', borderRadius: '14px', flexShrink: 0,
@@ -601,10 +743,7 @@ const MedicineInteractionChecker = () => {
 
             {/* Profile Medications Inclusion Checkbox */}
             {profileMeds.length > 0 && (
-              <div style={{
-                background: '#f8fafc', border: '1.5px solid #e2e8f0',
-                borderRadius: '14px', padding: '16px 20px', marginBottom: '24px'
-              }}>
+              <div className="profile-meds-box">
                 <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
                   <input
                     type="checkbox"
@@ -689,18 +828,7 @@ const MedicineInteractionChecker = () => {
               {(() => {
                 const styles = getSeverityStyles(interactionResult.overallSeverity);
                 return (
-                  <div style={{
-                    borderRadius: '20px 20px 0 0',
-                    background: styles.bg,
-                    border: `1.5px solid ${styles.border}`,
-                    borderBottom: 'none',
-                    padding: '24px 30px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    flexWrap: 'wrap',
-                    gap: '16px'
-                  }}>
+                  <div className="interaction-header-banner" style={{ background: styles.bg, border: `1.5px solid ${styles.border}`, borderBottom: 'none' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <AlertTriangle size={28} color={styles.iconColor} />
                       <div>
@@ -729,15 +857,7 @@ const MedicineInteractionChecker = () => {
               })()}
 
               {/* Advice Box and Detailed Warnings List */}
-              <div style={{
-                background: 'white',
-                borderRadius: '0 0 20px 20px',
-                border: '1.5px solid #cbd5e1',
-                padding: '28px 30px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '24px'
-              }}>
+              <div className="interaction-results-body">
                 {interactionResult.interactionsFound === 0 ? (
                   <div style={{
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -791,11 +911,7 @@ const MedicineInteractionChecker = () => {
                             borderRadius: '14px', overflow: 'hidden'
                           }}>
                             {/* Card Header */}
-                            <div style={{
-                              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                              padding: '12px 18px', background: itemStyles.bg, borderBottom: `1.5px solid ${itemStyles.border}`,
-                              flexWrap: 'wrap', gap: '10px'
-                            }}>
+                            <div className="warning-card-header" style={{ background: itemStyles.bg, borderBottom: `1.5px solid ${itemStyles.border}` }}>
                               <span style={{ fontSize: '13.5px', fontWeight: '700', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                 <Pill size={14} color="#64748b" />
                                 {item.medicationA} <span style={{ color: '#94a3b8', fontWeight: '400' }}>+</span> {item.medicationB}
@@ -810,7 +926,7 @@ const MedicineInteractionChecker = () => {
                             </div>
 
                             {/* Card Body */}
-                            <div style={{ padding: '18px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                            <div className="warning-card-body">
                               <p style={{ margin: 0, fontSize: '13px', color: '#334155', lineHeight: 1.65 }}>
                                 {item.description}
                               </p>
@@ -867,7 +983,7 @@ const MedicineInteractionChecker = () => {
       ──────────────────────────────────────────────────────────────── */}
       {activeMode === 'lookup' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-          <div className="profile-card" style={{ padding: '32px' }}>
+          <div className="profile-card form-card-padding">
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '26px' }}>
               <div style={{
                 width: '48px', height: '48px', borderRadius: '14px', flexShrink: 0,
@@ -980,12 +1096,7 @@ const MedicineInteractionChecker = () => {
           {/* LOOKUP RESULTS */}
           {lookupResult && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0', animation: 'fadeSlide 0.4s ease' }}>
-              <div style={{
-                borderRadius: '20px 20px 0 0',
-                background: 'white',
-                padding: '32px 36px 24px',
-                borderBottom: '1.5px solid #e2e8f0',
-              }}>
+              <div className="lookup-header">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px' }}>
                   <div>
                     {lookupResult.category && (
@@ -1024,11 +1135,7 @@ const MedicineInteractionChecker = () => {
                   </div>
                 </div>
 
-                <p style={{
-                  margin: '20px 0 0', fontSize: '14px', lineHeight: 1.8, color: '#475569',
-                  background: '#f8fafc', padding: '16px 20px', borderRadius: '14px',
-                  border: '1.5px solid #f1f5f9',
-                }}>
+                <p className="lookup-overview-box">
                   {lookupResult.overview}
                 </p>
               </div>
@@ -1061,11 +1168,7 @@ const MedicineInteractionChecker = () => {
                 ))}
               </div>
 
-              <div style={{
-                background: 'white', borderRadius: '0 0 20px 20px',
-                border: '1px solid #e2e8f0', borderTop: 'none',
-                padding: '28px 30px',
-              }}>
+              <div className="lookup-content-body">
                 {renderLookupTab()}
               </div>
 

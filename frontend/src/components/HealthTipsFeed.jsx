@@ -107,15 +107,91 @@ const HealthTipsFeed = () => {
         .filter-btn { cursor:pointer; transition:all 0.16s ease; border:none; }
         .filter-btn:hover { transform:translateY(-1px); }
         .refresh-btn:hover { background:#f1f5f9 !important; }
+
+        .tips-hero-header {
+          background: linear-gradient(135deg,#0c4a6e 0%,#0369a1 55%,#38bdf8 100%);
+          border-radius: 22px;
+          padding: 30px 34px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 16px;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .tip-row-item {
+          display: flex;
+          align-items: center;
+          gap: 18px;
+          padding: 20px 24px;
+          background: white;
+          cursor: pointer;
+          transition: background 0.18s ease;
+        }
+        .tip-row-item.active {
+          background: #f8fafc;
+        }
+        .tip-row-item:hover {
+          background: #f8fafc;
+        }
+
+        .tip-expanded-content {
+          padding: 0 24px 22px 90px;
+          animation: fadeUp 0.22s ease;
+        }
+
+        .actionable-tip-box {
+          display: inline-flex;
+          align-items: flex-start;
+          gap: 10px;
+          background: white;
+          border-radius: 12px;
+          padding: 12px 16px;
+        }
+
+        @media (max-width: 480px) {
+          .tips-hero-header {
+            padding: 16px 20px !important;
+            border-radius: 16px !important;
+            gap: 12px !important;
+          }
+          .tips-hero-header h2 {
+            font-size: 18px !important;
+          }
+          .tips-hero-header p {
+            font-size: 11.5px !important;
+          }
+          .tips-hero-header .refresh-btn {
+            padding: 8px 14px !important;
+            font-size: 11.5px !important;
+          }
+          .tip-row-item {
+            padding: 14px 16px !important;
+            gap: 12px !important;
+          }
+          .tip-row-item p {
+            font-size: 14px !important;
+          }
+          .tip-row-item span {
+            font-size: 9.5px !important;
+          }
+          .tip-expanded-content {
+            padding: 0 16px 16px 16px !important;
+          }
+          .actionable-tip-box {
+            display: flex !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            padding: 10px 12px !important;
+            gap: 8px !important;
+          }
+        }
       `}</style>
 
       {/* ── HERO HEADER ── */}
-      <div style={{
-        background:'linear-gradient(135deg,#0c4a6e 0%,#0369a1 55%,#38bdf8 100%)',
-        borderRadius:'22px', padding:'30px 34px',
-        display:'flex', justifyContent:'space-between', alignItems:'center',
-        flexWrap:'wrap', gap:'16px', position:'relative', overflow:'hidden',
-      }}>
+      <div className="tips-hero-header">
         {/* decorative blobs */}
         <div style={{ position:'absolute', top:'-40px', right:'-40px', width:'160px', height:'160px',
           borderRadius:'50%', background:'rgba(255,255,255,0.07)', pointerEvents:'none' }} />
@@ -211,12 +287,9 @@ const HealthTipsFeed = () => {
 
                 {/* ── MAIN ROW ── */}
                 <div
-                  className="tip-row"
+                  className={`tip-row-item ${isExpanded ? 'active' : ''}`}
                   onClick={() => setExpanded(isExpanded ? null : idx)}
                   style={{
-                    display:'flex', alignItems:'center', gap:'18px',
-                    padding:'20px 24px',
-                    background: isExpanded ? '#f8fafc' : 'white',
                     borderBottom: isLast && !isExpanded ? 'none' : '1px solid #f1f5f9',
                   }}
                 >
@@ -272,11 +345,9 @@ const HealthTipsFeed = () => {
 
                 {/* ── EXPANDED DETAIL ── */}
                 {isExpanded && (
-                  <div style={{
+                  <div className="tip-expanded-content" style={{
                     background: cfg.light,
                     borderBottom: isLast ? 'none' : '1px solid #f1f5f9',
-                    padding:'0 24px 22px 90px',
-                    animation:'fadeUp 0.22s ease',
                   }}>
                     {/* full tip content */}
                     <p style={{
@@ -288,10 +359,8 @@ const HealthTipsFeed = () => {
 
                     {/* actionable tip */}
                     {tip.actionable && (
-                      <div style={{
-                        display:'inline-flex', alignItems:'flex-start', gap:'10px',
-                        background:'white', border:`1.5px solid ${cfg.text}22`,
-                        borderRadius:'12px', padding:'12px 16px',
+                      <div className="actionable-tip-box" style={{
+                        border:`1.5px solid ${cfg.text}22`,
                       }}>
                         <Zap size={15} color={cfg.text} style={{ flexShrink:0, marginTop:'1px' }} />
                         <div>

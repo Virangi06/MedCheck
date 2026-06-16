@@ -508,6 +508,72 @@ function SymptomChecker() {
           50% { transform: scale(1.4); opacity: 1; }
           100% { transform: scale(0.9); opacity: 0.6; }
         }
+
+        .mobile-only {
+          display: none !important;
+        }
+        .desktop-only {
+          display: block !important;
+        }
+        .mobile-select {
+          width: 100%;
+          padding: 16px;
+          border: 1.5px solid #cbd5e1;
+          border-radius: 16px;
+          background: white;
+          font-size: 14px;
+          color: #0f172a;
+          outline: none;
+          appearance: none;
+          box-sizing: border-box;
+          background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: right 16px center;
+          background-size: 16px;
+          transition: all 0.2s ease;
+        }
+        .mobile-select:focus {
+          border-color: #0ea5e9;
+          box-shadow: 0 0 0 4px rgba(14,165,233,0.12);
+        }
+
+        .results-container {
+          background: white;
+          border-radius: 32px;
+          padding: 48px;
+          box-shadow: 0 20px 50px rgba(15,23,42,0.06);
+          border: 1px solid #e2e8f0;
+        }
+
+        .primary-condition-card {
+          background: #f0f9ff;
+          padding: 28px;
+          border-radius: 24px;
+          margin-bottom: 32px;
+          border: 1.5px solid #bee3f8;
+          position: relative;
+        }
+
+        .metric-card {
+          padding: 24px;
+          background: #f8fafc;
+          border-radius: 18px;
+          border: 1px solid #e2e8f0;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .action-btn-group {
+          margin-top: 40px;
+          padding-top: 24px;
+          border-top: 2px solid #f1f5f9;
+          display: flex;
+          gap: 16px;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
+
         @media (max-width: 768px) {
           .glass-container {
             padding: 24px 16px !important;
@@ -527,6 +593,83 @@ function SymptomChecker() {
           }
         }
         @media (max-width: 480px) {
+          .mobile-only {
+            display: block !important;
+          }
+          .desktop-only {
+            display: none !important;
+          }
+          .gender-grid {
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 8px !important;
+          }
+          .gender-grid .interactive-card {
+            padding: 10px 4px !important;
+            gap: 6px !important;
+            border-radius: 12px !important;
+          }
+          .gender-grid .interactive-card div {
+            width: 32px !important;
+            height: 32px !important;
+          }
+          .gender-grid .interactive-card div svg {
+            width: 16px !important;
+            height: 16px !important;
+          }
+          .gender-grid .interactive-card span {
+            font-size: 13px !important;
+          }
+          .duration-grid {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 8px !important;
+          }
+          .duration-grid .interactive-card {
+            padding: 12px 8px !important;
+            border-radius: 12px !important;
+          }
+          .duration-grid .interactive-card span {
+            font-size: 13px !important;
+          }
+          .severity-grid {
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 8px !important;
+          }
+          .severity-grid .interactive-card {
+            padding: 12px 6px !important;
+            border-radius: 12px !important;
+            gap: 6px !important;
+          }
+          .severity-grid .interactive-card span {
+            font-size: 13px !important;
+          }
+          .severity-grid .interactive-card .severity-desc {
+            display: none !important;
+          }
+          .results-container {
+            padding: 20px 16px !important;
+            border-radius: 20px !important;
+          }
+          .primary-condition-card {
+            padding: 16px !important;
+            border-radius: 16px !important;
+            margin-bottom: 20px !important;
+          }
+          .metric-card {
+            padding: 12px 14px !important;
+            border-radius: 14px !important;
+            gap: 4px !important;
+          }
+          .metric-card p {
+            line-height: 1.4 !important;
+          }
+          .action-btn-group {
+            flex-direction: column !important;
+            gap: 12px !important;
+          }
+          .action-btn-group button {
+            width: 100% !important;
+            margin: 0 !important;
+          }
           .responsive-grid-130, .responsive-grid-160 {
             grid-template-columns: 1fr !important;
           }
@@ -617,7 +760,7 @@ function SymptomChecker() {
               <label style={{ fontWeight: '700', color: '#0f172a', display: 'block', marginBottom: '12px', fontSize: '15px' }}>
                 Gender Selection *
               </label>
-              <div className="responsive-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+              <div className="responsive-grid-3 gender-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
                 {['Male', 'Female', 'Other'].map(g => (
                   <div
                     key={g}
@@ -639,17 +782,31 @@ function SymptomChecker() {
               <label style={{ fontWeight: '700', color: '#0f172a', display: 'block', marginBottom: '12px', fontSize: '15px' }}>
                 Do you have any existing chronic conditions? *
               </label>
-              <div className="responsive-grid-130" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
-                {['None', 'Diabetes', 'Asthma', 'Blood Pressure', 'Heart Disease', 'Other'].map(item => (
-                  <div
-                    key={item}
-                    className={`interactive-card ${formData.diseases === item ? 'selected' : ''}`}
-                    style={{ padding: '16px 12px' }}
-                    onClick={() => selectOption('diseases', item)}
-                  >
-                    <span style={{ fontWeight: '600', fontSize: '14px' }}>{item}</span>
-                  </div>
-                ))}
+              <div className="desktop-only">
+                <div className="responsive-grid-130" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
+                  {['None', 'Diabetes', 'Asthma', 'Blood Pressure', 'Heart Disease', 'Other'].map(item => (
+                    <div
+                      key={item}
+                      className={`interactive-card ${formData.diseases === item ? 'selected' : ''}`}
+                      style={{ padding: '16px 12px' }}
+                      onClick={() => selectOption('diseases', item)}
+                    >
+                      <span style={{ fontWeight: '600', fontSize: '14px' }}>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="mobile-only">
+                <select
+                  className="mobile-select"
+                  value={formData.diseases}
+                  onChange={(e) => selectOption('diseases', e.target.value)}
+                >
+                  <option value="" disabled hidden>Select condition...</option>
+                  {['None', 'Diabetes', 'Asthma', 'Blood Pressure', 'Heart Disease', 'Other'].map(item => (
+                    <option key={item} value={item}>{item}</option>
+                  ))}
+                </select>
               </div>
               {formData.diseases === 'Other' && (
                 <div style={{ marginTop: '16px' }} className="input-container border-2 rounded-xl p-3 border-slate-300">
@@ -664,17 +821,31 @@ function SymptomChecker() {
               <label style={{ fontWeight: '700', color: '#0f172a', display: 'block', marginBottom: '12px', fontSize: '15px' }}>
                 Are you taking any routine medications? *
               </label>
-              <div className="responsive-grid-130" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
-                {['None', 'Paracetamol', 'Insulin', 'BP Medication', 'Asthma Inhaler', 'Other'].map(item => (
-                  <div
-                    key={item}
-                    className={`interactive-card ${formData.medications === item ? 'selected' : ''}`}
-                    style={{ padding: '16px 12px' }}
-                    onClick={() => selectOption('medications', item)}
-                  >
-                    <span style={{ fontWeight: '600', fontSize: '14px' }}>{item}</span>
-                  </div>
-                ))}
+              <div className="desktop-only">
+                <div className="responsive-grid-130" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
+                  {['None', 'Paracetamol', 'Insulin', 'BP Medication', 'Asthma Inhaler', 'Other'].map(item => (
+                    <div
+                      key={item}
+                      className={`interactive-card ${formData.medications === item ? 'selected' : ''}`}
+                      style={{ padding: '16px 12px' }}
+                      onClick={() => selectOption('medications', item)}
+                    >
+                      <span style={{ fontWeight: '600', fontSize: '14px' }}>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="mobile-only">
+                <select
+                  className="mobile-select"
+                  value={formData.medications}
+                  onChange={(e) => selectOption('medications', e.target.value)}
+                >
+                  <option value="" disabled hidden>Select medication status...</option>
+                  {['None', 'Paracetamol', 'Insulin', 'BP Medication', 'Asthma Inhaler', 'Other'].map(item => (
+                    <option key={item} value={item}>{item}</option>
+                  ))}
+                </select>
               </div>
               {formData.medications === 'Other' && (
                 <div style={{ marginTop: '16px' }} className="input-container border-2 rounded-xl p-3 border-slate-300">
@@ -689,17 +860,31 @@ function SymptomChecker() {
               <label style={{ fontWeight: '700', color: '#0f172a', display: 'block', marginBottom: '12px', fontSize: '15px' }}>
                 Do you have any known medical or environmental allergies? *
               </label>
-              <div className="responsive-grid-130" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
-                {['None', 'Dust', 'Pollen', 'Food Allergy', 'Medicine Allergy', 'Other'].map(item => (
-                  <div
-                    key={item}
-                    className={`interactive-card ${formData.allergies === item ? 'selected' : ''}`}
-                    style={{ padding: '16px 12px' }}
-                    onClick={() => selectOption('allergies', item)}
-                  >
-                    <span style={{ fontWeight: '600', fontSize: '14px' }}>{item}</span>
-                  </div>
-                ))}
+              <div className="desktop-only">
+                <div className="responsive-grid-130" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
+                  {['None', 'Dust', 'Pollen', 'Food Allergy', 'Medicine Allergy', 'Other'].map(item => (
+                    <div
+                      key={item}
+                      className={`interactive-card ${formData.allergies === item ? 'selected' : ''}`}
+                      style={{ padding: '16px 12px' }}
+                      onClick={() => selectOption('allergies', item)}
+                    >
+                      <span style={{ fontWeight: '600', fontSize: '14px' }}>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="mobile-only">
+                <select
+                  className="mobile-select"
+                  value={formData.allergies}
+                  onChange={(e) => selectOption('allergies', e.target.value)}
+                >
+                  <option value="" disabled hidden>Select allergy status...</option>
+                  {['None', 'Dust', 'Pollen', 'Food Allergy', 'Medicine Allergy', 'Other'].map(item => (
+                    <option key={item} value={item}>{item}</option>
+                  ))}
+                </select>
               </div>
               {formData.allergies === 'Other' && (
                 <div style={{ marginTop: '16px' }} className="input-container border-2 rounded-xl p-3 border-slate-300">
@@ -754,7 +939,7 @@ function SymptomChecker() {
               <label style={{ fontWeight: '700', color: '#0f172a', display: 'block', marginBottom: '12px', fontSize: '15px' }}>
                 How long have these symptoms persisted? *
               </label>
-              <div className="responsive-grid-160" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px' }}>
+              <div className="responsive-grid-160 duration-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px' }}>
                 {['1-2 Days', '3-7 Days', '1-2 Weeks', 'More than 2 Weeks'].map(d => (
                   <div
                     key={d}
@@ -774,7 +959,7 @@ function SymptomChecker() {
               <label style={{ fontWeight: '700', color: '#0f172a', display: 'block', marginBottom: '12px', fontSize: '15px' }}>
                 How severe is the discomfort? *
               </label>
-              <div className="responsive-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+              <div className="responsive-grid-3 severity-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
                 {[
                   { name: 'Mild', color: '#22c55e', bg: '#f0fdf4', border: '#bbf7d0', desc: 'Easily tolerated symptoms' },
                   { name: 'Moderate', color: '#eab308', bg: '#fefce8', border: '#fef08a', desc: 'Interferes with activities' },
@@ -792,7 +977,7 @@ function SymptomChecker() {
                   >
                     <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: s.color }} />
                     <span style={{ fontWeight: '500', fontSize: '16px', color: formData.severity === s.name ? '#0f172a' : '#475569' }}>{s.name}</span>
-                    <span style={{ fontSize: '11px', color: '#64748b' }}>{s.desc}</span>
+                    <span className="severity-desc" style={{ fontSize: '11px', color: '#64748b' }}>{s.desc}</span>
                   </div>
                 ))}
               </div>
@@ -819,7 +1004,7 @@ function SymptomChecker() {
 
         {/* ── STEP 3: Results ───────────────────────────── */}
         {step === 3 && analysis && (
-          <div style={{ background: 'white', borderRadius: '32px', padding: '48px', boxShadow: '0 20px 50px rgba(15,23,42,0.06)', border: '1px solid #e2e8f0' }}>
+          <div className="results-container">
 
             {/* Diagnostics Header */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '18px', marginBottom: '36px', paddingBottom: '24px', borderBottom: '2px solid #f1f5f9' }}>
@@ -841,7 +1026,7 @@ function SymptomChecker() {
             </div>
 
             {/* Primary Condition Block */}
-            <div style={{ background: '#f0f9ff', padding: '28px', borderRadius: '24px', marginBottom: '32px', border: '1.5px solid #bee3f8', position: 'relative' }}>
+            <div className="primary-condition-card">
               <div style={{ position: 'absolute', top: '16px', right: '16px', background: '#0284c7', color: 'white', padding: '4px 12px', borderRadius: '50px', fontSize: '12px', textTransform: 'uppercase' }}>
                 Primary Match
               </div>
@@ -874,7 +1059,7 @@ function SymptomChecker() {
                 const isHigh = (item.value || '').toLowerCase() === 'high';
                 const hasValue = !!item.value;
                 return (
-                  <div key={i} style={{ padding: '24px', background: '#f8fafc', borderRadius: '18px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div key={i} className="metric-card">
                     <div style={{ fontSize: '24px' }}>{item.icon}</div>
                     <p style={{ fontSize: '11px', color: '#64748b', margin: 0, fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{item.label}</p>
                     {hasValue ? (
@@ -1081,7 +1266,7 @@ function SymptomChecker() {
             ) : null}
 
             {/* Action Buttons */}
-            <div style={{ marginTop: '40px', paddingTop: '24px', borderTop: '2px solid #f1f5f9', display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <div className="action-btn-group">
               <button
                 onClick={() => navigate('/patient/dashboard')}
                 disabled={isStreaming}

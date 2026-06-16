@@ -34,6 +34,95 @@ const S = `
   .assess-btn:hover { transform: translateY(-2px) !important; box-shadow: 0 14px 36px rgba(124,58,237,0.38) !important; }
   .cond-row { transition: background 0.16s ease; }
   .cond-row:hover { background: #f5f3ff !important; }
+
+  @media (max-width: 480px) {
+    .stats-top-bar {
+      padding: 10px 14px !important;
+      border-radius: 14px !important;
+    }
+    .stats-top-bar div {
+      font-size: 13px !important;
+    }
+    .stats-top-bar .refresh-btn {
+      padding: 6px 12px !important;
+      font-size: 11.5px !important;
+    }
+    .stat-tiles-grid {
+      grid-template-columns: 1fr 1fr !important;
+      gap: 10px !important;
+    }
+    .stat-tile {
+      padding: 12px 14px !important;
+      border-radius: 14px !important;
+      gap: 6px !important;
+    }
+    .stat-tile div svg {
+      width: 14px !important;
+      height: 14px !important;
+    }
+    .stat-tile div {
+      font-size: 18px !important;
+    }
+    .stat-tile div div {
+      font-size: 10px !important;
+    }
+    .recommendation-banner {
+      padding: 16px !important;
+      border-radius: 14px !important;
+      gap: 12px !important;
+    }
+    .recommendation-banner div svg {
+      width: 16px !important;
+      height: 16px !important;
+    }
+    .recommendation-banner div {
+      width: 32px !important;
+      height: 32px !important;
+    }
+    .recommendation-banner p {
+      font-size: 13px !important;
+      line-height: 1.5 !important;
+    }
+    .ai-assessment-card-header {
+      padding: 14px 16px !important;
+      gap: 10px !important;
+    }
+    .ai-assessment-card-header div div {
+      width: 36px !important;
+      height: 36px !important;
+    }
+    .ai-assessment-card-header div svg {
+      width: 18px !important;
+      height: 18px !important;
+    }
+    .ai-assessment-card-header h3 {
+      font-size: 15px !important;
+    }
+    .ai-assessment-card-body {
+      padding: 16px !important;
+    }
+    .ai-assessment-card-body .summary-box {
+      padding: 12px 14px !important;
+      border-radius: 12px !important;
+      font-size: 13px !important;
+      line-height: 1.6 !important;
+    }
+    .ai-assessment-columns-grid {
+      grid-template-columns: 1fr !important;
+      gap: 14px !important;
+    }
+    .ai-assessment-column {
+      padding: 14px !important;
+      border-radius: 12px !important;
+    }
+    .charts-container {
+      padding: 14px !important;
+      border-radius: 14px !important;
+    }
+    .charts-container h3 {
+      font-size: 14px !important;
+    }
+  }
 `;
 
 /* ── Mini stat tile ── */
@@ -160,7 +249,7 @@ const AIAssessmentCard = ({ totalAnalyses, lastUpdated }) => {
     }}>
 
       {/* Header */}
-      <div style={{
+      <div className="ai-assessment-card-header" style={{
         background: 'white',
         padding: '22px 24px',
         borderBottom: '1px solid #f1f5f9',
@@ -222,7 +311,7 @@ const AIAssessmentCard = ({ totalAnalyses, lastUpdated }) => {
       </div>
 
       {/* Body */}
-      <div style={{ background: 'white', padding: '26px 28px' }}>
+      <div className="ai-assessment-card-body" style={{ background: 'white', padding: '26px 28px' }}>
 
         {!hasData ? (
           <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
@@ -299,7 +388,7 @@ const AIAssessmentCard = ({ totalAnalyses, lastUpdated }) => {
                 }}>
                   Health Situation Summary
                 </p>
-                <p style={{
+                <p className="summary-box" style={{
                   margin: 0,
                   fontSize: '14px',
                   color: '#475569',
@@ -315,10 +404,10 @@ const AIAssessmentCard = ({ totalAnalyses, lastUpdated }) => {
             </div>
 
             {/* Symptoms & Disease Analysis Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+            <div className="ai-assessment-columns-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
               
               {/* Current Symptoms Column */}
-              <div style={{
+              <div className="ai-assessment-column" style={{
                 background: 'white',
                 border: '1.5px solid #e2e8f0',
                 borderRadius: '16px',
@@ -345,7 +434,7 @@ const AIAssessmentCard = ({ totalAnalyses, lastUpdated }) => {
               </div>
 
               {/* General Disease Analysis */}
-              <div style={{
+              <div className="ai-assessment-column" style={{
                 background: 'white',
                 border: '1.5px solid #e2e8f0',
                 borderRadius: '16px',
@@ -376,7 +465,7 @@ const AIAssessmentCard = ({ totalAnalyses, lastUpdated }) => {
 
             {/* Recommended Next Steps */}
             {assessment.immediateActions?.length > 0 && (
-              <div style={{
+              <div className="ai-assessment-column" style={{
                 background: 'white',
                 border: '1.5px solid #e2e8f0',
                 borderRadius: '16px',
@@ -502,7 +591,7 @@ const HealthStatisticsDashboard = ({ healthProfile, analyses }) => {
       <style>{S}</style>
 
       {/* ── TOP BAR ── */}
-      <div style={{
+      <div className="stats-top-bar" style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         background: 'white', padding: '14px 24px', borderRadius: '18px',
         border: '1.5px solid #f1f5f9', flexWrap: 'wrap', gap: '12px',
@@ -523,7 +612,7 @@ const HealthStatisticsDashboard = ({ healthProfile, analyses }) => {
           <span style={{ fontSize: '12px', color: '#94a3b8' }}>
             Updated: <strong style={{ color: '#0ea5e9' }}>{fmtUpdated()}</strong>
           </span>
-          <button onClick={handleRefresh} disabled={isRefreshing} style={{
+          <button className="refresh-btn" onClick={handleRefresh} disabled={isRefreshing} style={{
             display: 'flex', alignItems: 'center', gap: '7px', padding: '9px 16px',
             borderRadius: '10px', border: '1.5px solid #e2e8f0', background: 'white',
             color: '#475569', fontSize: '12.5px', fontWeight: '600', cursor: 'pointer',
@@ -554,7 +643,7 @@ const HealthStatisticsDashboard = ({ healthProfile, analyses }) => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
 
           {/* ── STAT TILES ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: '16px' }}>
+          <div className="stat-tiles-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: '16px' }}>
             <StatTile label="Total Screenings" value={statistics.totalAnalyses}
               sub="All time" accent="#0ea5e9" icon={<ClipboardList size={18} />} />
             <StatTile label="Top Condition" value={statistics.insights.topCondition || 'N/A'}
@@ -562,7 +651,7 @@ const HealthStatisticsDashboard = ({ healthProfile, analyses }) => {
           </div>
 
           {/* ── RECOMMENDATION BANNER ── */}
-          <div style={{
+          <div className="recommendation-banner" style={{
             display: 'flex', alignItems: 'flex-start', gap: '16px',
             background: 'linear-gradient(135deg,#0c4a6e,#0369a1)',
             borderRadius: '20px', padding: '24px 28px', color: 'white',
@@ -587,7 +676,7 @@ const HealthStatisticsDashboard = ({ healthProfile, analyses }) => {
           {healthProfile?.diseases &&
             healthProfile.diseases.toLowerCase() !== 'none' &&
             healthProfile.diseases.trim() !== '' && (
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px',
+            <div className="recommendation-banner" style={{ display: 'flex', alignItems: 'flex-start', gap: '14px',
               background: '#eff9ff', border: '1.5px solid #e0f2fe', borderRadius: '18px', padding: '22px' }}>
               <div style={{ padding: '8px', borderRadius: '12px', background: '#e0f2fe',
                 color: '#0ea5e9', flexShrink: 0 }}>
@@ -610,7 +699,7 @@ const HealthStatisticsDashboard = ({ healthProfile, analyses }) => {
           <AIAssessmentCard totalAnalyses={statistics.totalAnalyses} lastUpdated={lastUpdated} />
 
           {/* ── CHARTS ── */}
-          <div style={{ background: 'white', borderRadius: '20px', padding: '24px',
+          <div className="charts-container" style={{ background: 'white', borderRadius: '20px', padding: '24px',
             border: '1.5px solid #f1f5f9', boxShadow: '0 4px 20px rgba(15,23,42,0.03)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '22px' }}>
               <BarChart3 size={16} color="#0284c7" />
