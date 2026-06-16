@@ -35,7 +35,7 @@ const S = `
   .cond-row { transition: background 0.16s ease; }
   .cond-row:hover { background: #f5f3ff !important; }
 
-  @media (max-width: 480px) {
+  @media (max-width: 768px) {
     .stats-top-bar {
       padding: 10px 14px !important;
       border-radius: 14px !important;
@@ -87,11 +87,11 @@ const S = `
       padding: 14px 16px !important;
       gap: 10px !important;
     }
-    .ai-assessment-card-header div div {
+    .ai-assessment-card-header .ai-assessment-icon-wrap {
       width: 36px !important;
       height: 36px !important;
     }
-    .ai-assessment-card-header div svg {
+    .ai-assessment-card-header .ai-assessment-icon-wrap svg {
       width: 18px !important;
       height: 18px !important;
     }
@@ -261,7 +261,7 @@ const AIAssessmentCard = ({ totalAnalyses, lastUpdated }) => {
         position: 'relative',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div style={{
+          <div className="ai-assessment-icon-wrap" style={{
             width: '44px',
             height: '44px',
             borderRadius: '13px',
