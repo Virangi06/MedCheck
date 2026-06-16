@@ -5,7 +5,9 @@ import { getDashboardStatistics, clearStatisticsCache, getAIHealthAssessment } f
 import SymptomFrequencyChart from './Charts/Symptomfrequencychart';
 import {
   RefreshCw, AlertCircle, ShieldAlert, Activity, ClipboardList,
-  Brain, Sparkles, Stethoscope, Info, BarChart3,
+  Brain, Sparkles, ChevronDown, ChevronUp, CheckCircle2,
+  XCircle, TrendingUp, Heart, Stethoscope, AlertTriangle, Info,
+  BarChart3, Calendar,
 } from 'lucide-react';
 
 /* ══════════════════════════════════════
@@ -647,6 +649,8 @@ const HealthStatisticsDashboard = ({ healthProfile, analyses }) => {
             <StatTile label="Top Condition" value={statistics.insights.topCondition || 'N/A'}
               sub="Most detected" accent="#0369a1" icon={<Stethoscope size={18} />} />
           </div>
+
+
 
           {/* ── PROFILE CORRELATION ── */}
           {healthProfile?.diseases &&
